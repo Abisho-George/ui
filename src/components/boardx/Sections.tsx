@@ -21,10 +21,11 @@ import { EvidenceState } from "@/components/EvidenceState";
 import { FindingCard } from "@/components/FindingCard";
 
 /* Shared section header with numbered, principal-facing question heading (§5.3) */
-export function SectionHead({ n, q, lead, right }: { n: number; q: string; lead?: string; right?: React.ReactNode }) {
+export function SectionHead({ n, name, q, lead, right }: { n: number; name?: string; q: string; lead?: string; right?: React.ReactNode }) {
   return (
     <div className="section__head">
       <div>
+        {name && <div className="section__name">{name}</div>}
         <h2 className="section-q">
           <span className="section-q__num">{n}</span>
           {q}
@@ -44,7 +45,7 @@ export function DiagnosticQuality() {
   const underTestsApplication = d.applicationQuestionsPct < d.applicationExpectationPct;
   return (
     <section className="section" id="s1">
-      <SectionHead n={1} q="How much can this test actually tell us?" lead="Diagnostic quality of the paper itself, before any student findings." />
+      <SectionHead n={1} name="Assessment Diagnostic Quality" q="Can I trust this test to tell me enough?" lead="Diagnostic quality of the paper itself, before any student findings." />
       <div className="card">
         <div className="card__body">
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
@@ -101,7 +102,7 @@ export function PerformanceSnapshot({ onBand }: { onBand: (key: string) => void 
   const fills = ["bar__fill--green", "bar__fill", "bar__fill--gold", "bar__fill--risk"];
   return (
     <section className="section" id="s2">
-      <SectionHead n={2} q="Where does Class X stand on the marks the Board actually tests?" lead={`Based on ${standardPerformance.basedOn}. Click a band to see those students.`} />
+      <SectionHead n={2} name="Standard Performance Snapshot" q="How is my entire Class X performing?" lead={`Based on ${standardPerformance.basedOn}. Click a band to see those students.`} />
       <div className="card">
         <div className="card__body">
           {standardPerformance.bands.map((b, i) => (
@@ -136,7 +137,7 @@ export function SubjectConversion({ subjectFilter }: { subjectFilter: string }) 
   const rows = subjectConversion.filter((r) => subjectFilter === "All" || r.subject === subjectFilter);
   return (
     <section className="section" id="s3">
-      <SectionHead n={3} q="Which subjects convert understanding into Board marks, and which don't?" lead="Average attainment against marks tested per subject, with how many students sit at the expected level." />
+      <SectionHead n={3} name="Subject Board Conversion" q="Across subjects, how much of the Board requirement are my students demonstrating?" lead="Average attainment against marks tested per subject, with how many students sit at the expected level." />
       <div className="card">
         <div className="table-wrap">
           <table className="table">
@@ -184,7 +185,8 @@ export function SubjectConversion({ subjectFilter }: { subjectFilter: string }) 
 export function MarksLoss({ items, onOpen }: { items: Finding[]; onOpen: (f: Finding) => void }) {
   return (
     <section className="section" id="s4">
-      <SectionHead n={4} q="Where exactly are marks being lost?" lead="Each card is one finding: what, how many students, how urgent for the Board, and how sure we are. The three statuses are independent." />
+      <SectionHead n={4} name="Marks Loss Intelligence" q="What is stopping students from scoring higher?" lead="Each card is one finding: what, how many students, how urgent for the Board, and how sure we are. The three statuses are independent." />
+      <p className="hero-line">Lost Marks = Lost Board Potential</p>
       {items.length === 0 ? (
         <EvidenceState kind="early">No findings match the current filters. Widen the subject filter to see all findings.</EvidenceState>
       ) : (
@@ -203,7 +205,7 @@ export function UrgencyVsImpact({ items, onOpen }: { items: Finding[]; onOpen: (
   const sorted = [...items].sort((a, b) => b.studentsAffected * b.avgMarksLost - a.studentsAffected * a.avgMarksLost);
   return (
     <section className="section" id="s5">
-      <SectionHead n={5} q="What should we fix first — what's most urgent, or what hurts most students?" lead="Board urgency and student impact are shown side by side so the trade-off is visible rather than collapsed into one score." />
+      <SectionHead n={5} name="Board Urgency vs. Board Impact" q="Even if students are weak here, how much should I care for the Board?" lead="Board urgency and student impact are shown side by side so the trade-off is visible rather than collapsed into one score." />
       <div className="card">
         <div className="table-wrap">
           <table className="table table--hover">
@@ -254,7 +256,7 @@ export function PotentialLadder() {
   const p = potentialLadder;
   return (
     <section className="section" id="s6">
-      <SectionHead n={6} q="How many students are one step away from full marks?" lead="Students close to full attainment on tested Board marks, and the most common thing holding them back." />
+      <SectionHead n={6} name="Student Potential Ladder" q="Who is close to the next level?" lead="Students close to full attainment on tested Board marks, and the most common thing holding them back." />
       <div className="grid grid--4">
         <div className="stat">
           <div className="stat__label">Ladder</div>
@@ -289,7 +291,7 @@ export function PotentialLadder() {
 export function BandOpportunity() {
   return (
     <section className="section" id="s7">
-      <SectionHead n={7} q="In each band, how many students could move up — and what's in the way?" />
+      <SectionHead n={7} name="Performance Band Opportunity" q="What is stopping each band from moving higher?" />
       <div className="card">
         <div className="table-wrap">
           <table className="table">
@@ -331,7 +333,7 @@ export function RiskIntelligence() {
   const r = riskIntelligence;
   return (
     <section className="section" id="s8">
-      <SectionHead n={8} q="Who is at risk — and who is quietly under-performing their potential?" />
+      <SectionHead n={8} name="Risk Intelligence" q="Who requires intervention?" />
       <div className="grid grid--2">
         <div className="card">
           <div className="card__head">
@@ -400,7 +402,7 @@ export function SubjectAnomalies({ subjectFilter }: { subjectFilter: string }) {
   const rows = subjectAnomalies.filter((a) => subjectFilter === "All" || a.subject === subjectFilter);
   return (
     <section className="section" id="s9">
-      <SectionHead n={9} q="Is anything behaving unusually inside a subject?" lead="Patterns that stand out against the rest of the subject. Pattern labels are descriptive, not diagnoses." />
+      <SectionHead n={9} name="Subject Anomaly Intelligence" q="Where is my batch struggling in an unusual or concentrated way?" lead="Patterns that stand out against the rest of the subject. Pattern labels are descriptive, not diagnoses." />
       <div className="card">
         <div className="table-wrap">
           <table className="table">
@@ -446,7 +448,7 @@ export function SubjectAnomalies({ subjectFilter }: { subjectFilter: string }) {
 export function SectionComparison({ sectionFilter, onSection }: { sectionFilter: string; onSection?: (s: string) => void }) {
   return (
     <section className="section" id="s10">
-      <SectionHead n={10} q="Which sections need the most attention?" lead="Attention is a section-level signal. It is separate from Board urgency and confidence." />
+      <SectionHead n={10} name="Section Comparison" q="Are all my sections facing the same problem?" lead="Attention is a section-level signal. It is separate from Board urgency and confidence." />
       <div className="grid" style={{ gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)" }}>
         <div className="card">
           <div className="table-wrap">
@@ -494,6 +496,10 @@ export function SectionComparison({ sectionFilter, onSection }: { sectionFilter:
             <div style={{ marginTop: 12 }}>
               <ConfidenceMeter level={sectionComparisonInsight.confidence} />
             </div>
+            <p className="note" style={{ marginTop: 14 }}>
+              A section gap describes tested performance on this assessment only. It is not a measure of
+              teaching quality, and BoardX does not attribute it to any teacher.
+            </p>
           </div>
         </div>
       </div>
@@ -505,7 +511,7 @@ export function SectionComparison({ sectionFilter, onSection }: { sectionFilter:
 export function InterventionPlan({ onOpen }: { onOpen: (f: Finding) => void }) {
   return (
     <section className="section" id="s11">
-      <SectionHead n={11} q="What should we do next, in what order?" lead="Priority combines student impact, marks exposure, Board recurrence and confidence. A confirmed problem without a localized cause is routed to investigation, not to an intervention." />
+      <SectionHead n={11} name="Recommended Intervention Plan" q="What should my school act on now?" lead="Priority combines student impact, marks exposure, Board recurrence and confidence. A confirmed problem without a localized cause is routed to investigation, not to an intervention." />
       <div style={{ display: "grid", gap: 12 }}>
         {interventionPlan.map((p) => {
           const f = findings.find((x) => x.id === p.findingId)!;

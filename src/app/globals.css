@@ -2,39 +2,48 @@
    AVAI — design tokens (spec §0 brand system)
    ============================================================ */
 :root {
-  --brand-ink: #15252e;
-  --brand-ink-soft: #3c4c56;
-  --brand-teal: #1f8a8a;
-  --brand-teal-soft: #d8eeee;
-  --brand-gold: #e0a62a;
-  --brand-gold-soft: #fbf0d6;
-  --brand-green: #3a9d6a;
-  --brand-green-soft: #dcf1e5;
-  --brand-cream: #faf6ee;
+  /* Brand tokens read off the brand sheet (spec §0) */
+  --brand-ink: #14213D;
+  --brand-ink-soft: #3d4a6b;
+  --brand-teal: #2FB8C6;
+  --brand-teal-deep: #1b8b98;
+  --brand-teal-soft: #ddf3f6;
+  --brand-gold: #F2A93B;
+  --brand-gold-soft: #fdefd9;
+  --brand-green: #1E9E7E;
+  --brand-green-soft: #d8f0e9;
+  --brand-cream: #FBF6EF;
 
   --info: #2f6fd3;
   --info-soft: #e2ebfa;
   --risk: #c94a3a;
   --risk-soft: #f9e1dd;
+  /* §0: --warn (caution) is deliberately SPLIT from --brand-gold (celebrate).
+     They look alike and mean opposite things — never swap one for the other. */
+  --warn: #b4791a;
+  --warn-soft: #f6ead2;
 
   /* neutrals */
   --surface: #ffffff;
-  --surface-2: #f4f1ea;
-  --line: #e6e1d6;
+  --surface-2: #f5f1ea;
+  --line: #e7e1d7;
   --line-strong: #cfc8ba;
-  --muted: #6c7880;
+  --muted: #6b7382;
   --text: var(--brand-ink);
 
-  /* status dimensions — deliberately three SEPARATE visual systems */
-  /* 1. Attention (section / student): filled pill, ink/teal family */
-  --attention-low: var(--brand-green);
-  --attention-medium: var(--brand-gold);
-  --attention-high: var(--risk);
-  /* 2. Board urgency: outlined chip with a flame glyph, warm gradient */
+  /* status dimensions — deliberately three SEPARATE visual systems (§5.8) */
+  /* 1. Attention (action status): filled pill — five states */
+  --attention-immediate: var(--risk);
+  --attention-watch: var(--warn);
+  --attention-ontrack: var(--brand-green);
+  --attention-investigate: #6c5ce0; /* neutral-purple: investigative, not alarming */
+  --attention-insufficient: #8b93a1;
+  /* 2. Board urgency: outlined chip with a flame glyph, warm ramp — never the
+        red/amber/green of Attention */
   --urgency-very-high: #8c1d1d;
   --urgency-high: #c2571c;
   --urgency-medium: #b58a1c;
-  --urgency-low: #6c7880;
+  --urgency-low: #6b7382;
   /* 3. Confidence: dotted meter, cool blue/grey */
   --confidence-high: #2f6fd3;
   --confidence-medium: #6a8fcf;
@@ -43,11 +52,12 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
-  --shadow-sm: 0 1px 2px rgba(21, 37, 46, 0.06), 0 1px 1px rgba(21, 37, 46, 0.04);
-  --shadow-md: 0 6px 20px rgba(21, 37, 46, 0.1);
+  --shadow-sm: 0 1px 2px rgba(20, 33, 61, 0.06), 0 1px 1px rgba(20, 33, 61, 0.04);
+  --shadow-md: 0 6px 20px rgba(20, 33, 61, 0.1);
 
-  --font-sans: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --font-display: "Georgia", "Times New Roman", serif;
+  /* §0 typography: Manrope (display) / Source Sans 3 (body) */
+  --font-sans: var(--font-source-sans), "Source Sans 3", system-ui, -apple-system, sans-serif;
+  --font-display: var(--font-manrope), "Manrope", system-ui, sans-serif;
 
   --sidebar-w: 232px;
   --topbar-h: 60px;
@@ -98,8 +108,13 @@ table { border-collapse: collapse; width: 100%; }
   color: #d4dde2; font-size: 13.5px;
 }
 .navlink:hover { background: rgba(255,255,255,0.06); color: #fff; }
-.navlink--active { background: var(--brand-teal); color: #fff; }
-.navlink--active:hover { background: var(--brand-teal); }
+/* §3: active nav item = solid left accent bar + brighter label. */
+.navlink--active {
+  background: rgba(47, 184, 198, 0.16); color: #fff;
+  box-shadow: inset 3px 0 0 var(--brand-teal);
+}
+.navlink--active:hover { background: rgba(47, 184, 198, 0.22); }
+.navlink--active svg { color: var(--brand-teal); }
 .sidebar__footer { padding: 14px; border-top: 1px solid rgba(255,255,255,0.08); font-size: 12.5px; }
 .sidebar__user { display: flex; align-items: center; gap: 10px; }
 .avatar {
@@ -160,6 +175,64 @@ table { border-collapse: collapse; width: 100%; }
 .card--soft { background: var(--surface-2); }
 .section { margin-top: 36px; }
 .section__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.hero-line {
+  font-family: var(--font-display); font-size: 15px; font-weight: 700;
+  color: var(--brand-ink); margin: -4px 0 14px; letter-spacing: 0.01em;
+}
+.note {
+  font-size: 12.5px; line-height: 1.5; color: var(--muted);
+  border-left: 2px solid var(--line-strong); padding-left: 10px;
+}
+.studentfilters {
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end;
+  padding: 14px; margin-bottom: 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md);
+}
+.filter--grow { flex: 1 1 220px; }
+.input--sm { padding: 7px 10px; font-size: 13px; }
+.feedback__trend--up { color: var(--brand-green); }
+.feedback__trend--down { color: var(--muted); }
+.feedback__trend--flat { color: var(--muted); }
+.rowactions { display: inline-flex; gap: 6px; align-items: center; position: relative; }
+.rowmenu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 20;
+  min-width: 212px; padding: 6px;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-md);
+  text-align: left;
+}
+.rowmenu__item {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 8px 10px; border: 0; border-radius: var(--radius-sm);
+  background: none; font-size: 13px; color: var(--text); text-align: left;
+}
+.rowmenu__item:hover:not(:disabled) { background: var(--surface-2); }
+.rowmenu__item:disabled { color: var(--muted); cursor: not-allowed; }
+.rowmenu__why { padding: 2px 10px 6px; font-size: 11.5px; color: var(--muted); }
+.modal-scrim {
+  position: fixed; inset: 0; z-index: 60;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: rgba(20, 33, 61, 0.42);
+}
+.modal {
+  width: min(440px, 100%);
+  background: var(--surface); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md); overflow: hidden;
+}
+.modal__head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+.modal__body { padding: 18px; display: grid; gap: 12px; font-size: 14px; }
+.modal__foot { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 18px; background: var(--surface-2); }
+.pin {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; border: 1px dashed var(--line-strong); border-radius: var(--radius-md);
+  background: var(--brand-cream);
+}
+.pin__value { font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: 0.22em; }
+.section__name {
+  font-family: var(--font-display); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--brand-teal-deep);
+  margin-bottom: 6px;
+}
 .section__lead { color: var(--muted); font-size: 13.5px; margin-top: 4px; max-width: 780px; }
 
 .grid { display: grid; gap: 16px; }
@@ -185,8 +258,9 @@ table { border-collapse: collapse; width: 100%; }
   white-space: nowrap;
 }
 .btn:hover { background: var(--surface-2); }
-.btn--primary { background: var(--brand-teal); border-color: var(--brand-teal); color: #fff; }
-.btn--primary:hover { background: #1a7777; }
+/* §9: primary action = solid --brand-ink fill, white text. */
+.btn--primary { background: var(--brand-ink); border-color: var(--brand-ink); color: #fff; }
+.btn--primary:hover { background: #0e1830; }
 .btn--ink { background: var(--brand-ink); border-color: var(--brand-ink); color: #fff; }
 .btn--ink:hover { background: #0f1b22; }
 .btn--ghost { background: transparent; border-color: transparent; }
@@ -234,12 +308,13 @@ table { border-collapse: collapse; width: 100%; }
   display: inline-flex; align-items: center; gap: 6px;
   padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #fff;
 }
-.attn--low { background: var(--attention-low); }
-.attn--medium { background: var(--attention-medium); color: var(--brand-ink); }
-.attn--high { background: var(--attention-high); }
-.attn--ontrack { background: var(--attention-low); }
-.attn--watch { background: var(--attention-medium); color: var(--brand-ink); }
-.attn--intervention { background: var(--attention-high); }
+/* The five §5.8 Attention states. Section-level Low/Medium/High map onto the
+   same three tones so a section badge is never read as a fourth dimension. */
+.attn--ontrack, .attn--low { background: var(--attention-ontrack); }
+.attn--watch, .attn--medium { background: var(--attention-watch); }
+.attn--immediateattention, .attn--intervention, .attn--high { background: var(--attention-immediate); }
+.attn--investigationrequired { background: var(--attention-investigate); }
+.attn--insufficientevidence { background: var(--attention-insufficient); }
 
 /* Dimension 2 — Board urgency (outlined chip with flame glyph) */
 .urg {
@@ -302,6 +377,7 @@ table { border-collapse: collapse; width: 100%; }
   background: var(--info-soft); border: 1px solid #c9d8f3; color: #1f3f75; font-size: 13px;
 }
 .evidence--gold { background: var(--brand-gold-soft); border-color: #ecd8a5; color: #6b4d0a; }
+.evidence--risk { background: var(--risk-soft); border-color: #eec3bb; color: #8c2f22; }
 .evidence--neutral { background: var(--surface-2); border-color: var(--line); color: var(--brand-ink-soft); }
 .evidence__title { font-weight: 650; font-size: 13px; margin-bottom: 2px; }
 .evidence svg { flex: 0 0 auto; margin-top: 1px; }
@@ -408,10 +484,9 @@ table { border-collapse: collapse; width: 100%; }
 }
 .login__brand::after {
   content: ""; position: absolute; width: 560px; height: 560px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(31,138,138,.45), transparent 70%); right: -160px; bottom: -200px;
+  background: radial-gradient(circle, rgba(47,184,198,.40), transparent 70%); right: -160px; bottom: -200px;
 }
 .login__logo { display: flex; align-items: center; gap: 12px; }
-.login__wordmark { font-family: var(--font-display); font-size: 30px; letter-spacing: .12em; }
 .login__hero { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 24px; align-items: flex-start; }
 .login__hero h1 { font-family: var(--font-display); font-size: 40px; font-weight: 500; line-height: 1.15; max-width: 480px; }
 .login__hero p { color: #b8c5cd; font-size: 15px; max-width: 440px; }
@@ -457,7 +532,7 @@ table { border-collapse: collapse; width: 100%; }
 .report-card__subj { font-weight: 650; font-size: 16px; }
 .feedback { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; box-shadow: var(--shadow-md); overflow: hidden; }
 .feedback__hero { background: linear-gradient(135deg, var(--brand-teal-soft), var(--brand-gold-soft)); padding: 28px 26px; display: flex; align-items: center; gap: 20px; }
-.feedback__score { font-family: var(--font-display); font-size: 44px; line-height: 1; }
+.feedback__score { display: inline-flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 44px; line-height: 1; }
 .feedback__body { padding: 24px 26px; display: grid; gap: 18px; }
 .feedback__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .feedback__list li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: var(--radius-md); background: var(--surface-2); font-size: 14.5px; }

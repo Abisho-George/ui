@@ -7,7 +7,7 @@ import { LogOut, type LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { homeFor, initials, useAuth, type CurrentUser } from "@/lib/auth";
 import { school, type Role } from "@/lib/avai-mock-data";
-import { Logomark, Mascot } from "./Mascot";
+import { Logomark, Mascot, Wordmark } from "./Mascot";
 
 export interface NavItem {
   href: string;
@@ -37,7 +37,7 @@ export function LoadingScreen({ label = "Loading AVAI…" }: { label?: string })
   return (
     <div className="loading">
       <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}>
-        <Mascot pose="thinking" size={96} />
+        <Mascot pose="loading" size={96} />
       </motion.div>
       <div className="small">{label}</div>
     </div>
@@ -68,10 +68,7 @@ export function StaffShell({
       <aside className="sidebar">
         <div className="sidebar__brand">
           <Logomark />
-          <div>
-            <div className="sidebar__brand-name">AVAI</div>
-            <div className="sidebar__brand-sub">{roleLabel}</div>
-          </div>
+          <Wordmark size={21} tagline light />
         </div>
         <nav className="sidebar__nav" aria-label="Primary">
           {nav.map((item) => {

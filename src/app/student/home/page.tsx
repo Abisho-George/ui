@@ -28,9 +28,9 @@ export default function StudentHome() {
       </h2>
       {reports.length === 0 ? (
         <div className="card empty-hero">
-          <Mascot pose="neutral" size={90} className="" />
-          <h3 style={{ marginTop: 12 }}>No reports yet</h3>
-          <p>When your teacher shares a report, it will show up here.</p>
+          <Mascot pose="hello" size={90} />
+          <h3 style={{ marginTop: 12 }}>Nothing shared with you yet</h3>
+          <p>Nothing shared with you yet — your teacher will let you know when a report is ready.</p>
         </div>
       ) : (
         reports.map((r) => (

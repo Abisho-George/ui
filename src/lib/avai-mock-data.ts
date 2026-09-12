@@ -589,3 +589,21 @@ export const placeholderPages = {
   enterMarks: { title: "Enter Marks", blurb: "Question-wise marks entry for analysed assessments. Teachers can also enter marks from their Subject view.", status: "Coming in the next build pass" },
   settings: { title: "School Settings", blurb: "School profile, academic year, sections and subject configuration.", status: "Coming in the next build pass" },
 };
+
+// §5.1 Operations summary — the old flat /admin counts dashboard, demoted out
+// of the sidebar and folded into Settings. ✅ these counts exist today.
+export const operationsSummary = [
+  { label: "Papers stored", value: 14 },
+  { label: "Answer scripts stored", value: 1_186 },
+  { label: "Reports issued", value: 212 },
+  { label: "Reports shared with students", value: 96 },
+  { label: "Active staff keys", value: 7 },
+];
+
+// §5.6 Student Intelligence filter options. Risk level and intervention status
+// are derived in the UI from `attention` / `mainBlocker` for this build —
+// 🔧 BACKEND REQUIRED as real per-student fields before wiring.
+export const studentFilterOptions = {
+  riskLevels: ["All", "High", "Medium", "Low"],
+  interventionStatuses: ["All", "Recommended", "Under investigation", "None"],
+};

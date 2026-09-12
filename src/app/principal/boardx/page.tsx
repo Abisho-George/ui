@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Info, ListFilter } from "lucide-react";
+import { Download, Info, ListFilter, Search } from "lucide-react";
 import {
   assessmentContext,
   emptyStates,
@@ -9,6 +9,7 @@ import {
   marksLossFindingIds,
   sections,
   standardOptions,
+  studentFilterOptions,
   studentIntelligenceTable,
   subjects,
   type Finding,
@@ -44,6 +45,20 @@ function bandOf(attainment: string) {
   if (pct >= 0.6) return "60to80";
   return "below60";
 }
+/* Risk level and intervention status are derived from the student's Attention
+   signal and main blocker for this build — 🔧 both are BACKEND REQUIRED as
+   real per-student fields (§5.6). */
+function riskOf(attention: string) {
+  if (attention === "Intervention") return "High";
+  if (attention === "Watch") return "Medium";
+  return "Low";
+}
+function interventionOf(s: { attention: string; mainBlocker: string }) {
+  if (s.mainBlocker === "—") return "None";
+  if (s.attention === "Intervention") return "Recommended";
+  return "Under investigation";
+}
+
 const bandLabel: Record<string, string> = { full: "Full mastery", "80plus": "80%+ attainment", "60to80": "60–80% attainment", below60: "Below 60%" };
 
 export default function BoardXPage() {
@@ -53,6 +68,10 @@ export default function BoardXPage() {
   const [band, setBand] = useState<string | null>(null);
   const [openFinding, setOpenFinding] = useState<Finding | null>(null);
   const [openStudent, setOpenStudent] = useState<string | null>(null);
+  /* §5.6 student-table filters */
+  const [query, setQuery] = useState("");
+  const [risk, setRisk] = useState("All");
+  const [interventionStatus, setInterventionStatus] = useState("All");
 
   const visibleFindings = useMemo(() => {
     const ordered = marksLossFindingIds.map((id) => findings.find((f) => f.id === id)!).filter(Boolean);
@@ -68,9 +87,12 @@ export default function BoardXPage() {
       studentIntelligenceTable.filter((s) => {
         if (section !== "All" && s.section !== section) return false;
         if (band && bandOf(s.attainment) !== band) return false;
+        if (query.trim() && !s.name.toLowerCase().includes(query.trim().toLowerCase())) return false;
+        if (risk !== "All" && riskOf(s.attention) !== risk) return false;
+        if (interventionStatus !== "All" && interventionOf(s) !== interventionStatus) return false;
         return true;
       }),
-    [section, band]
+    [section, band, query, risk, interventionStatus]
   );
 
   const ctx = assessmentContext;
@@ -165,6 +187,9 @@ export default function BoardXPage() {
           </select>
         </div>
         <div className="filterbar__spacer" />
+        <button className="btn btn--sm" title="Generates a Board-readiness summary for this filter combination">
+          <Download size={13} /> Export / Generate Principal Report
+        </button>
         {(section !== "All" || subject !== "All" || band) && (
           <button
             className="btn btn--sm btn--ghost"
@@ -277,6 +302,38 @@ export default function BoardXPage() {
               ) : null
             }
           />
+          <div className="studentfilters">
+            <div className="filter filter--grow">
+              <label htmlFor="f-student">Search student</label>
+              <div style={{ position: "relative" }}>
+                <Search size={14} style={{ position: "absolute", left: 10, top: 9, color: "var(--muted)" }} />
+                <input
+                  id="f-student"
+                  className="input input--sm"
+                  style={{ paddingLeft: 30 }}
+                  placeholder="Name"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="filter">
+              <label htmlFor="f-risk">Risk level</label>
+              <select id="f-risk" className="select" value={risk} onChange={(e) => setRisk(e.target.value)}>
+                {studentFilterOptions.riskLevels.map((r) => (
+                  <option key={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+            <div className="filter">
+              <label htmlFor="f-intervention">Intervention status</label>
+              <select id="f-intervention" className="select" value={interventionStatus} onChange={(e) => setInterventionStatus(e.target.value)}>
+                {studentFilterOptions.interventionStatuses.map((r) => (
+                  <option key={r}>{r}</option>
+                ))}
+              </select>
+            </div>
+          </div>
           <div className="card">
             <div className="table-wrap">
               <table className="table table--hover">

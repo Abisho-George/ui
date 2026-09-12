@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowRight, KeyRound, School, ShieldAlert, User } from "lucide-react";
 import { motion } from "framer-motion";
-import { Logomark, Mascot } from "@/components/Mascot";
+import { Logomark, Mascot, Wordmark } from "@/components/Mascot";
 import { homeFor, useAuth } from "@/lib/auth";
 import { devLoginOptions, school } from "@/lib/avai-mock-data";
 
@@ -22,7 +22,7 @@ export default function LoginPage() {
 
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setNotice("Real sign-in is not wired in this build. Use a DEV LOGIN shortcut below.");
+    setNotice("We couldn\u2019t sign you in with those details. Check them and try again.");
   }
 
   const options = devLoginOptions.filter((o) => (tab === "student" ? o.role === "student" : o.role !== "student"));
@@ -32,11 +32,13 @@ export default function LoginPage() {
       <section className="login__brand">
         <div className="login__logo">
           <Logomark size={36} />
-          <span className="login__wordmark">AVAI</span>
+          <Wordmark size={34} tagline light />
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.35 }}>
+            <Mascot pose="hello" size={64} />
+          </motion.div>
         </div>
         <motion.div className="login__hero" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <Mascot pose="hello" size={150} />
-          <h1>Hello. Let&apos;s turn one test into Board-ready intelligence.</h1>
+          <h1>A brighter tomorrow for every student.</h1>
           <p>AVAI reads your assessments against the Board blueprint and tells you where marks are being lost, how urgent it is, and how sure we are.</p>
         </motion.div>
         <div className="login__foot">
@@ -68,10 +70,10 @@ export default function LoginPage() {
             </div>
             {tab === "staff" ? (
               <div className="field">
-                <label htmlFor="staffKey">Staff access key</label>
+                <label htmlFor="staffKey">Sign-in key</label>
                 <div style={{ position: "relative" }}>
                   <KeyRound size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
-                  <input id="staffKey" className="input" style={{ paddingLeft: 34 }} type="password" placeholder="Access key issued by AVAI" />
+                  <input id="staffKey" className="input" style={{ paddingLeft: 34 }} type="password" placeholder="Key issued by your school office" />
                 </div>
               </div>
             ) : (
@@ -96,13 +98,13 @@ export default function LoginPage() {
               Continue <ArrowRight size={15} />
             </button>
             {notice && (
-              <div className="evidence evidence--gold" role="status">
+              <div className="evidence evidence--risk" role="alert">
                 <ShieldAlert size={16} />
                 <div>{notice}</div>
               </div>
             )}
           </form>
-          <div className="login__help">{tab === "staff" ? "Lost your access key? Contact your AVAI school administrator." : "Ask your class teacher for your PIN."}</div>
+          <div className="login__help">Trouble signing in? Ask your school office.</div>
 
           <div className="devlogin" aria-label="Development login shortcuts">
             <div className="devlogin__head">
