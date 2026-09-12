@@ -42,7 +42,8 @@ export function resolveUser(role: Role, userId: string): CurrentUser | null {
 }
 
 export function homeFor(role: Role) {
-  return role === "principal" ? "/principal/boardx" : role === "teacher" ? "/teacher/home" : "/student/home";
+  // The principal lands on the school overview, above any single assessment.
+  return role === "principal" ? "/principal" : role === "teacher" ? "/teacher/home" : "/student/home";
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

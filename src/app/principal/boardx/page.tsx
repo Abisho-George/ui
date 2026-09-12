@@ -1,14 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Download, Info, ListFilter, Search } from "lucide-react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { ChevronLeft, Download, Info, ListFilter, Search } from "lucide-react";
 import {
   assessmentContext,
   emptyStates,
   findings,
   marksLossFindingIds,
   sections,
-  standardOptions,
+  schoolStandards,
+  standardAssessments,
   studentFilterOptions,
   studentIntelligenceTable,
   subjects,
@@ -62,6 +65,15 @@ function interventionOf(s: { attention: string; mainBlocker: string }) {
 const bandLabel: Record<string, string> = { full: "Full mastery", "80plus": "80%+ attainment", "60to80": "60–80% attainment", below60: "Below 60%" };
 
 export default function BoardXPage() {
+  /* BoardX is the assessment-level view: which standard and assessment it is
+     showing comes from the class page that opened it. */
+  const params = useSearchParams();
+  const standardId = params.get("standard") ?? "X";
+  const standard = schoolStandards.find((s) => s.id === standardId) ?? schoolStandards.find((s) => s.id === "X")!;
+  const assessments = standardAssessments[standard.id] ?? [];
+  const requested = params.get("assessment");
+  const assessmentName = assessments.find((a) => a.analysed && a.name === requested)?.name ?? assessmentContext.assessmentName;
+
   const [tab, setTab] = useState<Tab>("Overview");
   const [section, setSection] = useState<string>("All");
   const [subject, setSubject] = useState<string>("All");
@@ -99,12 +111,20 @@ export default function BoardXPage() {
 
   return (
     <>
+      <nav className="crumbs" aria-label="Breadcrumb">
+        <Link href="/principal">School</Link>
+        <span aria-hidden="true">/</span>
+        <Link href={`/principal/class/${standard.id}`}>{standard.label}</Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{assessmentName}</span>
+      </nav>
+
       {/* §5.2 Page header / assessment context */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16, flexWrap: "wrap", marginTop: 10 }}>
         <div>
-          <div className="eyebrow">BoardX Intelligence · Class X</div>
+          <div className="eyebrow">BoardX Intelligence · {standard.label}</div>
           <h1 className="page-title" style={{ marginTop: 4 }}>
-            {ctx.assessmentName}
+            {assessmentName}
           </h1>
           <p className="page-sub">What this assessment tells us about Board readiness — and how confidently.</p>
         </div>
@@ -136,6 +156,12 @@ export default function BoardXPage() {
         <EvidenceState kind="trend">{ctx.pilotStatusMessage}</EvidenceState>
       </div>
 
+      <div style={{ marginTop: 14 }}>
+        <Link href={`/principal/class/${standard.id}`} className="btn btn--ghost btn--sm">
+          <ChevronLeft size={13} /> Back to {standard.label}
+        </Link>
+      </div>
+
       {/* Tabs */}
       <div className="tabs" role="tablist" style={{ marginTop: 20 }}>
         {TABS.map((t) => (
@@ -149,8 +175,8 @@ export default function BoardXPage() {
       <div className="filterbar">
         <div className="filter">
           <label htmlFor="f-assessment">Assessment</label>
-          <select id="f-assessment" className="select" defaultValue={ctx.assessmentName}>
-            {ctx.assessmentOptions.map((o) => (
+          <select id="f-assessment" className="select" value={assessmentName} disabled title={`Pick the assessment on the ${standard.label} page — BoardX shows one analysed assessment at a time`}>
+            {(assessments.length ? assessments.map((a) => ({ label: a.name, selectable: a.analysed })) : ctx.assessmentOptions).map((o) => (
               <option key={o.label} value={o.label} disabled={!o.selectable}>
                 {o.label}
                 {!o.selectable ? " — not yet analysed" : ""}
@@ -160,10 +186,11 @@ export default function BoardXPage() {
         </div>
         <div className="filter">
           <label htmlFor="f-standard">Standard</label>
-          <select id="f-standard" className="select" defaultValue="Class X">
-            {standardOptions.map((o) => (
-              <option key={o.label} value={o.label} disabled={!o.selectable}>
+          <select id="f-standard" className="select" value={standard.label} disabled title="Pick the standard on the school overview — BoardX shows one standard at a time">
+            {schoolStandards.map((o) => (
+              <option key={o.id} value={o.label} disabled={o.status !== "analysed"}>
                 {o.label}
+                {o.status !== "analysed" ? " — not analysed yet" : ""}
               </option>
             ))}
           </select>

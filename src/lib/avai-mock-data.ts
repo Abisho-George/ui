@@ -607,3 +607,131 @@ export const studentFilterOptions = {
   riskLevels: ["All", "High", "Medium", "Low"],
   interventionStatuses: ["All", "Recommended", "Under investigation", "None"],
 };
+
+// ============================================================
+// School → Standard → Assessment hierarchy.
+//
+// The principal signs in above any single assessment: they see every
+// standard in the school, step into one, and only then open an assessment
+// in BoardX. 🔧 BACKEND REQUIRED — a per-standard roll-up (students,
+// sections, assessments analysed, attainment, attention) does not exist as
+// an endpoint today; the Class X numbers below are the same cohort figures
+// BoardX already uses, the other standards are roll-up only.
+//
+// Pilot rule (§3): only Class X has an analysed assessment, so only Class X
+// carries findings. The other standards render their real state — awaiting a
+// first analysis — rather than borrowed numbers.
+// ============================================================
+
+export type StandardStatus = "analysed" | "awaiting_analysis" | "no_papers";
+
+export interface SchoolStandard {
+  id: string;
+  label: string;
+  boardYear: boolean; // a Board-examination year
+  students: number;
+  sectionIds: string[];
+  subjects: number;
+  papersUploaded: number;
+  assessmentsAnalysed: number;
+  latestAssessment: string | null;
+  overallAttainment: number | null; // % of tested Board marks attained
+  highPriorityFindings: number | null;
+  attention: "Low" | "Medium" | "High" | null;
+  status: StandardStatus;
+}
+
+export const schoolStandards: SchoolStandard[] = [
+  {
+    id: "XII",
+    label: "Class XII",
+    boardYear: true,
+    students: 186,
+    sectionIds: ["XII-A", "XII-B", "XII-C", "XII-D"],
+    subjects: 5,
+    papersUploaded: 2,
+    assessmentsAnalysed: 0,
+    latestAssessment: null,
+    overallAttainment: null,
+    highPriorityFindings: null,
+    attention: null,
+    status: "awaiting_analysis",
+  },
+  {
+    id: "X",
+    label: "Class X",
+    boardYear: true,
+    students: 240,
+    sectionIds: [...sections],
+    subjects: 5,
+    papersUploaded: 6,
+    assessmentsAnalysed: 1,
+    latestAssessment: "Unit Test 2",
+    overallAttainment: 75,
+    highPriorityFindings: 5,
+    attention: "Medium",
+    status: "analysed",
+  },
+  {
+    id: "XI",
+    label: "Class XI",
+    boardYear: false,
+    students: 192,
+    sectionIds: ["XI-A", "XI-B", "XI-C", "XI-D"],
+    subjects: 5,
+    papersUploaded: 0,
+    assessmentsAnalysed: 0,
+    latestAssessment: null,
+    overallAttainment: null,
+    highPriorityFindings: null,
+    attention: null,
+    status: "no_papers",
+  },
+  {
+    id: "IX",
+    label: "Class IX",
+    boardYear: false,
+    students: 228,
+    sectionIds: ["IX-A", "IX-B", "IX-C", "IX-D", "IX-E"],
+    subjects: 5,
+    papersUploaded: 1,
+    assessmentsAnalysed: 0,
+    latestAssessment: null,
+    overallAttainment: null,
+    highPriorityFindings: null,
+    attention: null,
+    status: "no_papers",
+  },
+];
+
+/** Assessments per standard. Only an analysed one can be opened in BoardX. */
+export interface StandardAssessment {
+  name: string;
+  conductedOn: string;
+  analysed: boolean;
+  marksEntered: boolean;
+  studentsAnalysed: number | null;
+  diagnosticStrength: "STRONG" | "MODERATE" | "LIMITED" | null;
+}
+
+export const standardAssessments: Record<string, StandardAssessment[]> = {
+  X: [
+    { name: "Unit Test 2", conductedOn: "12 Aug 2026", analysed: true, marksEntered: true, studentsAnalysed: 240, diagnosticStrength: "MODERATE" },
+    { name: "Unit Test 1", conductedOn: "24 Jun 2026", analysed: false, marksEntered: true, studentsAnalysed: null, diagnosticStrength: null },
+    { name: "Quarterly Exam", conductedOn: "Scheduled Oct 2026", analysed: false, marksEntered: false, studentsAnalysed: null, diagnosticStrength: null },
+  ],
+  XII: [
+    { name: "Unit Test 2", conductedOn: "09 Aug 2026", analysed: false, marksEntered: true, studentsAnalysed: null, diagnosticStrength: null },
+    { name: "Unit Test 1", conductedOn: "21 Jun 2026", analysed: false, marksEntered: false, studentsAnalysed: null, diagnosticStrength: null },
+  ],
+  XI: [],
+  IX: [{ name: "Unit Test 1", conductedOn: "26 Jun 2026", analysed: false, marksEntered: false, studentsAnalysed: null, diagnosticStrength: null }],
+};
+
+/** Copy for a standard with no intelligence yet — a state, not an error. */
+export const standardEmptyStates: Record<Exclude<StandardStatus, "analysed">, string> = {
+  awaiting_analysis:
+    "Marks have been entered for this standard but no assessment has been analysed yet. Board intelligence appears here once an analysis completes.",
+  no_papers:
+    "No assessment has been uploaded and mapped to the Board blueprint for this standard yet.",
+};

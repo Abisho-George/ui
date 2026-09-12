@@ -228,6 +228,31 @@ table { border-collapse: collapse; width: 100%; }
   background: var(--brand-cream);
 }
 .pin__value { font-family: var(--font-display); font-size: 30px; font-weight: 800; letter-spacing: 0.22em; }
+/* Breadcrumbs: School / Class X / assessment */
+.crumbs { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--muted); }
+.crumbs a { color: var(--muted); text-decoration: none; }
+.crumbs a:hover { color: var(--brand-teal-deep); text-decoration: underline; }
+.crumbs [aria-current] { color: var(--text); font-weight: 600; }
+
+/* Standard card on the school overview */
+.standard {
+  display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: var(--radius-md); box-shadow: var(--shadow-sm); overflow: hidden;
+}
+.standard__head {
+  display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+  padding: 16px 18px 14px;
+}
+.standard__title { font-family: var(--font-display); font-size: 22px; margin: 4px 0 3px; }
+.standard__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); }
+.standard__stats .metric { background: var(--surface-2); border: 0; border-radius: 0; }
+.standard__body { padding: 0 18px 14px; }
+.standard__foot {
+  margin-top: auto; display: flex; gap: 8px; flex-wrap: wrap;
+  padding: 14px 18px; border-top: 1px solid var(--line); background: var(--surface-2);
+}
+.urg__years { font-weight: 600; opacity: .85; }
 .section__name {
   font-family: var(--font-display); font-size: 11px; font-weight: 700;
   letter-spacing: 0.12em; text-transform: uppercase; color: var(--brand-teal-deep);

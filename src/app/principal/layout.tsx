@@ -1,14 +1,20 @@
 "use client";
 
-import { BarChart3, ClipboardList, FileText, Settings, Users } from "lucide-react";
+import { BarChart3, ClipboardList, FileText, School, Settings, Users } from "lucide-react";
 import { RoleGuard, StaffShell, type NavItem } from "@/components/Shell";
-import { assessmentContext } from "@/lib/avai-mock-data";
 
 /* §5.1 — BoardX is the default landing page and the sidebar reads
    BoardX · Papers · Enter Marks · Manage Teachers · Settings. The old flat
    /admin counts dashboard is no longer a peer item; it lives in Settings as
    an Operations summary. */
 const nav: NavItem[] = [
+  {
+    href: "/principal",
+    label: "School",
+    icon: School,
+    // Only the landing page and the class pages beneath it, not every /principal/* route.
+    match: (path) => path === "/principal" || path.startsWith("/principal/class"),
+  },
   { href: "/principal/boardx", label: "BoardX", icon: BarChart3 },
   { href: "/principal/papers", label: "Papers", icon: FileText },
   { href: "/principal/enter-marks", label: "Enter Marks", icon: ClipboardList },
@@ -24,12 +30,7 @@ export default function PrincipalLayout({ children }: { children: React.ReactNod
           user={user}
           nav={nav}
           roleLabel="Principal"
-          topbarRight={
-            <>
-              <span className="tag tag--teal">Evidence: {assessmentContext.assessmentEvidence}</span>
-              <span>Academic year 2026–27</span>
-            </>
-          }
+          topbarRight={<span>Academic year 2026–27</span>}
         >
           {children}
         </StaffShell>

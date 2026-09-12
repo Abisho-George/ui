@@ -22,11 +22,18 @@ const urgencyLabel: Record<BoardUrgency, string> = {
   LOW: "Low",
 };
 
-export function UrgencyChip({ level, withLabel = true }: { level: BoardUrgency; withLabel?: boolean }) {
+/**
+ * Board urgency. Spec §12 requires the recurrence to travel with the level —
+ * a topic appearing 4/4 Board years must never read like one appearing 1/4 —
+ * so `withYears` appends it wherever the chip stands alone in a table.
+ */
+export function UrgencyChip({ level, withLabel = true, withYears }: { level: BoardUrgency; withLabel?: boolean; withYears?: string }) {
+  const years = withYears ? withYears.replace(/recent Board years?/i, "yrs").replace(/years?/i, "yrs") : null;
   return (
     <span className={`urg urg--${level.toLowerCase()}`} title="Board urgency — how often this competency recurs in recent Board papers">
       <Flame />
       {withLabel ? `Board urgency: ${urgencyLabel[level]}` : urgencyLabel[level]}
+      {years && <span className="urg__years">· {years}</span>}
     </span>
   );
 }
@@ -35,7 +42,7 @@ const confidenceLabel: Record<Confidence, string> = { HIGH: "High confidence", M
 
 export function ConfidenceMeter({ level, short = false }: { level: Confidence; short?: boolean }) {
   return (
-    <span className={`conf conf--${level.toLowerCase()}`} title="Confidence — strength of evidence that this pattern exists">
+    <span className={`conf conf--${level.toLowerCase()}`} title="High confidence: supported by sufficient student responses and a consistent performance pattern in this assessment. Confidence is about the evidence, not about how urgent the finding is.">
       <span className="conf__dots" aria-hidden="true">
         <span className="conf__dot" />
         <span className="conf__dot" />
