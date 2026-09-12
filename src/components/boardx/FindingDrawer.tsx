@@ -3,11 +3,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { emptyStates, findingDetail, type Finding } from "@/lib/avai-mock-data";
+import { useEscape } from "@/lib/use-escape";
 import { ConfidenceMeter, UrgencyChip } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 
 /** §5.5 Finding details drawer. */
 export function FindingDrawer({ finding, onClose }: { finding: Finding | null; onClose: () => void }) {
+  useEscape(Boolean(finding), onClose);
   const detail = finding ? findingDetail[finding.id] : undefined;
   return (
     <AnimatePresence>

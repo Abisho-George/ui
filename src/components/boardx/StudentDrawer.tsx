@@ -3,6 +3,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { emptyStates, individualStudentIntelligence, type BoardUrgency, type Confidence } from "@/lib/avai-mock-data";
+import { useEscape } from "@/lib/use-escape";
 import { ConfidenceMeter, UrgencyChip } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 
@@ -18,6 +19,7 @@ interface SubjectRow {
 
 /** §5.6 Student row drill-down. */
 export function StudentDrawer({ studentKey, onClose }: { studentKey: string | null; onClose: () => void }) {
+  useEscape(Boolean(studentKey), onClose);
   const data = studentKey ? individualStudentIntelligence[studentKey] : undefined;
   return (
     <AnimatePresence>
