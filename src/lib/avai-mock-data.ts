@@ -445,24 +445,142 @@ export const studentMyReports = [
   },
 ];
 
-export const studentReportDetail: Record<string, any> = {
+// §7.3 One-page BoardX student report — mirrors the real
+// "AVAI BoardX — Your One-Page Assessment Report" hand-off design:
+// where you stand, how you handled questions, where marks went, and
+// what to practise next. Evidence-first: nothing here invents a score
+// or a pattern the underlying paper doesn't support.
+
+export interface ReportStandingRow {
+  chapter: string;
+  scored: number;
+  outOf: number;
+  notScored: number;
+  boardImportance: string; // e.g. "10 / 80" or "Not enough evidence"
+}
+
+export interface ReportMarksLostItem {
+  chapter: string;
+  scoreLabel: string; // "6 / 7"
+  scored: number;
+  outOf: number;
+  subLabel: string; // "1 / 1 application mark not scored"
+  insight: string;
+}
+
+export interface ReportActionGroup {
+  heading: string;
+  items: string[];
+}
+
+export interface BoardXStudentReport {
+  subject: string;
+  assessmentName: string; // "Unit Test 2"
+  score: string; // "16 / 17" — headline for the report list / hero
+  trend: "up" | "down" | "flat"; // drives Improve/Achieve mascot pose
+  encouragingLine: string;
+  totalBoardMarks: number;
+  boardExposureMarks: number;
+  boardScoreImpact: "NOT_CALIBRATED" | string;
+  standing: ReportStandingRow[];
+  patternLabel: string;
+  patternHeadline: string;
+  patternBody: string;
+  marksLost: ReportMarksLostItem[];
+  noPatternNote: { chapter: string; scoreLabel: string; note: string } | null;
+  actionPlan: ReportActionGroup[];
+  practiceRule: string;
+  takeaway: string;
+  evidenceNote: string;
+}
+
+export const studentReportDetail: Record<string, BoardXStudentReport> = {
   report_maths_t2: {
     subject: "Mathematics",
-    term: "Term 2 Assessment",
-    score: "78 / 80",
-    trend: "up", // "up" | "down" | "flat" — drives Improve/Achieve/neutral mascot pose
+    assessmentName: "Unit Test 2",
+    score: "16 / 17",
+    trend: "up",
     encouragingLine: "Keep going. You're on the right path.",
-    doingWell: ["Recall-based questions", "Basic algebra"],
-    workOnNext: ["Quadratic equations — application-style questions"],
+    totalBoardMarks: 80,
+    boardExposureMarks: 30,
+    boardScoreImpact: "NOT_CALIBRATED",
+    standing: [
+      { chapter: "Quadratic Equations", scored: 6, outOf: 7, notScored: 1, boardImportance: "12 / 80" },
+      { chapter: "Arithmetic Progressions", scored: 4, outOf: 4, notScored: 0, boardImportance: "8 / 80" },
+      { chapter: "Trigonometry", scored: 3, outOf: 3, notScored: 0, boardImportance: "10 / 80" },
+      { chapter: "Coordinate Geometry", scored: 3, outOf: 3, notScored: 0, boardImportance: "Not enough evidence" },
+    ],
+    patternLabel: "MULTI-STEP APPLICATION",
+    patternHeadline: "You scored higher on questions asking you to state a rule than on questions asking you to apply it in a new situation.",
+    patternBody: "The clearest pattern in this paper is on multi-step application questions in Quadratic Equations — the same pattern BoardX sees across Class X.",
+    marksLost: [
+      {
+        chapter: "Quadratic Equations",
+        scoreLabel: "6 / 7",
+        scored: 6,
+        outOf: 7,
+        subLabel: "1 / 1 application mark not scored",
+        insight: "Your one lost mark is on a multi-step application question — consistent with the class-wide pattern in this chapter.",
+      },
+    ],
+    noPatternNote: {
+      chapter: "Coordinate Geometry",
+      scoreLabel: "3 / 3",
+      note: "Full marks here — there isn't a loss to explain, so no pattern is shown for this chapter.",
+    },
+    actionPlan: [
+      {
+        heading: "START WITH: Quadratic Equations — application",
+        items: ["Ex 4.3 Q7 — word problem leading to a quadratic", "Ex 4.4 Q2 — two-step \"nature of roots\" application", "Ex 4.4 Q5 — forming the equation from a story sum"],
+      },
+    ],
+    practiceRule:
+      "For every wrong answer, mark the error: reading the condition, choosing the method, setting up the steps, calculation, or the final answer.",
+    takeaway: "See where the marks went, the pattern behind them, the Board importance, and the exact practice to do next.",
+    evidenceNote: "Evidence note: one assessment only; this does not predict your final Board score.",
   },
   report_science_t1: {
     subject: "Science",
-    term: "Term 1 Assessment",
-    score: "65 / 80",
+    assessmentName: "Unit Test 1",
+    score: "15 / 20",
     trend: "flat",
     encouragingLine: "Solid foundations — a bit more practice will help.",
-    doingWell: ["Diagrams", "Key definitions"],
-    workOnNext: ["Numerical questions in Electricity"],
+    totalBoardMarks: 80,
+    boardExposureMarks: 16,
+    boardScoreImpact: "NOT_CALIBRATED",
+    standing: [
+      { chapter: "Electricity", scored: 5, outOf: 8, notScored: 3, boardImportance: "9 / 80" },
+      { chapter: "Light", scored: 6, outOf: 7, notScored: 1, boardImportance: "7 / 80" },
+      { chapter: "Carbon Compounds", scored: 4, outOf: 5, notScored: 1, boardImportance: "Not enough evidence" },
+    ],
+    patternLabel: "NUMERICAL CONVERSION",
+    patternHeadline: "You scored higher on questions asking you to state a law than on questions asking you to calculate a numerical answer.",
+    patternBody: "The clearest pattern in this paper is on numerical questions in Electricity.",
+    marksLost: [
+      {
+        chapter: "Electricity",
+        scoreLabel: "5 / 8",
+        scored: 5,
+        outOf: 8,
+        subLabel: "3 / 3 numerical marks not scored",
+        insight: "All of your lost marks in this chapter are on questions that ask you to calculate a value, not state a rule.",
+      },
+    ],
+    noPatternNote: {
+      chapter: "Light",
+      scoreLabel: "6 / 7",
+      note: "No additional pattern is shown because this paper does not provide enough evidence to issue one confidently for this chapter.",
+    },
+    actionPlan: [
+      {
+        heading: "START WITH: Electricity — numerical conversion",
+        items: ["V = IR — single-step numericals, practice set A", "Power (P = VI) — two-step problems", "Series + parallel combination circuits"],
+      },
+    ],
+    practiceRule:
+      "For every wrong answer, mark the error: reading the condition, choosing the method, setting up the steps, calculation, or the final answer.",
+    takeaway: "See where the marks went, the pattern behind them, the Board importance, and the exact practice to do next.",
+    evidenceNote: "Evidence note: one assessment only; this does not predict your final Board score.",
   },
 };
 

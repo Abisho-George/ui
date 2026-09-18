@@ -38,7 +38,7 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
 | Teacher | `/teacher/subject/[subject]/[section]` | §6.3, incl. Enter Marks tab (shared `MarksEntryGrid`) |
 | Teacher | `/teacher/student/[studentId]` | §6.4 Issue / Share |
 | Student | `/student/home` | §7.2 |
-| Student | `/student/report/[reportId]` | §7.3 |
+| Student | `/student/report/[reportId]` | §7.3 — one-page BoardX report (where you stand, pattern seen, where marks went, what to do next) |
 
 ## Design system notes
 
@@ -49,7 +49,10 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
   Attention = solid pill, Board urgency = outlined chip with a flame,
   Confidence = three-dot meter.
 - Empty / limited-evidence states are first-class (`EvidenceState`).
-- The mascot (`src/components/Mascot.tsx`) is an inline SVG stand-in with the
-  spec's pose vocabulary (hello / improve / achieve / neutral / thinking).
-  Swap it for the real `AVAI_Mascot` artwork when available. It appears only
-  on the login screen, loading states and student screens.
+- The mascot and logo (`src/components/Mascot.tsx`) use the real AVAI brand
+  artwork (`public/mascot/`, `public/brand/`), cropped from the brand sheet.
+  `<Mascot>` keeps the spec's pose vocabulary (hello / improve / achieve /
+  neutral / thinking) and appears only on the login screen, loading states
+  and student screens. `<Logomark>` is the compact app-icon glyph and is
+  used everywhere, including the staff sidebars; it also doubles as the
+  site favicon (`src/app/icon.png`).
