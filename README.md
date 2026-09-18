@@ -30,7 +30,9 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
 | --- | --- | --- |
 | Principal | `/principal/boardx` | §5 BoardX: tabs, sticky filters, 11 sections, finding cards, drawers |
 | Principal | `/principal/teachers` | §5.11 Manage Teachers (add / edit / revoke, local state) |
-| Principal | `/principal/papers`, `/principal/enter-marks`, `/principal/settings` | placeholders |
+| Principal | `/principal/papers` | §5.9 Question Papers (simulated upload + blueprint mapping drawer, local state) |
+| Principal | `/principal/enter-marks` | §5.10 Enter Marks (question-wise entry grid, local state) |
+| Principal | `/principal/settings` | §5.12 School Settings (academic year, sections, subjects, local state) |
 | Teacher | `/teacher/home` | §6.1 My Classes / My Subjects |
 | Teacher | `/teacher/class/[section]` | §6.2 |
 | Teacher | `/teacher/subject/[subject]/[section]` | §6.3 |

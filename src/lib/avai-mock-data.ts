@@ -583,9 +583,151 @@ individualStudentIntelligence.riya = {
   boardXSummary: "Riya is performing at a high level. The single mark lost in Light does not yet form a pattern; no intervention is recommended at this stage.",
 };
 
-// §5.9 Papers / §5.10 Enter marks / §5.12 Settings — placeholder page copy
-export const placeholderPages = {
-  papers: { title: "Question Papers", blurb: "Upload and map assessment papers to the Board blueprint. Paper diagnostics feed the Assessment Diagnostic Quality section of BoardX.", status: "Coming in the next build pass" },
-  enterMarks: { title: "Enter Marks", blurb: "Question-wise marks entry for analysed assessments. Teachers can also enter marks from their Subject view.", status: "Coming in the next build pass" },
-  settings: { title: "School Settings", blurb: "School profile, academic year, sections and subject configuration.", status: "Coming in the next build pass" },
+// §5.9 Papers / §5.10 Enter marks / §5.12 Settings — page headers
+export const pageHeaders = {
+  papers: { title: "Question Papers", blurb: "Upload and map assessment papers to the Board blueprint. Paper diagnostics feed the Assessment Diagnostic Quality section of BoardX." },
+  enterMarks: { title: "Enter Marks", blurb: "Question-wise marks entry for analysed assessments. Teachers can also enter marks from their Subject view." },
+  settings: { title: "School Settings", blurb: "School profile, academic year, sections and subject configuration." },
+};
+
+// ============================================================
+// §5.9 Question Papers — upload + blueprint mapping
+// 🔧 BACKEND REQUIRED — upload/mapping is simulated with a timed
+// status transition; nothing is actually parsed or stored.
+// ============================================================
+
+export type PaperStatus = "Mapped" | "Needs mapping" | "Processing";
+
+export interface PaperRecord {
+  id: string;
+  assessmentName: string;
+  subject: string; // "All subjects" for a combined paper
+  fileName: string;
+  uploadedBy: string;
+  uploadedAt: string;
+  status: PaperStatus;
+  blueprintCoveragePct: number | null;
+  chaptersCovered: number | null;
+  chaptersTotal: number | null;
+}
+
+export const papersList: PaperRecord[] = [
+  {
+    id: "paper_ut2_all",
+    assessmentName: "Unit Test 2",
+    subject: "All subjects",
+    fileName: "unit-test-2-question-paper.pdf",
+    uploadedBy: "Mrs. Kavitha Rajan",
+    uploadedAt: "2026-08-14",
+    status: "Mapped",
+    blueprintCoveragePct: diagnosticQuality.blueprintCoveragePct,
+    chaptersCovered: diagnosticQuality.chaptersCovered,
+    chaptersTotal: diagnosticQuality.chaptersTotal,
+  },
+  {
+    id: "paper_ut1_maths",
+    assessmentName: "Unit Test 1",
+    subject: "Mathematics",
+    fileName: "unit-test-1-maths.pdf",
+    uploadedBy: "Mrs. Lakshmi",
+    uploadedAt: "2026-06-02",
+    status: "Mapped",
+    blueprintCoveragePct: 74,
+    chaptersCovered: 6,
+    chaptersTotal: 9,
+  },
+  {
+    id: "paper_qe_science",
+    assessmentName: "Quarterly Exam",
+    subject: "Science",
+    fileName: "quarterly-exam-science-draft.pdf",
+    uploadedBy: "Mr. Ravi",
+    uploadedAt: "2026-09-10",
+    status: "Needs mapping",
+    blueprintCoveragePct: null,
+    chaptersCovered: null,
+    chaptersTotal: null,
+  },
+];
+
+// Per-paper chapter mapping shown in the "View mapping" drawer. Falls back to
+// a generic message when a paper has no chapter-level detail yet.
+export const paperChapterMapping: Record<string, { chapter: string; covered: boolean; questionsMapped: number }[]> = {
+  paper_ut2_all: [
+    { chapter: "Quadratic Equations", covered: true, questionsMapped: 4 },
+    { chapter: "Arithmetic Progressions", covered: true, questionsMapped: 2 },
+    { chapter: "Electricity", covered: true, questionsMapped: 3 },
+    { chapter: "Light", covered: true, questionsMapped: 3 },
+    { chapter: "Carbon Compounds", covered: true, questionsMapped: 1 },
+    { chapter: "Acids, Bases and Salts", covered: true, questionsMapped: 2 },
+    { chapter: "Life Processes", covered: true, questionsMapped: 2 },
+    { chapter: "Trigonometry", covered: true, questionsMapped: 1 },
+    { chapter: "Coordinate Geometry", covered: false, questionsMapped: 0 },
+  ],
+  paper_ut1_maths: [
+    { chapter: "Real Numbers", covered: true, questionsMapped: 2 },
+    { chapter: "Polynomials", covered: true, questionsMapped: 2 },
+    { chapter: "Pair of Linear Equations", covered: true, questionsMapped: 3 },
+    { chapter: "Quadratic Equations", covered: true, questionsMapped: 2 },
+    { chapter: "Arithmetic Progressions", covered: true, questionsMapped: 1 },
+    { chapter: "Triangles", covered: true, questionsMapped: 1 },
+    { chapter: "Coordinate Geometry", covered: false, questionsMapped: 0 },
+    { chapter: "Trigonometry", covered: false, questionsMapped: 0 },
+    { chapter: "Circles", covered: false, questionsMapped: 0 },
+  ],
+};
+
+// ============================================================
+// §5.10 Enter Marks — question-wise entry grid
+// 🔧 BACKEND REQUIRED — marks are held in React state only; "Save"
+// does not persist anything.
+// ============================================================
+
+export interface QuestionSpec {
+  key: string;
+  label: string;
+  maxMarks: number;
+}
+
+export const questionSets: Record<string, QuestionSpec[]> = {
+  Mathematics: [
+    { key: "q1", label: "Q1", maxMarks: 2 },
+    { key: "q2", label: "Q2", maxMarks: 3 },
+    { key: "q3", label: "Q3", maxMarks: 2 },
+    { key: "q4", label: "Q4", maxMarks: 5 },
+    { key: "q5", label: "Q5", maxMarks: 5 },
+  ],
+  Physics: [
+    { key: "q1", label: "Q1", maxMarks: 2 },
+    { key: "q2", label: "Q2", maxMarks: 3 },
+    { key: "q3", label: "Q3", maxMarks: 5 },
+  ],
+  Chemistry: [
+    { key: "q1", label: "Q1", maxMarks: 2 },
+    { key: "q2", label: "Q2", maxMarks: 3 },
+    { key: "q3", label: "Q3", maxMarks: 5 },
+  ],
+  English: [
+    { key: "q1", label: "Q1 — Reading", maxMarks: 5 },
+    { key: "q2", label: "Q2 — Writing", maxMarks: 5 },
+    { key: "q3", label: "Q3 — Grammar", maxMarks: 5 },
+  ],
+  "Social Science": [
+    { key: "q1", label: "Q1", maxMarks: 5 },
+    { key: "q2", label: "Q2", maxMarks: 5 },
+    { key: "q3", label: "Q3", maxMarks: 5 },
+    { key: "q4", label: "Q4", maxMarks: 5 },
+  ],
+};
+
+// ============================================================
+// §5.12 School Settings — profile, academic year, sections/subjects
+// 🔧 BACKEND REQUIRED — held in local state; nothing persists.
+// ============================================================
+
+export const academicYears = ["2024–25", "2025–26", "2026–27"];
+
+export const schoolSettings = {
+  academicYear: "2026–27",
+  boardBlueprintMappingEnabled: true,
 };
