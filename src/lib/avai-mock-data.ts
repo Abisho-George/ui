@@ -718,6 +718,13 @@ export const questionSets: Record<string, QuestionSpec[]> = {
     { key: "q3", label: "Q3", maxMarks: 5 },
     { key: "q4", label: "Q4", maxMarks: 5 },
   ],
+  // Combined Physics + Chemistry paper, matching Mr. Ravi's "Science" assignment.
+  Science: [
+    { key: "q1", label: "Q1 — Physics", maxMarks: 5 },
+    { key: "q2", label: "Q2 — Physics", maxMarks: 5 },
+    { key: "q3", label: "Q3 — Chemistry", maxMarks: 5 },
+    { key: "q4", label: "Q4 — Chemistry", maxMarks: 5 },
+  ],
 };
 
 // ============================================================

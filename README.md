@@ -35,7 +35,7 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
 | Principal | `/principal/settings` | §5.12 School Settings (academic year, sections, subjects, local state) |
 | Teacher | `/teacher/home` | §6.1 My Classes / My Subjects |
 | Teacher | `/teacher/class/[section]` | §6.2 |
-| Teacher | `/teacher/subject/[subject]/[section]` | §6.3 |
+| Teacher | `/teacher/subject/[subject]/[section]` | §6.3, incl. Enter Marks tab (shared `MarksEntryGrid`) |
 | Teacher | `/teacher/student/[studentId]` | §6.4 Issue / Share |
 | Student | `/student/home` | §7.2 |
 | Student | `/student/report/[reportId]` | §7.3 |

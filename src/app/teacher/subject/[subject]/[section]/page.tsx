@@ -3,16 +3,17 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { ArrowRight, ClipboardList } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { classRoster, findings, subjectSectionSnapshot } from "@/lib/avai-mock-data";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { FindingCard } from "@/components/FindingCard";
+import { MarksEntryGrid } from "@/components/MarksEntryGrid";
 
 const subjectFamily: Record<string, string[]> = { Science: ["Physics", "Chemistry", "Science"] };
 
-/** §6.3 Subject view — one subject, one section, with an Enter Marks tab placeholder. */
+/** §6.3 Subject view — one subject, one section, with an Enter Marks tab. */
 export default function SubjectView() {
   const params = useParams<{ subject: string; section: string }>();
   const subject = decodeURIComponent(params.subject);
@@ -124,13 +125,7 @@ export default function SubjectView() {
           </section>
         </>
       ) : (
-        <div className="placeholder" style={{ marginTop: 20 }}>
-          <ClipboardList size={28} style={{ color: "var(--brand-gold)" }} />
-          <h3 style={{ marginTop: 10, color: "var(--brand-ink)" }}>Question-wise marks entry</h3>
-          <p style={{ marginTop: 6 }}>
-            Enter marks for {subject} · {section} question by question. Coming in the next build pass.
-          </p>
-        </div>
+        <MarksEntryGrid key={`${subject}-${section}`} subject={subject} roster={roster} scopeLabel={`${subject} · ${section}`} />
       )}
     </>
   );
