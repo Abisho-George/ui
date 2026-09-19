@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import {
   analysedTests,
   attentionFor,
@@ -17,6 +16,7 @@ import {
 } from "@/lib/avai-mock-data";
 import { downloadClassReport } from "@/lib/downloadReport";
 import { useSharedTestKeys } from "@/lib/shareState";
+import { usePageHeader } from "@/lib/pageHeader";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { DeltaCell, StudentRosterTable } from "@/components/StudentRosterTable";
@@ -31,6 +31,7 @@ import { DeltaCell, StudentRosterTable } from "@/components/StudentRosterTable";
 export default function ClassDetailPage() {
   const { section } = useParams<{ section: string }>();
   const router = useRouter();
+  usePageHeader({ title: `Class ${section}`, backHref: "/principal/classes" });
   const [testKey, setTestKey] = useState(latestTest.key);
 
   const summary = sectionComparison.find((s) => s.section === section);
@@ -66,22 +67,10 @@ export default function ClassDetailPage() {
 
   return (
     <>
-      <button className="btn btn--ghost btn--sm" onClick={() => router.push("/principal/classes")} style={{ marginBottom: 10 }}>
-        <ArrowLeft size={13} /> Back
-      </button>
-      <div className="small muted" style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
-        <Link href="/principal/classes" className="btn--link">
-          Classes
-        </Link>
-        <ChevronRight size={13} /> {section}
-      </div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
-        <div>
-          <h1 className="page-title">Class {section}</h1>
-          <p className="page-sub">
-            Class teacher: {classTeacherBySection[section] ?? "Not assigned"} · showing {test?.name ?? "—"}
-          </p>
-        </div>
+        <p className="page-sub" style={{ marginTop: 0 }}>
+          Class teacher: {classTeacherBySection[section] ?? "Not assigned"} · showing {test?.name ?? "—"}
+        </p>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button className="btn btn--sm" disabled={!analysed} onClick={() => downloadClassReport(section, testKey)}>
             <Download size={13} /> Download report

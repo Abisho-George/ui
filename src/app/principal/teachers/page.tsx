@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { MoreVertical, Pencil, Plus, ShieldOff, Trash2, UserPlus, X } from "lucide-react";
 import { manageTeachersList, sections, subjects, type TeacherAssignment } from "@/lib/avai-mock-data";
 import { initials } from "@/lib/auth";
+import { usePageHeader } from "@/lib/pageHeader";
 
 type Teacher = (typeof manageTeachersList)[number] & { revoked?: boolean };
 
@@ -87,13 +88,15 @@ export default function ManageTeachersPage() {
   const hasCompleteSubjectRow = draft.subjectRows.some((r) => r.subject && r.subjectSections.length > 0);
   const canSave = draft.name.trim().length > 1 && (draft.classSection || hasCompleteSubjectRow);
 
+  usePageHeader({ title: "Manage Teachers" });
+
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
-        <div>
-          <h1 className="page-title">Manage Teachers</h1>
-          <p className="page-sub">Who can see which classes and subjects. Class teachers see all subjects for their section; subject teachers see their subject across assigned sections.</p>
-        </div>
+        <p className="page-sub" style={{ marginTop: 0 }}>
+          Who can see which classes and subjects. Class teachers see all subjects for their section; subject teachers see their subject across assigned
+          sections.
+        </p>
         <button className="btn btn--primary" onClick={() => openEdit("new")}>
           <Plus size={15} /> Add teacher
         </button>

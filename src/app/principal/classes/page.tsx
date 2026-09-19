@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Download, Users } from "lucide-react";
 import { classTeacherBySection, latestTest, schoolSnapshot, sectionComparison } from "@/lib/avai-mock-data";
 import { downloadSectionsComparisonReport } from "@/lib/downloadReport";
+import { usePageHeader } from "@/lib/pageHeader";
 import { AttentionPill } from "@/components/Status";
 import { DeltaCell } from "@/components/StudentRosterTable";
 
@@ -11,6 +12,7 @@ import { DeltaCell } from "@/components/StudentRosterTable";
  * per section, drilling into the class detail page (tests conducted +
  * full student roster). */
 export default function ClassesPage() {
+  usePageHeader({ title: "Classes" });
   // Worst-performing class first: the overview's job is to point at the
   // class that needs the principal today, not to list sections in order.
   const ordered = [...sectionComparison].sort((a, b) => a.overallAttainment - b.overallAttainment);
@@ -18,13 +20,10 @@ export default function ClassesPage() {
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
-        <div>
-          <h1 className="page-title">Classes</h1>
-          <p className="page-sub">
-            After {latestTest.name} · {schoolSnapshot.students} students across {schoolSnapshot.sections} sections. Tap a class to see the tests conducted
-            and its students.
-          </p>
-        </div>
+        <p className="page-sub" style={{ marginTop: 0 }}>
+          After {latestTest.name} · {schoolSnapshot.students} students across {schoolSnapshot.sections} sections. Tap a class to see the tests conducted and
+          its students.
+        </p>
         <button className="btn btn--sm" onClick={() => downloadSectionsComparisonReport(latestTest.key)}>
           <Download size={13} /> Download report
         </button>

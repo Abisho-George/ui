@@ -4,11 +4,13 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { assessmentContext, classSummary, latestTest, subjectSnapshotFor } from "@/lib/avai-mock-data";
+import { usePageHeader } from "@/lib/pageHeader";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 
 /** §6.1 Teacher home — "My Classes" / "My Subjects" split, scoped to the signed-in teacher. */
 export default function TeacherHome() {
+  usePageHeader({ title: "Teacher Home" });
   const { user } = useAuth();
   if (!user || user.role !== "teacher") return null;
 
@@ -17,9 +19,8 @@ export default function TeacherHome() {
 
   return (
     <>
-      <h1 className="page-title">Welcome, {user.name}</h1>
-      <p className="page-sub">
-        {assessmentContext.assessmentName} has been analysed. Here is what it says about your classes and subjects.
+      <p className="page-sub" style={{ marginTop: 0 }}>
+        Welcome, {user.name} · {assessmentContext.assessmentName} has been analysed. Here is what it says about your classes and subjects.
       </p>
 
       <div className="grid grid--2" style={{ marginTop: 24, alignItems: "start" }}>

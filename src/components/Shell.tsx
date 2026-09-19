@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { LogOut, type LucideIcon } from "lucide-react";
+import { useEffect, useLayoutEffect, useRef } from "react";
+import { ArrowLeft, LogOut, type LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { homeFor, initials, useAuth, type CurrentUser } from "@/lib/auth";
 import { academicYear, school, type Role } from "@/lib/avai-mock-data";
+import { PageHeaderProvider, useCurrentPageHeader } from "@/lib/pageHeader";
 import { Logomark, Mascot } from "./Mascot";
 
 export interface NavItem {
@@ -40,6 +41,37 @@ export function LoadingScreen({ label = "Loading AVAI…" }: { label?: string })
         <Mascot pose="thinking" size={96} />
       </motion.div>
       <div className="small">{label}</div>
+    </div>
+  );
+}
+
+/** The sticky "which page am I on" bar: current page title + a back
+ * button, pinned to the top of the content area through any scroll. Fed
+ * by whichever page is mounted, via usePageHeader(). Skipped on the
+ * single-screen test sheet, which has its own compact header built in. */
+function PageHeaderBar() {
+  const header = useCurrentPageHeader();
+  const router = useRouter();
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Published as a CSS var so any sticky element further down the page
+  // (.roster-sticky, a standalone .filterbar) can sit right below this bar
+  // instead of guessing its height or sticking underneath it at the same
+  // top:0. Reset to 0 when there's no header so nothing sticks to a gap.
+  useLayoutEffect(() => {
+    document.documentElement.style.setProperty("--page-header-h", header && ref.current ? `${ref.current.offsetHeight}px` : "0px");
+    return () => document.documentElement.style.setProperty("--page-header-h", "0px");
+  }, [header]);
+
+  if (!header) return null;
+  return (
+    <div className="page-header-bar" ref={ref}>
+      {header.backHref && (
+        <button className="btn btn--ghost btn--sm" onClick={() => router.push(header.backHref!)}>
+          <ArrowLeft size={13} /> Back
+        </button>
+      )}
+      <h1 className="page-header-bar__title">{header.title}</h1>
     </div>
   );
 }
@@ -122,7 +154,10 @@ export function StaffShell({
         </div>
       </aside>
       <div className="main">
-        <main className={`content ${isSheetRoute ? "content--sheet" : ""}`}>{children}</main>
+        <PageHeaderProvider>
+          {!isSheetRoute && <PageHeaderBar />}
+          <main className={`content ${isSheetRoute ? "content--sheet" : ""}`}>{children}</main>
+        </PageHeaderProvider>
       </div>
     </div>
   );

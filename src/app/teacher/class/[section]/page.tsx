@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { analysedTests, classAveragePct, classRosterFull, classSummary, emptyStates, findings, latestTest, overallPctFor, rosterFor, subjects } from "@/lib/avai-mock-data";
+import { usePageHeader } from "@/lib/pageHeader";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { FindingCard } from "@/components/FindingCard";
@@ -14,6 +15,7 @@ import { DeltaCell } from "@/components/StudentRosterTable";
 /** §6.2 Class view — all subjects for one section. */
 export default function ClassView() {
   const { section } = useParams<{ section: string }>();
+  usePageHeader({ title: `Class ${section}`, backHref: "/teacher/home" });
   const { user } = useAuth();
   const summary = classSummary[section];
   const roster = useMemo(() => rosterFor(section, latestTest.key), [section]);
@@ -50,12 +52,7 @@ export default function ClassView() {
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
-        <div>
-          <div className="eyebrow">Class view · all subjects</div>
-          <h1 className="page-title" style={{ marginTop: 4 }}>
-            Class {section}
-          </h1>
-        </div>
+        <p className="page-sub" style={{ marginTop: 0 }}>Class view · all subjects</p>
         <AttentionPill level={summary.attention} label={`${summary.attention} risk`} />
       </div>
 

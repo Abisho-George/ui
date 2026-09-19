@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Check, Send, Share2 } from "lucide-react";
 import { attentionFor, findStudent, latestTest, mainBlockerFor, teacherReportFor } from "@/lib/avai-mock-data";
+import { usePageHeader } from "@/lib/pageHeader";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 
@@ -17,6 +18,7 @@ type ReportState = { issued: boolean; sharedWithStudent: boolean };
 export default function StudentReportPage() {
   const { studentId } = useParams<{ studentId: string }>();
   const student = findStudent(studentId);
+  usePageHeader({ title: student?.name ?? studentId, backHref: "/teacher/home" });
   const base = useMemo(() => (student ? teacherReportFor(student, latestTest.key) : null), [student]);
 
   const [state, setState] = useState<ReportState[]>(() =>
@@ -28,15 +30,9 @@ export default function StudentReportPage() {
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
-        <div>
-          <div className="eyebrow">Student report · {student.section}</div>
-          <h1 className="page-title" style={{ marginTop: 4 }}>
-            {student.name}
-          </h1>
-          <p className="page-sub">
-            Roll no. {student.rollNo} · Main blocker: {mainBlockerFor(student)}
-          </p>
-        </div>
+        <p className="page-sub" style={{ marginTop: 0 }}>
+          {student.section} · Roll no. {student.rollNo} · Main blocker: {mainBlockerFor(student)}
+        </p>
         <AttentionPill level={attentionFor(student)} />
       </div>
 

@@ -50,6 +50,9 @@
   --font-display: "Georgia", "Times New Roman", serif;
 
   --sidebar-w: 232px;
+  /* Height of the sticky page-header bar, set at runtime by PageHeaderBar
+     once it mounts (see src/components/Shell.tsx) — 0 until then. */
+  --page-header-h: 0px;
 }
 
 * { box-sizing: border-box; }
@@ -129,6 +132,18 @@ table { border-collapse: collapse; width: 100%; }
 .sidebar__signout:hover { background: rgba(255,255,255,0.08); }
 
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+/* Sticky "which page am I on" bar — pinned to the top of the content area
+   through any scroll, fed by whichever page is mounted (see
+   src/lib/pageHeader.tsx). Sits above every page's own filters/tabs, which
+   have their own lower z-index sticky layer (.roster-sticky, .filterbar). */
+.page-header-bar {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 28px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.page-header-bar__title { font-size: 16px; font-weight: 650; letter-spacing: -0.005em; }
 .content { padding: 24px 28px 64px; max-width: 1280px; width: 100%; margin: 0 auto; }
 .content--sheet { padding: 14px 24px 16px; height: 100vh; display: flex; flex-direction: column; min-height: 0; }
 
@@ -212,8 +227,11 @@ table { border-collapse: collapse; width: 100%; }
 .tab--active { color: var(--brand-ink); border-bottom-color: var(--brand-teal); }
 
 /* ---------- filter bar ---------- */
+/* --page-header-h (set by PageHeaderBar) is the sticky page-title bar's own
+   height, so a standalone filter bar settles in right below it once both
+   are stuck, instead of both trying to claim the very top of the screen. */
 .filterbar {
-  position: sticky; top: 0; z-index: 15;
+  position: sticky; top: var(--page-header-h, 0px); z-index: 15;
   background: var(--brand-cream);
   padding: 12px 0 14px;
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
@@ -222,11 +240,14 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 /* Freezes the roster's heading + filters + quick-filter tabs together as
-   one block once page scroll carries them to the top of the viewport;
-   the table underneath keeps its own internal scroll (.table-wrap--scroll)
-   so scrolling past this point moves the rows, not the frozen controls. */
+   one block once page scroll carries them to the top of the viewport (just
+   below the page header bar). The table itself has no independent scroll
+   box (see .table-wrap--stack) — it just keeps flowing down the page
+   underneath, so a normal page-scroll (or a scroll started with the mouse
+   over the table) always moves it; there's no separate inner scroll region
+   to fight over first. */
 .roster-sticky {
-  position: sticky; top: 0; z-index: 16;
+  position: sticky; top: var(--page-header-h, 0px); z-index: 16;
   background: var(--brand-cream);
   padding-top: 4px;
 }
@@ -326,6 +347,12 @@ table { border-collapse: collapse; width: 100%; }
 .table-wrap--scroll thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; box-shadow: 0 1px 0 var(--line); }
 .table-wrap--flex { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
 .table-wrap--flex thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; box-shadow: 0 1px 0 var(--line); }
+/* No max-height/overflow of its own — the table is part of normal page
+   flow, so a scroll anywhere over it moves the whole page, not a separate
+   inner box. The header instead sticks at --sticky-offset (the height of
+   the frozen .roster-sticky block above it), so it settles in just below
+   that block once both are stuck, rather than being covered by it. */
+.table-wrap--stack thead th { position: sticky; top: calc(var(--page-header-h, 0px) + var(--sticky-offset, 0px)); background: var(--surface); z-index: 14; box-shadow: 0 1px 0 var(--line); }
 
 /* Marks entry: many question columns scroll horizontally, so Roll and
    Student freeze on the left the same way the header row freezes on top —

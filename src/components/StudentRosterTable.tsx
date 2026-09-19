@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
@@ -68,6 +68,23 @@ export function StudentRosterTable({
   const [subjectFilter, setSubjectFilter] = useState("All");
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
 
+  // The frozen heading + filters + tabs block's own height, measured so the
+  // table's <thead> can stick right below it (rather than at the very top,
+  // which would tuck it under the frozen block once both are stuck). Only
+  // needed outside fillHeight mode — that one has no page-level scroll to
+  // freeze against in the first place.
+  const stickyRef = useRef<HTMLDivElement>(null);
+  const [stickyHeight, setStickyHeight] = useState(0);
+  useEffect(() => {
+    if (fillHeight || !stickyRef.current) return;
+    const el = stickyRef.current;
+    const measure = () => setStickyHeight(el.offsetHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [fillHeight]);
+
   // The test before this one, so the table can show movement rather than
   // a standing figure with no context.
   const prevTestKey = useMemo(() => {
@@ -102,7 +119,7 @@ export function StudentRosterTable({
 
   return (
     <div style={fillHeight ? { display: "flex", flexDirection: "column", flex: 1, minHeight: 0 } : undefined}>
-      <div className={fillHeight ? undefined : "roster-sticky"} style={{ flex: "0 0 auto" }}>
+      <div ref={stickyRef} className={fillHeight ? undefined : "roster-sticky"} style={{ flex: "0 0 auto" }}>
         {!fillHeight && heading}
         <div className="filterbar" style={{ marginBottom: 0 }}>
           {leadingFilters}
@@ -132,7 +149,10 @@ export function StudentRosterTable({
             <p>{testName ?? "This test"} hasn&apos;t been conducted yet — no marks to show.</p>
           </div>
         ) : (
-          <div className={`table-wrap ${fillHeight ? "table-wrap--flex" : "table-wrap--scroll"}`}>
+          <div
+            className={`table-wrap ${fillHeight ? "table-wrap--flex" : "table-wrap--stack"}`}
+            style={fillHeight ? undefined : ({ "--sticky-offset": `${stickyHeight}px` } as React.CSSProperties)}
+          >
             <table className="table table--hover">
               <thead>
                 <tr>

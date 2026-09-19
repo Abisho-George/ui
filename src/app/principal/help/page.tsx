@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Mail, MessageCircle, Phone, Send } from "lucide-react";
 import { helpContact, pageHeaders } from "@/lib/avai-mock-data";
 import { useAuth } from "@/lib/auth";
+import { usePageHeader } from "@/lib/pageHeader";
 
 const categories = ["A number looks wrong", "Something isn't working", "A feature I need", "Something else"];
 
@@ -13,6 +14,7 @@ const categories = ["A number looks wrong", "Something isn't working", "A featur
  * wrong or something breaks. The message form is local-only: it confirms
  * with a toast and nothing is actually sent anywhere. */
 export default function HelpPage() {
+  usePageHeader({ title: pageHeaders.help.title });
   const { user } = useAuth();
   const [category, setCategory] = useState(categories[0]);
   const [message, setMessage] = useState("");
@@ -35,8 +37,7 @@ export default function HelpPage() {
 
   return (
     <>
-      <h1 className="page-title">{pageHeaders.help.title}</h1>
-      <p className="page-sub">{pageHeaders.help.blurb}</p>
+      <p className="page-sub" style={{ marginTop: 0 }}>{pageHeaders.help.blurb}</p>
 
       <div className="grid grid--2" style={{ marginTop: 20, alignItems: "start" }}>
         <div className="card">

@@ -1,9 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight, Download } from "lucide-react";
+import { useParams } from "next/navigation";
+import { Download } from "lucide-react";
 import {
   analysedTests,
   attentionFor,
@@ -16,6 +15,7 @@ import {
   subjects,
 } from "@/lib/avai-mock-data";
 import { downloadStudentReport } from "@/lib/downloadReport";
+import { usePageHeader } from "@/lib/pageHeader";
 import { AttentionPill, ConfidenceMeter, UrgencyChip } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { BoardXReportView } from "@/components/BoardXReportView";
@@ -26,8 +26,8 @@ import { DeltaCell } from "@/components/StudentRosterTable";
  * subject to read the same one-page BoardX report the student sees. */
 export default function PrincipalStudentPage() {
   const { section, studentId } = useParams<{ section: string; studentId: string }>();
-  const router = useRouter();
   const student = (classRosterFull[section] ?? []).find((s) => s.id === studentId);
+  usePageHeader({ title: student?.name ?? studentId, backHref: `/principal/classes/${section}` });
 
   const [testKey, setTestKey] = useState(latestTest.key);
   const [subject, setSubject] = useState<string>(subjects[0]);
@@ -41,14 +41,7 @@ export default function PrincipalStudentPage() {
   const report = student ? buildStudentReport(student, testKey, subject) : null;
 
   if (!student) {
-    return (
-      <>
-        <button className="btn btn--ghost btn--sm" onClick={() => router.push(`/principal/classes/${section}`)} style={{ marginBottom: 10 }}>
-          <ArrowLeft size={13} /> Back
-        </button>
-        <EvidenceState kind="early">No student with id {studentId} in {section}.</EvidenceState>
-      </>
-    );
+    return <EvidenceState kind="early">No student with id {studentId} in {section}.</EvidenceState>;
   }
 
   const pct = Math.round(overallPctFor(student, testKey));
@@ -58,27 +51,10 @@ export default function PrincipalStudentPage() {
 
   return (
     <>
-      <button className="btn btn--ghost btn--sm" onClick={() => router.push(`/principal/classes/${section}`)} style={{ marginBottom: 10 }}>
-        <ArrowLeft size={13} /> Back
-      </button>
-      <div className="small muted" style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
-        <Link href="/principal/classes" className="btn--link">
-          Classes
-        </Link>
-        <ChevronRight size={13} />
-        <Link href={`/principal/classes/${section}`} className="btn--link">
-          {section}
-        </Link>
-        <ChevronRight size={13} /> {student.name}
-      </div>
-
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
-        <div>
-          <h1 className="page-title">{student.name}</h1>
-          <p className="page-sub">
-            {section} · Roll {student.rollNo}
-          </p>
-        </div>
+        <p className="page-sub" style={{ marginTop: 0 }}>
+          {section} · Roll {student.rollNo}
+        </p>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button className="btn btn--sm" disabled={!report} onClick={() => downloadStudentReport(student.id, testKey, subject)}>
             <Download size={13} /> Download report

@@ -37,7 +37,7 @@ export function MarksEntryGrid({
   /** Called whenever the entered/total count changes, so a parent screen
    * (Enter Marks' per-subject list) can show progress without owning the
    * grid's state itself. */
-  onProgress?: (entered: number, total: number) => void;
+  onProgress?: (progress: { entered: number; total: number; reviewPending: number }) => void;
 }) {
   const [marks, setMarks] = useState<MarksState>({});
   const [toast, setToast] = useState<string | null>(null);
@@ -74,11 +74,12 @@ export function MarksEntryGrid({
   }
 
   const enteredCount = roster.filter((s) => questions.some((q) => (marks[s.id]?.[q.key] ?? "") !== "")).length;
+  const reviewPending = review?.length ?? 0;
 
   useEffect(() => {
-    onProgress?.(enteredCount, roster.length);
+    onProgress?.({ entered: enteredCount, total: roster.length, reviewPending });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enteredCount, roster.length]);
+  }, [enteredCount, roster.length, reviewPending]);
 
   function save() {
     setToast(`Saved marks for ${enteredCount} of ${roster.length} students · ${scopeLabel} (local only).`);

@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, ChevronDown, FileUp, Plus, Sparkles, Upload, X } from "lucide-react";
 import {
   initialSubjectPapers,
-  latestTest,
   paperChapterMapping,
   paperCoverage,
   paperQuestions,
@@ -19,6 +18,7 @@ import {
 } from "@/lib/avai-mock-data";
 import { downloadAnswerCard } from "@/lib/downloadReport";
 import { useAuth } from "@/lib/auth";
+import { usePageHeader } from "@/lib/pageHeader";
 
 function StatusTag({ status }: { status: SubjectPaperStatus }) {
   if (status === "Mapped") return <span className="tag tag--green">Mapped</span>;
@@ -37,7 +37,8 @@ export default function PapersPage() {
   const { user } = useAuth();
   const [customTests, setCustomTests] = useState<ConductedTest[]>([]);
   const [papers, setPapers] = useState<PaperMap>(() => JSON.parse(JSON.stringify(initialSubjectPapers)) as PaperMap);
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set([latestTest.key]));
+  // Nothing expanded by default — the teacher opens what they want to see.
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   const [createOpen, setCreateOpen] = useState(false);
   const [createDraft, setCreateDraft] = useState<{ name: string; date: string; subjects: string[] }>({ name: "", date: "", subjects: [] });
@@ -127,13 +128,12 @@ export default function PapersPage() {
   const testForCard = cardFor ? allTests.find((t) => t.key === cardFor.testKey) : null;
   const testForUpload = uploadFor ? allTests.find((t) => t.key === uploadFor.testKey) : null;
 
+  usePageHeader({ title: pageHeaders.papers.title });
+
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
-        <div>
-          <h1 className="page-title">{pageHeaders.papers.title}</h1>
-          <p className="page-sub">{pageHeaders.papers.blurb}</p>
-        </div>
+        <p className="page-sub" style={{ marginTop: 0 }}>{pageHeaders.papers.blurb}</p>
         <button className="btn btn--primary" onClick={() => setCreateOpen(true)}>
           <Plus size={15} /> Create test
         </button>

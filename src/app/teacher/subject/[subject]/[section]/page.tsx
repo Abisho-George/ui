@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { findings, latestTest, rosterFor, subjectSnapshotFor } from "@/lib/avai-mock-data";
+import { usePageHeader } from "@/lib/pageHeader";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { FindingCard } from "@/components/FindingCard";
@@ -16,6 +17,7 @@ export default function SubjectView() {
   const params = useParams<{ subject: string; section: string }>();
   const subject = decodeURIComponent(params.subject);
   const section = params.section;
+  usePageHeader({ title: `${subject} · ${section}`, backHref: "/teacher/home" });
   const [tab, setTab] = useState<"insights" | "marks">("insights");
   const { user } = useAuth();
 
@@ -28,11 +30,7 @@ export default function SubjectView() {
 
   return (
     <>
-      <div className="eyebrow">Subject view</div>
-      <h1 className="page-title" style={{ marginTop: 4 }}>
-        {subject} · {section}
-      </h1>
-      <p className="page-sub">
+      <p className="page-sub" style={{ marginTop: 0 }}>
         After {latestTest.name} · top gap: {snap.topGap}
       </p>
 
