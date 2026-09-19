@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { AlertTriangle, Save, ScanLine, Upload, X } from "lucide-react";
 import { ocrMarksFor, questionSets, type RosterStudent } from "@/lib/avai-mock-data";
 
 type MarksState = Record<string, Record<string, string>>; // studentId -> questionKey -> value
 type Cell = { studentId: string; qKey: string };
+
+// A paper can run 15–20+ single-mark questions; cycling a small palette by
+// chapter (rather than one colour per question) groups them visually
+// without needing as many colours as there are chapters.
+const CHAPTER_PALETTE = ["var(--brand-teal)", "var(--brand-gold)", "var(--brand-green)", "var(--info)", "var(--risk)", "var(--brand-ink-soft)"];
 
 /** §5.10 / §6.3 Question-wise marks entry grid. Local state only — "Save"
  * confirms with a toast and nothing persists. Shared by Principal → Enter
@@ -15,17 +20,24 @@ type Cell = { studentId: string; qKey: string };
  * `testKey`, when given, unlocks "Upload answer card": a simulated OCR
  * read of a scanned mark-entry sheet that fills the grid automatically. A
  * few cells are deliberately left unreadable, same as a real scan, and the
- * teacher must resolve them by hand before saving. */
+ * teacher must resolve them by hand before saving. Roll and Student stay
+ * pinned to the left as the question columns scroll, so a paper with many
+ * questions never loses track of who a row belongs to. */
 export function MarksEntryGrid({
   subject,
   roster,
   scopeLabel,
   testKey,
+  onProgress,
 }: {
   subject: string;
   roster: RosterStudent[];
   scopeLabel: string;
   testKey?: string;
+  /** Called whenever the entered/total count changes, so a parent screen
+   * (Enter Marks' per-subject list) can show progress without owning the
+   * grid's state itself. */
+  onProgress?: (entered: number, total: number) => void;
 }) {
   const [marks, setMarks] = useState<MarksState>({});
   const [toast, setToast] = useState<string | null>(null);
@@ -40,8 +52,15 @@ export function MarksEntryGrid({
     return () => clearTimeout(t);
   }, [toast]);
 
-  const questions = questionSets[subject] ?? [];
+  const questions = useMemo(() => questionSets[subject] ?? [], [subject]);
   const maxTotal = questions.reduce((sum, q) => sum + q.maxMarks, 0);
+
+  const chapterOrder = useMemo(() => {
+    const seen: string[] = [];
+    for (const q of questions) if (!seen.includes(q.chapter)) seen.push(q.chapter);
+    return seen;
+  }, [questions]);
+  const colorForChapter = (chapter: string) => CHAPTER_PALETTE[chapterOrder.indexOf(chapter) % CHAPTER_PALETTE.length];
 
   function setMark(studentId: string, qKey: string, raw: string, max: number) {
     const n = Number(raw);
@@ -55,6 +74,11 @@ export function MarksEntryGrid({
   }
 
   const enteredCount = roster.filter((s) => questions.some((q) => (marks[s.id]?.[q.key] ?? "") !== "")).length;
+
+  useEffect(() => {
+    onProgress?.(enteredCount, roster.length);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enteredCount, roster.length]);
 
   function save() {
     setToast(`Saved marks for ${enteredCount} of ${roster.length} students · ${scopeLabel} (local only).`);
@@ -138,7 +162,9 @@ export function MarksEntryGrid({
     <>
       <div className="card" style={{ marginTop: 16 }}>
         <div className="card__head" style={{ flexWrap: "wrap", gap: 10 }}>
-          <div className="small muted">Question-wise entry, or upload a filled answer card to read marks automatically.</div>
+          <div className="small muted">
+            {questions.length} questions, {maxTotal} marks total. Upload a filled answer card to read marks automatically, or type them in directly.
+          </div>
           {testKey && (
             <>
               <input ref={fileInputRef} type="file" accept="image/*,.pdf" hidden onChange={onFilePicked} />
@@ -148,25 +174,40 @@ export function MarksEntryGrid({
             </>
           )}
         </div>
+        {chapterOrder.length > 1 && (
+          <div className="marks-grid__legend">
+            {chapterOrder.map((c) => (
+              <span className="marks-grid__legend-item" key={c}>
+                <span className="marks-grid__legend-dot" style={{ background: colorForChapter(c) }} />
+                {c}
+              </span>
+            ))}
+          </div>
+        )}
         {roster.length === 0 ? (
           <div className="placeholder">
             <p>No students on record for this section in this demo dataset.</p>
           </div>
         ) : (
-          <div className="table-wrap table-wrap--scroll">
+          <div className="table-wrap table-wrap--scroll marks-grid">
             <table className="table">
+              <colgroup>
+                <col style={{ width: 52 }} />
+                <col style={{ width: 150 }} />
+                {questions.map((q) => (
+                  <col key={q.key} style={{ width: 46 }} />
+                ))}
+                <col style={{ width: 76 }} />
+              </colgroup>
               <thead>
                 <tr>
                   <th>Roll</th>
                   <th>Student</th>
                   {questions.map((q) => (
-                    <th key={q.key} className="num" title={q.chapter}>
+                    <th key={q.key} className="num" title={q.chapter} style={{ borderTop: `3px solid ${colorForChapter(q.chapter)}` }}>
                       {q.label}
                       <div className="muted" style={{ fontWeight: 400 }}>
                         /{q.maxMarks}
-                      </div>
-                      <div className="muted" style={{ fontWeight: 400, fontSize: 10.5, maxWidth: 92, whiteSpace: "normal" }}>
-                        {q.chapter}
                       </div>
                     </th>
                   ))}
@@ -184,7 +225,7 @@ export function MarksEntryGrid({
                         <td key={q.key} className="num">
                           <input
                             className="input"
-                            style={{ width: 56, padding: "6px 8px", textAlign: "right" }}
+                            style={{ width: 40, padding: "6px 4px", textAlign: "right" }}
                             inputMode="numeric"
                             placeholder="—"
                             value={marks[s.id]?.[q.key] ?? ""}
@@ -204,7 +245,8 @@ export function MarksEntryGrid({
         )}
         <div className="card__foot" style={{ justifyContent: "space-between" }}>
           <span className="small muted">
-            {enteredCount} of {roster.length} students started · held in local state for this demo and reset on reload.
+            {enteredCount} of {roster.length} students entered, {roster.length - enteredCount} pending · held in local state for this demo and reset on
+            reload.
           </span>
           <button className="btn btn--primary btn--sm" onClick={save} disabled={roster.length === 0}>
             <Save size={13} /> Save marks

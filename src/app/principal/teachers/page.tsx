@@ -2,13 +2,24 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { MoreVertical, Pencil, Plus, ShieldOff, UserPlus, X } from "lucide-react";
+import { MoreVertical, Pencil, Plus, ShieldOff, Trash2, UserPlus, X } from "lucide-react";
 import { manageTeachersList, sections, subjects, type TeacherAssignment } from "@/lib/avai-mock-data";
 import { initials } from "@/lib/auth";
 
 type Teacher = (typeof manageTeachersList)[number] & { revoked?: boolean };
 
-const emptyDraft = { name: "", classSection: "", subject: "", subjectSections: [] as string[] };
+/** One subject block in the Add/Edit form — a teacher can carry any number
+ * of these (Mr. Ravi teaches both Physics and Chemistry, for instance). */
+interface SubjectRow {
+  subject: string;
+  subjectSections: string[];
+}
+
+function emptySubjectRow(): SubjectRow {
+  return { subject: subjects[0], subjectSections: [] };
+}
+
+const emptyDraft = { name: "", classSection: "", subjectRows: [] as SubjectRow[] };
 
 /** §5.11 Manage Teachers. Local state only — nothing persists across reloads. */
 export default function ManageTeachersPage() {
@@ -30,20 +41,33 @@ export default function ManageTeachersPage() {
     if (t === "new") setDraft(emptyDraft);
     else {
       const cls = t.assignments.find((a) => a.type === "class");
-      const sub = t.assignments.find((a) => a.type === "subject");
+      const subs = t.assignments.filter((a) => a.type === "subject") as Extract<TeacherAssignment, { type: "subject" }>[];
       setDraft({
         name: t.name,
         classSection: cls && cls.type === "class" ? cls.section : "",
-        subject: sub && sub.type === "subject" ? sub.subject : "",
-        subjectSections: sub && sub.type === "subject" ? sub.sections : [],
+        subjectRows: subs.map((s) => ({ subject: s.subject, subjectSections: s.sections })),
       });
     }
+  }
+
+  function addSubjectRow() {
+    setDraft((d) => ({ ...d, subjectRows: [...d.subjectRows, emptySubjectRow()] }));
+  }
+
+  function removeSubjectRow(index: number) {
+    setDraft((d) => ({ ...d, subjectRows: d.subjectRows.filter((_, i) => i !== index) }));
+  }
+
+  function updateSubjectRow(index: number, patch: Partial<SubjectRow>) {
+    setDraft((d) => ({ ...d, subjectRows: d.subjectRows.map((r, i) => (i === index ? { ...r, ...patch } : r)) }));
   }
 
   function save() {
     const assignments: TeacherAssignment[] = [];
     if (draft.classSection) assignments.push({ type: "class", section: draft.classSection });
-    if (draft.subject && draft.subjectSections.length) assignments.push({ type: "subject", subject: draft.subject, sections: draft.subjectSections });
+    for (const row of draft.subjectRows) {
+      if (row.subject && row.subjectSections.length) assignments.push({ type: "subject", subject: row.subject, sections: row.subjectSections });
+    }
     if (editing === "new") {
       setTeachers((ts) => [...ts, { id: `staff_teacher_${Date.now()}`, name: draft.name.trim(), role: "teacher", assignments }]);
       setToast(`Added ${draft.name.trim()}. Access key would be issued here.`);
@@ -60,7 +84,8 @@ export default function ManageTeachersPage() {
     setToast(t.revoked ? `Restored access for ${t.name}.` : `Revoked access for ${t.name}.`);
   }
 
-  const canSave = draft.name.trim().length > 1 && (draft.classSection || (draft.subject && draft.subjectSections.length));
+  const hasCompleteSubjectRow = draft.subjectRows.some((r) => r.subject && r.subjectSections.length > 0);
+  const canSave = draft.name.trim().length > 1 && (draft.classSection || hasCompleteSubjectRow);
 
   return (
     <>
@@ -179,39 +204,56 @@ export default function ManageTeachersPage() {
                   </select>
                 </div>
                 <div className="field">
-                  <label htmlFor="t-subject">Subject teacher of (optional)</label>
-                  <select id="t-subject" className="select" style={{ minWidth: 0 }} value={draft.subject} onChange={(e) => setDraft({ ...draft, subject: e.target.value })}>
-                    <option value="">No subject assignment</option>
-                    {[...subjects, "Science"].map((s) => (
-                      <option key={s}>{s}</option>
+                  <label>Subjects taught (optional — add as many as this teacher takes)</label>
+                  <div style={{ display: "grid", gap: 12 }}>
+                    {draft.subjectRows.map((row, i) => (
+                      <div key={i} className="card card--flat" style={{ background: "var(--surface-2)" }}>
+                        <div className="card__body" style={{ display: "grid", gap: 10, padding: 14 }}>
+                          <div style={{ display: "flex", gap: 8, alignItems: "flex-end" }}>
+                            <div className="field" style={{ flex: 1, margin: 0 }}>
+                              <label htmlFor={`t-subject-${i}`}>Subject</label>
+                              <select id={`t-subject-${i}`} className="select" style={{ minWidth: 0 }} value={row.subject} onChange={(e) => updateSubjectRow(i, { subject: e.target.value })}>
+                                {subjects.map((s) => (
+                                  <option key={s}>{s}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <button type="button" className="iconbtn" aria-label="Remove this subject" onClick={() => removeSubjectRow(i)}>
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                          <div>
+                            <label className="small muted" style={{ display: "block", marginBottom: 6 }}>
+                              Sections for {row.subject}
+                            </label>
+                            <div className="checkrow">
+                              {sections.map((s) => {
+                                const on = row.subjectSections.includes(s);
+                                return (
+                                  <label key={s} className={`check ${on ? "check--on" : ""}`}>
+                                    <input
+                                      type="checkbox"
+                                      checked={on}
+                                      onChange={() =>
+                                        updateSubjectRow(i, {
+                                          subjectSections: on ? row.subjectSections.filter((x) => x !== s) : [...row.subjectSections, s],
+                                        })
+                                      }
+                                    />
+                                    {s}
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     ))}
-                  </select>
-                </div>
-                {draft.subject && (
-                  <div className="field">
-                    <label>Sections for {draft.subject}</label>
-                    <div className="checkrow">
-                      {sections.map((s) => {
-                        const on = draft.subjectSections.includes(s);
-                        return (
-                          <label key={s} className={`check ${on ? "check--on" : ""}`}>
-                            <input
-                              type="checkbox"
-                              checked={on}
-                              onChange={() =>
-                                setDraft({
-                                  ...draft,
-                                  subjectSections: on ? draft.subjectSections.filter((x) => x !== s) : [...draft.subjectSections, s],
-                                })
-                              }
-                            />
-                            {s}
-                          </label>
-                        );
-                      })}
-                    </div>
                   </div>
-                )}
+                  <button type="button" className="btn btn--sm" style={{ marginTop: draft.subjectRows.length ? 10 : 0 }} onClick={addSubjectRow}>
+                    <Plus size={13} /> Add subject
+                  </button>
+                </div>
               </div>
               <div className="modal__foot">
                 <button className="btn" onClick={() => setEditing(null)}>

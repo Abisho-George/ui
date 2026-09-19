@@ -1357,12 +1357,26 @@ export function paperCoverage(subject: string) {
 /** Question-wise entry grid per subject, derived from the same blueprint —
  *  the columns a teacher types (or an answer card fills) into are the
  *  questions the paper actually contains. */
-export const questionSets: Record<string, QuestionSpec[]> = Object.fromEntries(
-  subjects.map((subject) => [
-    subject,
-    questionsForSubjects([subject]).map((q, i) => ({ key: `q${i + 1}`, label: q.no, maxMarks: q.marks, chapter: q.chapter })),
-  ])
-);
+/** One question per mark — a real paper's marking scheme is far more
+ *  granular than the chapter-level split used for blueprint mapping
+ *  (`paperQuestions`), and Enter Marks is where that granularity actually
+ *  matters: a teacher is transcribing individual question scores off a
+ *  scanned answer card, not chapter totals. Still sums to the same
+ *  subject total, so a grid entry always reconciles with the score shown
+ *  everywhere else. */
+function subPartsForSubject(subject: string): QuestionSpec[] {
+  const out: QuestionSpec[] = [];
+  let n = 1;
+  for (const spec of subjectChapters[subject] ?? []) {
+    for (let i = 0; i < spec.marks; i++) {
+      out.push({ key: `q${n}`, label: `Q${n}`, maxMarks: 1, chapter: spec.chapter });
+      n++;
+    }
+  }
+  return out;
+}
+
+export const questionSets: Record<string, QuestionSpec[]> = Object.fromEntries(subjects.map((subject) => [subject, subPartsForSubject(subject)]));
 
 export interface QuestionSpec {
   key: string;

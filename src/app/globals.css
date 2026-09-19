@@ -326,6 +326,20 @@ table { border-collapse: collapse; width: 100%; }
 .table-wrap--scroll thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; box-shadow: 0 1px 0 var(--line); }
 .table-wrap--flex { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
 .table-wrap--flex thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; box-shadow: 0 1px 0 var(--line); }
+
+/* Marks entry: many question columns scroll horizontally, so Roll and
+   Student freeze on the left the same way the header row freezes on top —
+   a paper with 30+ questions stays navigable instead of losing the
+   student's identity off-screen. */
+.marks-grid td:nth-child(1), .marks-grid td:nth-child(2) { position: sticky; z-index: 1; background: var(--surface); }
+.marks-grid td:nth-child(1) { left: 0; }
+.marks-grid td:nth-child(2) { left: 52px; box-shadow: 2px 0 4px -2px rgba(21,37,46,.15); }
+.marks-grid th:nth-child(1), .marks-grid th:nth-child(2) { position: sticky; z-index: 3; background: var(--surface); }
+.marks-grid th:nth-child(1) { left: 0; }
+.marks-grid th:nth-child(2) { left: 52px; box-shadow: 2px 0 4px -2px rgba(21,37,46,.15); }
+.marks-grid__legend { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 22px 0; }
+.marks-grid__legend-item { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+.marks-grid__legend-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
 .table th {
   text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
   padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; white-space: nowrap;

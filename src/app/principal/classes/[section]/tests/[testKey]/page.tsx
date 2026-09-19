@@ -1,10 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, ChevronRight, Check, Send } from "lucide-react";
 import { analysedTests, attentionFor, classAveragePct, classRosterFull, sectionComparison, subjects, testsConducted, topGapFor } from "@/lib/avai-mock-data";
+import { markReportShared, useReportShared } from "@/lib/shareState";
 import { EvidenceState } from "@/components/EvidenceState";
 import { DeltaCell, StudentRosterTable } from "@/components/StudentRosterTable";
 
@@ -19,6 +21,19 @@ export default function ClassTestPage() {
   const summary = sectionComparison.find((s) => s.section === section);
   const roster = useMemo(() => classRosterFull[section] ?? [], [section]);
   const test = testsConducted.find((t) => t.key === testKey);
+  const alreadyShared = useReportShared(section, testKey);
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2800);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  function shareReport() {
+    markReportShared(section, testKey);
+    setToast(`Report sent to ${roster.length} students in ${section} via WhatsApp (demo only) · ${test?.name ?? testKey}.`);
+  }
 
   // The test before this one, so every figure on this sheet can show
   // movement rather than a standing number with nothing to compare to.
@@ -77,6 +92,11 @@ export default function ClassTestPage() {
               {section} · {test.name}
             </h1>
             {test.status === "Analysed" ? <span className="tag tag--green">Analysed</span> : <span className="tag">Scheduled</span>}
+            {test.status === "Analysed" && (
+              <button className="btn btn--sm btn--primary" disabled={alreadyShared} onClick={shareReport}>
+                {alreadyShared ? <Check size={13} /> : <Send size={13} />} {alreadyShared ? "Shared" : "Share report"}
+              </button>
+            )}
           </div>
           <div className="small muted">Conducted {test.date}</div>
           {test.status === "Analysed" && (
@@ -138,6 +158,14 @@ export default function ClassTestPage() {
           </div>
         </>
       )}
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div className="toast" role="status" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
