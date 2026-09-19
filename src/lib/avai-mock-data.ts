@@ -856,3 +856,20 @@ export const schoolSettings = {
   academicYear: "2026–27",
   boardBlueprintMappingEnabled: true,
 };
+
+// ============================================================
+// Principal → Classes (classwise drill-down: Overview → Class →
+// Student, with a test-wise report picker on the student page).
+// Reuses sectionComparison / classRoster / studentReportDetail —
+// no new cohort-level numbers are invented here.
+// ============================================================
+
+/** studentId -> report ids available for that student (from studentReportDetail). */
+export const studentReportsByStudent: Record<string, string[]> = {
+  student_aditi: ["report_maths_t2", "report_science_t1"],
+};
+
+/** Section -> class teacher's display name, derived from mockTeachers' assignments. */
+export const classTeacherBySection: Record<string, string> = Object.fromEntries(
+  mockTeachers.flatMap((t) => t.assignments.filter((a) => a.type === "class").map((a) => [(a as { section: string }).section, t.name]))
+);

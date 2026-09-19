@@ -29,6 +29,9 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
 | Role | Route | Spec |
 | --- | --- | --- |
 | Principal | `/principal/boardx` | §5 BoardX: tabs, sticky filters, 11 sections, finding cards, drawers |
+| Principal | `/principal/classes` | Classes overview — one card per section (students, attainment, findings) |
+| Principal | `/principal/classes/[section]` | Class detail: KPIs, findings affecting the class, searchable student roster |
+| Principal | `/principal/classes/[section]/[studentId]` | Student detail with a test-wise assessment/subject picker, rendering the same one-page BoardX report a student sees themselves (falls back to summary intelligence, then an honest empty state) |
 | Principal | `/principal/teachers` | §5.11 Manage Teachers (add / edit / revoke, local state) |
 | Principal | `/principal/papers` | §5.9 Question Papers (simulated upload + blueprint mapping drawer, local state) |
 | Principal | `/principal/enter-marks` | §5.10 Enter Marks (question-wise entry grid, local state) |

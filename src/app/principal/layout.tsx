@@ -1,11 +1,12 @@
 "use client";
 
-import { BarChart3, ClipboardList, FileText, Settings, Users } from "lucide-react";
+import { BarChart3, ClipboardList, FileText, LayoutGrid, Settings, Users } from "lucide-react";
 import { RoleGuard, StaffShell, type NavItem } from "@/components/Shell";
 import { assessmentContext } from "@/lib/avai-mock-data";
 
 const nav: NavItem[] = [
   { href: "/principal/boardx", label: "BoardX Intelligence", icon: BarChart3, group: "Intelligence" },
+  { href: "/principal/classes", label: "Classes", icon: LayoutGrid, group: "Intelligence" },
   { href: "/principal/teachers", label: "Manage Teachers", icon: Users, group: "School" },
   { href: "/principal/papers", label: "Question Papers", icon: FileText },
   { href: "/principal/enter-marks", label: "Enter Marks", icon: ClipboardList },
