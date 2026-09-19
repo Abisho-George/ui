@@ -343,6 +343,12 @@ table { border-collapse: collapse; width: 100%; }
 
 /* ---------- tables ---------- */
 .table-wrap { overflow-x: auto; }
+/* overflow-x:auto alone makes the UA compute overflow-y as auto too,
+   which turns the wrapper into its own scroll container and breaks
+   position:sticky for thead (it sticks to that box, not the viewport).
+   The stack variant has no inner scrolling at all, so it must stay
+   visible on the y-axis — overriding the shared rule above. */
+.table-wrap--stack { overflow-x: visible; overflow-y: visible; }
 .table-wrap--scroll { overflow-y: auto; max-height: 560px; }
 .table-wrap--scroll thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; box-shadow: 0 1px 0 var(--line); }
 .table-wrap--flex { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
