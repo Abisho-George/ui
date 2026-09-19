@@ -125,7 +125,7 @@ export default function SubjectView() {
           </section>
         </>
       ) : (
-        <MarksEntryGrid key={`${subject}-${section}`} subject={subject} roster={roster} scopeLabel={`${subject} · ${section}`} />
+        <MarksEntryGrid key={`${subject}-${section}`} subject={subject} roster={roster} scopeLabel={`${subject} · ${section}`} testKey={latestTest.key} />
       )}
     </>
   );

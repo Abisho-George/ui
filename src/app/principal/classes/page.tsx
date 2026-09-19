@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Users } from "lucide-react";
+import { ArrowRight, Download, Users } from "lucide-react";
 import { classTeacherBySection, latestTest, schoolSnapshot, sectionComparison } from "@/lib/avai-mock-data";
+import { downloadSectionsComparisonReport } from "@/lib/downloadReport";
 import { AttentionPill } from "@/components/Status";
 import { DeltaCell } from "@/components/StudentRosterTable";
 
@@ -16,10 +17,18 @@ export default function ClassesPage() {
 
   return (
     <>
-      <h1 className="page-title">Classes</h1>
-      <p className="page-sub">
-        After {latestTest.name} · {schoolSnapshot.students} students across {schoolSnapshot.sections} sections. Tap a class to see the tests conducted and its students.
-      </p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
+        <div>
+          <h1 className="page-title">Classes</h1>
+          <p className="page-sub">
+            After {latestTest.name} · {schoolSnapshot.students} students across {schoolSnapshot.sections} sections. Tap a class to see the tests conducted
+            and its students.
+          </p>
+        </div>
+        <button className="btn btn--sm" onClick={() => downloadSectionsComparisonReport(latestTest.key)}>
+          <Download size={13} /> Download report
+        </button>
+      </div>
 
       <div className="card" style={{ marginTop: 16 }}>
         <div className="card__body" style={{ display: "flex", gap: 32, flexWrap: "wrap" }}>

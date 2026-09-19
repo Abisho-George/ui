@@ -1239,37 +1239,40 @@ export function subjectSnapshotFor(subject: string, section: string, testKey: st
   };
 }
 
-// §5.9 Papers / §5.10 Enter marks / §5.12 Settings — page headers
+// §5.9 Papers / §5.10 Enter marks / Help — page headers
 export const pageHeaders = {
-  papers: { title: "Question Papers", blurb: "Upload and map assessment papers to the Board blueprint. A paper's mapping decides which chapters its marks can be explained against in student reports." },
-  enterMarks: { title: "Enter Marks", blurb: "Question-wise marks entry for analysed assessments. Teachers can also enter marks from their Subject view." },
-  settings: { title: "School Settings", blurb: "School profile, academic year, sections and subject configuration." },
+  papers: { title: "Question Papers", blurb: "Upload and map each subject's paper to the Board blueprint. Once a subject's paper is mapped, generate its answer card for marking." },
+  enterMarks: { title: "Enter Marks", blurb: "Upload a filled answer card to read marks automatically, or enter them question-wise by hand. Teachers can also enter marks from their Subject view." },
+  help: { title: "Help & Contact", blurb: "Something not working, or a number that looks wrong? Tell us and we'll take a look." },
 };
 
 // ============================================================
-// §5.9 Question Papers — upload + blueprint mapping
-// 🔧 BACKEND REQUIRED — upload/mapping is simulated with a timed
-// status transition; nothing is actually parsed or stored.
+// §5.9 Question Papers — one paper per (test, subject). A test's papers
+// are managed together, but each subject's paper is uploaded, mapped and
+// turned into an answer card independently — that's how a real school
+// runs it: different subject teachers hand theirs in on their own schedule.
+// 🔧 BACKEND REQUIRED — upload / mapping / answer-card generation are all
+// simulated with local state and timed status transitions; nothing here is
+// actually parsed, scanned or stored.
 // ============================================================
 
-export type PaperStatus = "Mapped" | "Needs mapping" | "Processing";
+export type SubjectPaperStatus = "Not uploaded" | "Processing" | "Needs mapping" | "Mapped";
 
-export interface PaperRecord {
-  id: string;
-  assessmentName: string;
-  subject: string; // "All subjects" for a combined paper
-  fileName: string;
-  uploadedBy: string;
-  uploadedAt: string;
-  status: PaperStatus;
-  blueprintCoveragePct: number | null;
-  chaptersCovered: number | null;
-  chaptersTotal: number | null;
+export interface SubjectPaper {
+  testKey: string;
+  subject: string;
+  fileName: string | null;
+  uploadedBy: string | null;
+  uploadedAt: string | null;
+  status: SubjectPaperStatus;
+  /** Whether "Generate answer card" has been run for this paper — gates
+   *  the answer-card upload flow in Enter Marks. */
+  answerCardGenerated: boolean;
 }
 
-// Chapters in the Board blueprint that these unit tests did not reach.
-// Coverage is only meaningful against the whole blueprint, not against the
-// handful of chapters a paper happens to contain.
+// Chapters in the Board blueprint that a subject's papers in this build
+// don't reach. Coverage is measured against the whole blueprint, not
+// against any one paper, so it's a property of the subject, not the test.
 const blueprintExtras: Record<string, string[]> = {
   Mathematics: ["Real Numbers", "Polynomials", "Pair of Linear Equations", "Triangles", "Circles", "Statistics", "Probability"],
   Physics: ["Magnetic Effects of Current", "Sources of Energy"],
@@ -1293,9 +1296,9 @@ function splitIntoQuestions(marks: number): number[] {
   return out;
 }
 
-/** The questions in a paper, derived from the same chapter blueprint the
- *  student reports are built on — so "View mapping" and a student's report
- *  describe the same paper rather than two different ones. */
+/** The questions in a subject's paper, derived from the same chapter
+ *  blueprint the student reports are built on — so "View mapping", the
+ *  answer card and a student's report all describe the same paper. */
 function questionsForSubjects(paperSubjects: string[]): PaperQuestion[] {
   const questions: PaperQuestion[] = [];
   let n = 1;
@@ -1322,77 +1325,43 @@ function mappingForSubjects(paperSubjects: string[]): { chapter: string; covered
   return [...covered, ...missing];
 }
 
-const paperSubjectsById: Record<string, string[]> = {
-  paper_ut2_all: [...subjects],
-  paper_ut1_maths: ["Mathematics"],
-};
-
-export const paperChapterMapping: Record<string, { chapter: string; covered: boolean; questionsMapped: number }[]> = Object.fromEntries(
-  Object.entries(paperSubjectsById).map(([id, subs]) => [id, mappingForSubjects(subs)])
-);
-
 export interface PaperQuestion {
   no: string;
   chapter: string;
   marks: number;
 }
 
-/** Question-by-question mapping shown when a paper is opened — the detail
- * behind each chapter's questionsMapped count in paperChapterMapping. */
-export const paperQuestions: Record<string, PaperQuestion[]> = Object.fromEntries(
-  Object.entries(paperSubjectsById).map(([id, subs]) => [id, questionsForSubjects(subs)])
+/** Chapter-by-chapter blueprint mapping, keyed by subject — every analysed
+ *  test's paper for a subject is assumed to test the same chapter set (the
+ *  same assumption the report engine makes via `subjectChapters`), so
+ *  coverage is a property of the subject rather than of one test's file. */
+export const paperChapterMapping: Record<string, { chapter: string; covered: boolean; questionsMapped: number }[]> = Object.fromEntries(
+  subjects.map((s) => [s, mappingForSubjects([s])])
 );
 
-/** Coverage of the Board blueprint by one uploaded paper, derived from its
+/** Question-by-question breakdown behind each chapter's questionsMapped
+ *  count — shown when a subject's paper is opened. */
+export const paperQuestions: Record<string, PaperQuestion[]> = Object.fromEntries(subjects.map((s) => [s, questionsForSubjects([s])]));
+
+/** Coverage of the Board blueprint by a subject's paper, derived from its
  *  own mapping so the card and the drawer can never disagree. */
-export function paperCoverage(paperId: string) {
-  const rows = paperChapterMapping[paperId];
+export function paperCoverage(subject: string) {
+  const rows = paperChapterMapping[subject];
   if (!rows) return null;
   const covered = rows.filter((r) => r.covered).length;
   return { covered, total: rows.length, pct: Math.round((covered / rows.length) * 100) };
 }
 
-export const papersList: PaperRecord[] = [
-  {
-    id: "paper_ut2_all",
-    assessmentName: "Unit Test 2",
-    subject: "All subjects",
-    fileName: "unit-test-2-question-paper.pdf",
-    uploadedBy: "Mrs. Kavitha Rajan",
-    uploadedAt: "2026-08-14",
-    status: "Mapped",
-    blueprintCoveragePct: paperCoverage("paper_ut2_all")!.pct,
-    chaptersCovered: paperCoverage("paper_ut2_all")!.covered,
-    chaptersTotal: paperCoverage("paper_ut2_all")!.total,
-  },
-  {
-    id: "paper_ut1_maths",
-    assessmentName: "Unit Test 1",
-    subject: "Mathematics",
-    fileName: "unit-test-1-maths.pdf",
-    uploadedBy: "Mrs. Lakshmi",
-    uploadedAt: "2026-06-02",
-    status: "Mapped",
-    blueprintCoveragePct: paperCoverage("paper_ut1_maths")!.pct,
-    chaptersCovered: paperCoverage("paper_ut1_maths")!.covered,
-    chaptersTotal: paperCoverage("paper_ut1_maths")!.total,
-  },
-  {
-    id: "paper_qe_science",
-    assessmentName: "Quarterly Exam",
-    subject: "Physics & Chemistry",
-    fileName: "quarterly-exam-science-draft.pdf",
-    uploadedBy: "Mr. Ravi",
-    uploadedAt: "2026-09-10",
-    status: "Needs mapping",
-    blueprintCoveragePct: null,
-    chaptersCovered: null,
-    chaptersTotal: null,
-  },
-];
+/** Question-wise entry grid per subject, derived from the same blueprint —
+ *  the columns a teacher types (or an answer card fills) into are the
+ *  questions the paper actually contains. */
+export const questionSets: Record<string, QuestionSpec[]> = Object.fromEntries(
+  subjects.map((subject) => [
+    subject,
+    questionsForSubjects([subject]).map((q, i) => ({ key: `q${i + 1}`, label: q.no, maxMarks: q.marks, chapter: q.chapter })),
+  ])
+);
 
-// Per-paper chapter mapping shown in the "View mapping" drawer. Falls back to
-// a generic message when a paper has no chapter-level detail yet.
 export interface QuestionSpec {
   key: string;
   label: string;
@@ -1402,20 +1371,89 @@ export interface QuestionSpec {
   chapter: string;
 }
 
-/** Question-wise entry grid per subject, derived from the paper blueprint so
- *  the columns a teacher types into are the questions the paper contains. */
-export const questionSets: Record<string, QuestionSpec[]> = Object.fromEntries(
-  subjects.map((subject) => [
+/** First teacher assigned to a subject — used as the default uploader on a
+ *  seeded paper record. */
+function teacherForSubject(subject: string): string {
+  const t = mockTeachers.find((t) => t.assignments.some((a) => a.type === "subject" && a.subject === subject));
+  return t?.name ?? mockPrincipal.name;
+}
+
+function seedPaper(testKey: string, subject: string, status: SubjectPaperStatus): SubjectPaper {
+  const test = testsConducted.find((t) => t.key === testKey)!;
+  const uploaded = status !== "Not uploaded";
+  return {
+    testKey,
     subject,
-    questionsForSubjects([subject]).map((q, i) => ({ key: `q${i + 1}`, label: q.no, maxMarks: q.marks, chapter: q.chapter })),
+    fileName: uploaded ? `${testKey}-${subject.toLowerCase().replace(/[^a-z]+/g, "-")}.pdf` : null,
+    uploadedBy: uploaded ? teacherForSubject(subject) : null,
+    uploadedAt: uploaded ? test.date : null,
+    status,
+    answerCardGenerated: status === "Mapped",
+  };
+}
+
+/** testKey -> subject -> paper. The two analysed tests already have every
+ *  subject mapped (marks couldn't exist otherwise); the Quarterly Exam has
+ *  a Physics paper mid-review; every other combination starts "Not
+ *  uploaded" — what a school's paper tracker actually looks like mid-term. */
+export const initialSubjectPapers: Record<string, Record<string, SubjectPaper>> = Object.fromEntries(
+  testsConducted.map((t) => [
+    t.key,
+    Object.fromEntries(
+      subjects.map((s) => {
+        if (t.status === "Analysed") return [s, seedPaper(t.key, s, "Mapped")];
+        if (t.key === "quarterly" && s === "Physics") return [s, seedPaper(t.key, s, "Needs mapping")];
+        return [s, seedPaper(t.key, s, "Not uploaded")];
+      })
+    ),
   ])
 );
 
-export const academicYears = ["2024–25", "2025–26", "2026–27"];
+/** Simulated OCR read of a scanned answer card: splits a student's real
+ *  subject score across that subject's questions (largest-remainder,
+ *  weighted by question marks and a stable per-student draw), so an
+ *  uploaded answer card reconciles with the score already on record.
+ *  Only meaningful for an analysed test — a scheduled one has no marks to
+ *  read yet, so callers should gate the upload flow on that. */
+export function ocrMarksFor(studentId: string, testKey: string, subject: string): Record<string, number> | null {
+  const student = findStudent(studentId);
+  const score = student?.scores[testKey]?.[subject];
+  const qs = questionSets[subject];
+  if (!student || !score || !qs?.length) return null;
 
-export const schoolSettings = {
-  academicYear: "2026–27",
-  boardBlueprintMappingEnabled: true,
+  const rnd = mulberry32(seedFromString(`ocr|${studentId}|${testKey}|${subject}`));
+  const weights = qs.map((q) => q.maxMarks * (0.5 + rnd()));
+  const totalWeight = weights.reduce((a, b) => a + b, 0) || 1;
+  const ideal = qs.map((q, i) => Math.min(q.maxMarks, (weights[i] / totalWeight) * score.scored));
+  const floorVals = ideal.map((v) => Math.floor(v));
+  let remaining = score.scored - floorVals.reduce((a, b) => a + b, 0);
+  const order = qs.map((_, i) => i).sort((a, b) => ideal[b] - Math.floor(ideal[b]) - (ideal[a] - Math.floor(ideal[a])));
+  while (remaining > 0) {
+    const i = order.find((idx) => floorVals[idx] < qs[idx].maxMarks);
+    if (i === undefined) break;
+    floorVals[i] += 1;
+    remaining -= 1;
+    order.splice(order.indexOf(i), 1);
+    order.push(i);
+  }
+  return Object.fromEntries(qs.map((q, i) => [q.key, floorVals[i]]));
+}
+
+// ============================================================
+// Help & Contact — replaces the old Settings screen. A mock-only build
+// has nothing to configure; what a principal actually needs is a way to
+// reach AVAI when something looks wrong.
+// ============================================================
+
+export const helpContact = {
+  supportEmail: "support@avai.school",
+  supportPhone: "+91 44 4567 8900",
+  hours: "Mon–Sat, 9:00 AM – 6:00 PM IST",
+  faqs: [
+    { q: "A student's marks look wrong — what do I do?", a: "Open Enter Marks for that assessment and correct the question-wise score; every report and KPI that depends on it updates immediately." },
+    { q: "Why does a chapter say \"Not enough evidence\"?", a: "That chapter wasn't tested enough in the mapped papers to say anything reliable about it yet — map a paper against it to change that." },
+    { q: "Can I undo sending a report to students?", a: "Not from here — check the test before sending. Message us below if a report needs to be recalled." },
+  ],
 };
 
 // ============================================================

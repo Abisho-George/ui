@@ -33,12 +33,12 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
 | Principal | `/principal/classes/[section]/tests/[testKey]` | One test, one class, as a single-screen sheet (no page-level scroll): the school topbar is hidden, replaced by a compact right-aligned title + KPI row; subject-wise performance as compact tiles; then `StudentRosterTable` in `fillHeight` mode taking the rest of the viewport |
 | Principal | `/principal/classes/[section]/[studentId]` | Student detail: assessment + subject pickers, KPIs (overall, against the class, marks lost), the subject-by-subject gap table, and the same one-page BoardX report the student sees. Works for every one of the 240 students |
 | Principal | `/principal/teachers` | §5.11 Manage Teachers (add / edit / revoke, local state) |
-| Principal | `/principal/papers` | §5.9 Question Papers (simulated upload + blueprint mapping drawer, local state) |
-| Principal | `/principal/enter-marks` | §5.10 Enter Marks (question-wise entry grid, local state) |
-| Principal | `/principal/settings` | §5.12 School Settings (academic year, sections, subjects, local state) |
+| Principal | `/principal/papers` | §5.9 Question Papers — one paper per test × subject; create a test (choosing its subjects), upload/map each subject's paper independently, then generate and download that subject's blank answer card |
+| Principal | `/principal/enter-marks` | §5.10 Enter Marks — question-wise entry grid, or upload a filled answer card to read marks automatically (OCR simulated); any mark it can't read opens a manual-entry review before it can be confirmed |
+| Principal | `/principal/help` | Help & Contact — replaces School Settings; support details, a message form, and FAQs (all local state) |
 | Teacher | `/teacher/home` | §6.1 My Classes / My Subjects |
 | Teacher | `/teacher/class/[section]` | §6.2 |
-| Teacher | `/teacher/subject/[subject]/[section]` | §6.3, incl. Enter Marks tab (shared `MarksEntryGrid`) |
+| Teacher | `/teacher/subject/[subject]/[section]` | §6.3, incl. Enter Marks tab (shared `MarksEntryGrid`, same answer-card upload) |
 | Teacher | `/teacher/student/[studentId]` | §6.4 Issue / Share |
 | Student | `/student/home` | §7.2 — reports grouped by assessment, each with its score and direction |
 | Student | `/student/report/[reportId]` | §7.3 — one-page BoardX report (where you stand, pattern seen, where marks went, what to do next). `reportId` is `studentId~testKey~subject` |
@@ -113,9 +113,43 @@ the entry points.
 
 ### Papers
 
-`paperChapterMapping`, `paperQuestions` and `questionSets` are all generated
-from `subjectChapters`, so the "View mapping" drawer, the Enter Marks grid
-and a student's report describe the same paper. Blueprint coverage is
+Question papers are managed per **(test, subject)** — `SubjectPaper` in
+`initialSubjectPapers` — because that's how a school actually runs it:
+different subject teachers hand theirs in on their own schedule, so
+Mathematics for Unit Test 2 can be "Mapped" while Chemistry for the same
+test is still "Not uploaded". "Create test" adds a new test with only the
+subjects the principal picks; the two analysed tests start with every
+subject already mapped (marks couldn't exist otherwise).
+
+`paperChapterMapping`, `paperQuestions` and `questionSets` are generated
+from `subjectChapters` and keyed by **subject only** — the blueprint a
+subject's paper tests doesn't vary by which test it belongs to — so the
+"View mapping" drawer, the Enter Marks grid, the answer card and a
+student's report all describe the same paper. Blueprint coverage is
 measured against the whole Board blueprint (`blueprintExtras` holds the
-chapters a unit test doesn't reach), which is why a unit test covers well
+chapters no paper reaches yet), which is why a unit test covers well
 under 100%.
+
+Once a subject's paper is "Mapped", "Generate answer card" produces a
+blank, printable mark-entry sheet for one section (`downloadAnswerCard` in
+`src/lib/downloadReport.ts`) — one row per student, one column per
+question, 8 students per printed sheet. Scanning it back in is simulated
+by `ocrMarksFor(studentId, testKey, subject)`: it splits the student's
+*real* subject score across that paper's questions (the same
+largest-remainder technique as the chapter breakdown), so an "uploaded"
+answer card always reconciles with the score already on record. A few
+cells are deliberately left unread on each upload, opening a manual-review
+modal the teacher must fill before the marks are confirmed — because only
+analysed tests have a real score to check a scan against, the upload
+button only does anything for those.
+
+### Reports
+
+Every "Download report" button (Classes overview, Class detail, Student
+detail) builds a small self-contained HTML file client-side —
+`src/lib/downloadReport.ts` — and saves it via a Blob: no PDF library,
+genuinely downloadable, and printable to PDF from the browser. Class
+detail also has "Share report", which "sends" every student in that
+section their report for a chosen test (to WhatsApp, per the product
+spec) — simulated with local state, surfaced as a "Reports shared" KPI on
+the same page.

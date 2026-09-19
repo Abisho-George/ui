@@ -1,17 +1,20 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { assessmentContext, pageHeaders, rosterFor, sections, subjects } from "@/lib/avai-mock-data";
+import { latestTest, pageHeaders, rosterFor, sections, subjects, testsConducted } from "@/lib/avai-mock-data";
 import { MarksEntryGrid } from "@/components/MarksEntryGrid";
 
 /** §5.10 Enter Marks. Filters select assessment/section/subject; the grid
- * itself is the shared MarksEntryGrid (also used by the teacher subject view). */
+ * itself is the shared MarksEntryGrid (also used by the teacher subject
+ * view). Answer-card upload only lights up for an analysed assessment —
+ * a scheduled one has no marks yet for a scan to be checked against. */
 export default function EnterMarksPage() {
-  const [assessment, setAssessment] = useState(assessmentContext.assessmentOptions[0].label);
+  const [testKey, setTestKey] = useState(latestTest.key);
   const [section, setSection] = useState<string>(sections[0]);
   const [subject, setSubject] = useState<string>(subjects[0]);
 
-  const roster = useMemo(() => rosterFor(section), [section]);
+  const test = testsConducted.find((t) => t.key === testKey);
+  const roster = useMemo(() => rosterFor(section, testKey), [section, testKey]);
 
   return (
     <>
@@ -21,9 +24,12 @@ export default function EnterMarksPage() {
       <div className="filterbar" style={{ marginTop: 20 }}>
         <div className="filter">
           <label htmlFor="em-assessment">Assessment</label>
-          <select id="em-assessment" className="select" value={assessment} onChange={(e) => setAssessment(e.target.value)}>
-            {assessmentContext.assessmentOptions.map((o) => (
-              <option key={o.label}>{o.label}</option>
+          <select id="em-assessment" className="select" value={testKey} onChange={(e) => setTestKey(e.target.value)}>
+            {testsConducted.map((t) => (
+              <option key={t.key} value={t.key}>
+                {t.name}
+                {t.status !== "Analysed" ? " (not yet analysed)" : ""}
+              </option>
             ))}
           </select>
         </div>
@@ -45,7 +51,13 @@ export default function EnterMarksPage() {
         </div>
       </div>
 
-      <MarksEntryGrid key={`${section}-${subject}`} subject={subject} roster={roster} scopeLabel={`${section} · ${subject}`} />
+      <MarksEntryGrid
+        key={`${testKey}-${section}-${subject}`}
+        subject={subject}
+        roster={roster}
+        scopeLabel={`${section} · ${subject} · ${test?.name ?? testKey}`}
+        testKey={testKey}
+      />
     </>
   );
 }

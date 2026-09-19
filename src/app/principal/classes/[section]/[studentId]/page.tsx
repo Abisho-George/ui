@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, Download } from "lucide-react";
 import {
   analysedTests,
   attentionFor,
@@ -15,6 +15,7 @@ import {
   studentIntelligenceFor,
   subjects,
 } from "@/lib/avai-mock-data";
+import { downloadStudentReport } from "@/lib/downloadReport";
 import { AttentionPill, ConfidenceMeter, UrgencyChip } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { BoardXReportView } from "@/components/BoardXReportView";
@@ -78,7 +79,12 @@ export default function PrincipalStudentPage() {
             {section} · Roll {student.rollNo}
           </p>
         </div>
-        <AttentionPill level={attentionFor(student, testKey)} />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button className="btn btn--sm" disabled={!report} onClick={() => downloadStudentReport(student.id, testKey, subject)}>
+            <Download size={13} /> Download report
+          </button>
+          <AttentionPill level={attentionFor(student, testKey)} />
+        </div>
       </div>
 
       <div className="filterbar" style={{ marginTop: 20 }}>

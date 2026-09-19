@@ -337,6 +337,9 @@ table { border-collapse: collapse; width: 100%; }
 }
 .delta[data-dir="up"] { color: var(--brand-green); }
 .delta[data-dir="down"] { color: var(--risk); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
 .table .strong { font-weight: 600; }
 
 /* ---------- bars ---------- */

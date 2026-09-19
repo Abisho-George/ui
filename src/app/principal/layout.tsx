@@ -1,6 +1,6 @@
 "use client";
 
-import { ClipboardList, FileText, LayoutGrid, Settings, Users } from "lucide-react";
+import { ClipboardList, FileText, HelpCircle, LayoutGrid, Users } from "lucide-react";
 import { RoleGuard, StaffShell, type NavItem } from "@/components/Shell";
 import { assessmentContext } from "@/lib/avai-mock-data";
 
@@ -9,7 +9,7 @@ const nav: NavItem[] = [
   { href: "/principal/teachers", label: "Manage Teachers", icon: Users, group: "School" },
   { href: "/principal/papers", label: "Question Papers", icon: FileText },
   { href: "/principal/enter-marks", label: "Enter Marks", icon: ClipboardList },
-  { href: "/principal/settings", label: "Settings", icon: Settings },
+  { href: "/principal/help", label: "Help & Contact", icon: HelpCircle },
 ];
 
 export default function PrincipalLayout({ children }: { children: React.ReactNode }) {

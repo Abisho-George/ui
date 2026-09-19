@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft, ChevronRight, Download, Send, X } from "lucide-react";
 import {
   analysedTests,
   attentionFor,
@@ -15,6 +16,7 @@ import {
   testsConducted,
   topGapFor,
 } from "@/lib/avai-mock-data";
+import { downloadClassReport } from "@/lib/downloadReport";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { DeltaCell, StudentRosterTable } from "@/components/StudentRosterTable";
@@ -29,11 +31,35 @@ export default function ClassDetailPage() {
   const { section } = useParams<{ section: string }>();
   const router = useRouter();
   const [testKey, setTestKey] = useState(latestTest.key);
+  const [shareOpen, setShareOpen] = useState(false);
+  const [shareTestKey, setShareTestKey] = useState(latestTest.key);
+  // Which tests' reports have already been sent to this class's students —
+  // local to this session, same as every other "resets on reload" action
+  // in this demo (Enter Marks, Question Papers, Help & Contact).
+  const [sharedTests, setSharedTests] = useState<Set<string>>(new Set());
+  const [toast, setToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2800);
+    return () => clearTimeout(t);
+  }, [toast]);
 
   const summary = sectionComparison.find((s) => s.section === section);
   const roster = useMemo(() => classRosterFull[section] ?? [], [section]);
   const test = testsConducted.find((t) => t.key === testKey);
   const analysed = test?.status === "Analysed";
+  const lastSharedTest = [...sharedTests]
+    .map((k) => testsConducted.find((t) => t.key === k))
+    .filter((t): t is (typeof testsConducted)[number] => Boolean(t))
+    .sort((a, b) => Date.parse(b.date) - Date.parse(a.date))[0];
+
+  function sendReport() {
+    setSharedTests((s) => new Set(s).add(shareTestKey));
+    setShareOpen(false);
+    const t = testsConducted.find((x) => x.key === shareTestKey);
+    setToast(`Report sent to ${roster.length} students in ${section} via WhatsApp (demo only) · ${t?.name ?? shareTestKey}.`);
+  }
 
   const kpis = useMemo(() => {
     if (!analysed) return null;
@@ -71,10 +97,25 @@ export default function ClassDetailPage() {
             Class teacher: {classTeacherBySection[section] ?? "Not assigned"} · showing {test?.name ?? "—"}
           </p>
         </div>
-        <AttentionPill level={summary.attention} label={`${summary.attention} risk`} />
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button className="btn btn--sm" disabled={!analysed} onClick={() => downloadClassReport(section, testKey)}>
+            <Download size={13} /> Download report
+          </button>
+          <button
+            className="btn btn--sm btn--primary"
+            disabled={!analysedTests.length}
+            onClick={() => {
+              setShareTestKey(testKey);
+              setShareOpen(true);
+            }}
+          >
+            <Send size={13} /> Share report
+          </button>
+          <AttentionPill level={summary.attention} label={`${summary.attention} risk`} />
+        </div>
       </div>
 
-      <div className="grid grid--4" style={{ marginTop: 20 }}>
+      <div className="grid grid--5" style={{ marginTop: 20 }}>
         <div className="stat">
           <div className="stat__label">Students</div>
           <div className="stat__value">{roster.length}</div>
@@ -101,6 +142,19 @@ export default function ClassDetailPage() {
         <div className="stat">
           <div className="stat__label">Biggest gap</div>
           <div className="stat__value stat__value--sm">{kpis ? kpis.topGap : <span className="muted">—</span>}</div>
+        </div>
+        <div className="stat">
+          <div className="stat__label">Reports shared</div>
+          <div className="stat__value stat__value--sm">
+            {lastSharedTest ? (
+              <>
+                {roster.length} of {roster.length}
+                <span className="small muted" style={{ fontWeight: 400 }}> · {lastSharedTest.name}</span>
+              </>
+            ) : (
+              <span className="muted">Not sent yet</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -173,6 +227,62 @@ export default function ClassDetailPage() {
           />
         </div>
       </section>
+
+      <AnimatePresence>
+        {shareOpen && (
+          <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShareOpen(false)}>
+            <motion.div
+              className="modal"
+              role="dialog"
+              aria-modal="true"
+              initial={{ y: 16, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 16, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal__head">
+                <h3 style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Send size={16} /> Share report with {section}
+                </h3>
+                <button className="iconbtn" onClick={() => setShareOpen(false)} aria-label="Close">
+                  <X size={16} />
+                </button>
+              </div>
+              <div className="modal__body">
+                <p className="small muted" style={{ margin: 0 }}>
+                  Sends every student in {section} their own one-page report for the assessment you pick, directly to WhatsApp.
+                </p>
+                <div className="field">
+                  <label htmlFor="share-test">Assessment</label>
+                  <select id="share-test" className="select" value={shareTestKey} onChange={(e) => setShareTestKey(e.target.value)}>
+                    {analysedTests.map((t) => (
+                      <option key={t.key} value={t.key}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="modal__foot">
+                <button className="btn" onClick={() => setShareOpen(false)}>
+                  Cancel
+                </button>
+                <button className="btn btn--primary" onClick={sendReport}>
+                  <Send size={14} /> Send to {roster.length} students
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {toast && (
+          <motion.div className="toast" role="status" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 8 }}>
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 }
