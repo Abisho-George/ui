@@ -54,7 +54,7 @@ export default function PrincipalStudentPage() {
   const pct = Math.round(overallPctFor(student, testKey));
   const delta = prevTestKey ? pct - Math.round(overallPctFor(student, prevTestKey)) : null;
   const classPct = Math.round(classAveragePct(section, testKey));
-  const totalMarks = subjects.reduce((sum, sub) => sum + student.scores[testKey][sub].outOf, 0);
+  const totalMarks = subjects.reduce((sum, sub) => sum + (student.scores[testKey]?.[sub]?.outOf ?? 0), 0);
 
   return (
     <>

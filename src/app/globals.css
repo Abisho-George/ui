@@ -526,6 +526,23 @@ table { border-collapse: collapse; width: 100%; }
 /* ---------- loading ---------- */
 .loading { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--muted); }
 
+/* ---------- error fallback ---------- */
+.error-fallback {
+  min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; gap: 10px; padding: 40px 20px; margin: 0 auto; max-width: 460px;
+}
+.error-fallback__icon {
+  width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: var(--risk-soft); color: var(--risk); margin-bottom: 6px;
+}
+.error-fallback h2 { font-size: 18px; }
+.error-fallback p { color: var(--muted); font-size: 13.5px; }
+.error-fallback__actions { display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap; justify-content: center; }
+.error-fallback__detail {
+  margin-top: 14px; font-size: 11px; color: var(--muted); font-family: monospace; background: var(--surface-2);
+  border-radius: var(--radius-sm); padding: 8px 10px; max-width: 100%; overflow-wrap: break-word; text-align: left;
+}
+
 @media (max-width: 860px) {
   .sidebar { display: none; }
   .content { padding: 18px 16px 60px; }

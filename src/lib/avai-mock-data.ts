@@ -1106,7 +1106,10 @@ export interface TeacherSubjectReport {
 export function teacherReportFor(student: FullRosterStudent, testKey: string = latestTest.key) {
   const test = testsConducted.find((t) => t.key === testKey);
   const subjectReports: TeacherSubjectReport[] = subjects.map((subject, i) => {
-    const score = student.scores[testKey][subject];
+    const score = student.scores[testKey]?.[subject];
+    if (!score) {
+      return { subject, assessment: test?.name ?? testKey, score: "— / —", strengths: [], focusAreas: [], issued: false, sharedWithStudent: false };
+    }
     const rows = chapterBreakdown(student, testKey, subject);
     const clean = rows.filter((r) => r.notScored === 0).map((r) => r.chapter);
     const losses = rows.filter((r) => r.notScored > 0).sort((a, b) => b.notScored - a.notScored);
@@ -1158,15 +1161,19 @@ export interface RosterStudent {
  *  teacher and the principal never see different numbers for the same
  *  student. `testKey` defaults to the latest analysed test. */
 export function rosterFor(section: string, testKey: string = latestTest.key): RosterStudent[] {
-  return (classRosterFull[section] ?? []).map((s) => ({
-    id: s.id,
-    rollNo: s.rollNo,
-    name: s.name,
-    section: s.section,
-    attainment: Object.fromEntries(subjects.map((sub) => [sub, `${s.scores[testKey][sub].scored}/${s.scores[testKey][sub].outOf}`])),
-    attention: attentionFor(s, testKey),
-    mainBlocker: mainBlockerFor(s, testKey),
-  }));
+  return (classRosterFull[section] ?? []).map((s) => {
+    const row = s.scores[testKey];
+    return {
+      id: s.id,
+      rollNo: s.rollNo,
+      name: s.name,
+      section: s.section,
+      // A scheduled test has no scores yet — "—" rather than a crash.
+      attainment: Object.fromEntries(subjects.map((sub) => [sub, row ? `${row[sub].scored}/${row[sub].outOf}` : "—"])),
+      attention: attentionFor(s, testKey),
+      mainBlocker: mainBlockerFor(s, testKey),
+    };
+  });
 }
 
 /** Every student in the school as a roster row (latest analysed test). */
