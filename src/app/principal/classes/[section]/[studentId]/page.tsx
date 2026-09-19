@@ -40,7 +40,7 @@ export default function PrincipalStudentPage() {
 
   return (
     <>
-      <button className="btn btn--ghost btn--sm" onClick={() => router.back()} style={{ marginBottom: 10 }}>
+      <button className="btn btn--ghost btn--sm" onClick={() => router.push(`/principal/classes/${section}`)} style={{ marginBottom: 10 }}>
         <ArrowLeft size={13} /> Back
       </button>
       <div className="small muted" style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>

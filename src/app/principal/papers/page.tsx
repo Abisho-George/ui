@@ -6,6 +6,7 @@ import { CheckCircle2, FileUp, Sparkles, Upload, X } from "lucide-react";
 import {
   assessmentContext,
   paperChapterMapping,
+  paperQuestions,
   papersList,
   pageHeaders,
   subjects,
@@ -263,6 +264,37 @@ export default function PapersPage() {
                 ) : (
                   <div className="drawer__section">
                     <p className="muted">No chapter-level mapping available yet for this paper.</p>
+                  </div>
+                )}
+                {paperQuestions[mappingFor.id] && (
+                  <div className="drawer__section">
+                    <h4>Questions in this paper</h4>
+                    <div className="card card--flat">
+                      <table className="table">
+                        <thead>
+                          <tr>
+                            <th>Q. No</th>
+                            <th>Chapter</th>
+                            <th className="num">Marks</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {paperQuestions[mappingFor.id].map((q) => (
+                            <tr key={q.no}>
+                              <td className="strong">{q.no}</td>
+                              <td>{q.chapter}</td>
+                              <td className="num">{q.marks}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div className="small muted" style={{ marginTop: 8, display: "flex", justifyContent: "space-between" }}>
+                      <span>{paperQuestions[mappingFor.id].length} questions</span>
+                      <span className="strong" style={{ color: "var(--text)" }}>
+                        Total: {paperQuestions[mappingFor.id].reduce((sum, q) => sum + q.marks, 0)} marks
+                      </span>
+                    </div>
                   </div>
                 )}
               </div>

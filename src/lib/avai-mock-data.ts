@@ -637,6 +637,50 @@ export const paperChapterMapping: Record<string, { chapter: string; covered: boo
   ],
 };
 
+export interface PaperQuestion {
+  no: string;
+  chapter: string;
+  marks: number;
+}
+
+/** Question-by-question mapping shown when a paper is opened — the detail
+ * behind each chapter's questionsMapped count in paperChapterMapping. */
+export const paperQuestions: Record<string, PaperQuestion[]> = {
+  paper_ut2_all: [
+    { no: "Q1", chapter: "Quadratic Equations", marks: 2 },
+    { no: "Q2", chapter: "Arithmetic Progressions", marks: 2 },
+    { no: "Q3", chapter: "Electricity", marks: 2 },
+    { no: "Q4", chapter: "Light", marks: 2 },
+    { no: "Q5", chapter: "Acids, Bases and Salts", marks: 2 },
+    { no: "Q6", chapter: "Carbon Compounds", marks: 2 },
+    { no: "Q7", chapter: "Quadratic Equations", marks: 3 },
+    { no: "Q8", chapter: "Arithmetic Progressions", marks: 3 },
+    { no: "Q9", chapter: "Electricity", marks: 3 },
+    { no: "Q10", chapter: "Light", marks: 3 },
+    { no: "Q11", chapter: "Acids, Bases and Salts", marks: 3 },
+    { no: "Q12", chapter: "Quadratic Equations", marks: 4 },
+    { no: "Q13", chapter: "Life Processes", marks: 2 },
+    { no: "Q14", chapter: "Trigonometry", marks: 3 },
+    { no: "Q15", chapter: "Electricity", marks: 5 },
+    { no: "Q16", chapter: "Light", marks: 3 },
+    { no: "Q17", chapter: "Life Processes", marks: 3 },
+    { no: "Q18", chapter: "Quadratic Equations", marks: 3 },
+  ],
+  paper_ut1_maths: [
+    { no: "Q1", chapter: "Real Numbers", marks: 2 },
+    { no: "Q2", chapter: "Polynomials", marks: 2 },
+    { no: "Q3", chapter: "Pair of Linear Equations", marks: 2 },
+    { no: "Q4", chapter: "Quadratic Equations", marks: 2 },
+    { no: "Q5", chapter: "Triangles", marks: 2 },
+    { no: "Q6", chapter: "Real Numbers", marks: 3 },
+    { no: "Q7", chapter: "Polynomials", marks: 3 },
+    { no: "Q8", chapter: "Pair of Linear Equations", marks: 3 },
+    { no: "Q9", chapter: "Quadratic Equations", marks: 3 },
+    { no: "Q10", chapter: "Arithmetic Progressions", marks: 3 },
+    { no: "Q11", chapter: "Pair of Linear Equations", marks: 5 },
+  ],
+};
+
 // ============================================================
 // §5.10 Enter Marks — question-wise entry grid
 // 🔧 BACKEND REQUIRED — marks are held in React state only; "Save"

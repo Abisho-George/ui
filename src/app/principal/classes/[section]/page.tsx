@@ -3,43 +3,24 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight } from "lucide-react";
 import { classRosterFull, classTeacherBySection, sectionComparison, subjects, testsConducted } from "@/lib/avai-mock-data";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
-
-type QuickFilter = "all" | "top10" | "attention";
+import { StudentRosterTable } from "@/components/StudentRosterTable";
 
 /** Principal → Classes → one section. KPIs, the test calendar for this
- * class, and the full student roster with test/subject/quick filters. */
+ * class (each test clickable through to its own class-in-that-test page),
+ * and the full student roster with test/subject/quick filters. */
 export default function ClassDetailPage() {
   const { section } = useParams<{ section: string }>();
   const router = useRouter();
   const [testKey, setTestKey] = useState("unit_test_2");
-  const [subjectFilter, setSubjectFilter] = useState("All");
-  const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
 
   const summary = sectionComparison.find((s) => s.section === section);
   const roster = useMemo(() => classRosterFull[section] ?? [], [section]);
   const test = testsConducted.find((t) => t.key === testKey);
   const needAttentionCount = roster.filter((s) => s.attention !== "On Track").length;
-
-  const rows = useMemo(() => {
-    if (!test || test.status !== "Analysed") return [];
-    const withScore = roster.map((s) => {
-      const testScores = s.scores[testKey];
-      const pct =
-        subjectFilter === "All"
-          ? (subjects.reduce((sum, subj) => sum + testScores[subj].scored / testScores[subj].outOf, 0) / subjects.length) * 100
-          : (testScores[subjectFilter].scored / testScores[subjectFilter].outOf) * 100;
-      return { student: s, pct: Math.round(pct) };
-    });
-    let filtered = withScore;
-    if (quickFilter === "attention") filtered = filtered.filter((r) => r.student.attention !== "On Track");
-    filtered = [...filtered].sort((a, b) => (quickFilter === "top10" ? b.pct - a.pct : Number(a.student.rollNo) - Number(b.student.rollNo)));
-    if (quickFilter === "top10") filtered = filtered.slice(0, 10);
-    return filtered;
-  }, [roster, test, testKey, subjectFilter, quickFilter]);
 
   if (!summary) {
     return <EvidenceState kind="early">No class named {section} in this demo dataset.</EvidenceState>;
@@ -47,7 +28,7 @@ export default function ClassDetailPage() {
 
   return (
     <>
-      <button className="btn btn--ghost btn--sm" onClick={() => router.back()} style={{ marginBottom: 10 }}>
+      <button className="btn btn--ghost btn--sm" onClick={() => router.push("/principal/classes")} style={{ marginBottom: 10 }}>
         <ArrowLeft size={13} /> Back
       </button>
       <div className="small muted" style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
@@ -89,13 +70,14 @@ export default function ClassDetailPage() {
         </div>
         <div className="card">
           <div className="table-wrap">
-            <table className="table">
+            <table className="table table--hover">
               <thead>
                 <tr>
                   <th>Assessment</th>
                   <th>Date</th>
                   <th>Status</th>
                   <th className="num">Class average</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -109,11 +91,14 @@ export default function ClassDetailPage() {
                         )
                       : null;
                   return (
-                    <tr key={t.key}>
+                    <tr key={t.key} onClick={() => router.push(`/principal/classes/${section}/tests/${t.key}`)}>
                       <td className="strong">{t.name}</td>
                       <td className="small muted">{t.date}</td>
                       <td>{t.status === "Analysed" ? <span className="tag tag--green">Analysed</span> : <span className="tag">Scheduled</span>}</td>
                       <td className="num">{avg != null ? `${avg}%` : <span className="muted">—</span>}</td>
+                      <td style={{ textAlign: "right" }}>
+                        <span className="btn--link">View →</span>
+                      </td>
                     </tr>
                   );
                 })}
@@ -140,82 +125,10 @@ export default function ClassDetailPage() {
               ))}
             </select>
           </div>
-          <div className="filter">
-            <label htmlFor="subject-filter">Subject</label>
-            <select id="subject-filter" className="select" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
-              <option value="All">All subjects</option>
-              {subjects.map((s) => (
-                <option key={s}>{s}</option>
-              ))}
-            </select>
-          </div>
         </div>
 
-        <div className="tabs" role="tablist" style={{ marginTop: 14 }}>
-          {(["all", "top10", "attention"] as QuickFilter[]).map((k) => (
-            <button
-              key={k}
-              role="tab"
-              aria-selected={quickFilter === k}
-              className={`tab ${quickFilter === k ? "tab--active" : ""}`}
-              onClick={() => setQuickFilter(k)}
-            >
-              {k === "all" ? "All Students" : k === "top10" ? "Top 10" : "Need Attention"}
-            </button>
-          ))}
-        </div>
-
-        <div className="card" style={{ marginTop: 14 }}>
-          {!test || test.status !== "Analysed" ? (
-            <div className="placeholder">
-              <p>{test?.name ?? "This test"} hasn&apos;t been conducted yet — no marks to show.</p>
-            </div>
-          ) : (
-            <div className="table-wrap table-wrap--scroll">
-              <table className="table table--hover">
-                <thead>
-                  <tr>
-                    <th>Roll</th>
-                    <th>Student</th>
-                    <th className="num">{subjectFilter === "All" ? "Overall" : subjectFilter}</th>
-                    <th>Main blocker</th>
-                    <th>Attention</th>
-                    <th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rows.length === 0 && (
-                    <tr>
-                      <td colSpan={6}>
-                        <EvidenceState kind="early" compact>
-                          No students match this filter.
-                        </EvidenceState>
-                      </td>
-                    </tr>
-                  )}
-                  {rows.map(({ student: s, pct }) => (
-                    <tr key={s.id} onClick={() => router.push(`/principal/classes/${section}/${s.id}`)}>
-                      <td className="muted">{s.rollNo}</td>
-                      <td className="strong">{s.name}</td>
-                      <td className="num">{pct}%</td>
-                      <td>{s.mainBlocker}</td>
-                      <td>
-                        <AttentionPill level={s.attention} />
-                      </td>
-                      <td style={{ textAlign: "right" }}>
-                        <Link href={`/principal/classes/${section}/${s.id}`} className="btn btn--sm" onClick={(e) => e.stopPropagation()}>
-                          Report <ArrowRight size={12} />
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-          <div className="card__foot small muted">
-            {quickFilter === "top10" ? `Top ${rows.length} of ${roster.length}` : `Showing ${rows.length} of ${roster.length} students.`}
-          </div>
+        <div style={{ marginTop: 14 }}>
+          <StudentRosterTable roster={roster} testKey={testKey} section={section} testStatus={test?.status ?? "Scheduled"} testName={test?.name} />
         </div>
       </section>
     </>

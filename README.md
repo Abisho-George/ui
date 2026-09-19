@@ -29,7 +29,8 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
 | Role | Route | Spec |
 | --- | --- | --- |
 | Principal | `/principal/classes` | Classes overview — one card per section (students, attainment, need-attention count) |
-| Principal | `/principal/classes/[section]` | Class detail: KPIs, the test calendar for this class, and the full 48-student roster with test/subject/quick filters (All Students, Top 10, Need Attention), scrollable in a fixed-height table |
+| Principal | `/principal/classes/[section]` | Class detail: KPIs, the clickable test calendar for this class, and the full 48-student roster (shared `StudentRosterTable`: subject filter + All Students/Top 10/Need Attention/Critical presets, scrollable in a fixed-height table) |
+| Principal | `/principal/classes/[section]/tests/[testKey]` | One test, one class: overall + subject-wise performance, then the same `StudentRosterTable` fixed to that test |
 | Principal | `/principal/classes/[section]/[studentId]` | Student detail with a test-wise assessment/subject picker, rendering the same one-page BoardX report a student sees themselves (falls back to summary intelligence, then an honest empty state) |
 | Principal | `/principal/teachers` | §5.11 Manage Teachers (add / edit / revoke, local state) |
 | Principal | `/principal/papers` | §5.9 Question Papers (simulated upload + blueprint mapping drawer, local state) |
@@ -58,6 +59,13 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
   48 per section) rather than a hand-authored sample; a handful of students
   (Aditi, Divya, Riya) are pinned at their original roll numbers so their
   richer report / intelligence drill-downs keep working.
+- Every "← Back" button navigates to an explicit parent route (not
+  `router.back()`), so it works even when the page was opened directly
+  (a fresh tab, a shared link, a reload) with no in-app history to pop.
+- Question Papers' "View mapping" drawer shows the question-by-question
+  breakdown behind each chapter's count (`paperQuestions` in the
+  mock-data file) — question number, chapter, marks, and a running total —
+  for papers that have it (Unit Test 2, Unit Test 1 Maths).
 - The mascot and logo (`src/components/Mascot.tsx`) use the real AVAI brand
   artwork (`public/mascot/`, `public/brand/`), cropped from the brand sheet.
   `<Mascot>` keeps the spec's pose vocabulary (hello / improve / achieve /
