@@ -62,6 +62,11 @@ export function StaffShell({
   const router = useRouter();
   const { signOut } = useAuth();
 
+  // The single-test page is a dense, one-screen "sheet" — its own compact
+  // header replaces the school topbar so the whole thing fits without
+  // scrolling the page itself.
+  const hideTopbar = /^\/principal\/classes\/[^/]+\/tests\/[^/]+\/?$/.test(pathname);
+
   let lastGroup: string | undefined;
   return (
     <div className="shell">
@@ -109,13 +114,15 @@ export function StaffShell({
         </div>
       </aside>
       <div className="main">
-        <header className="topbar">
-          <div className="topbar__school">
-            <strong>{school.name}</strong> · {school.board} · {school.state}
-          </div>
-          <div className="topbar__right">{topbarRight ?? <span>Academic year 2026–27</span>}</div>
-        </header>
-        <main className="content">{children}</main>
+        {!hideTopbar && (
+          <header className="topbar">
+            <div className="topbar__school">
+              <strong>{school.name}</strong> · {school.board} · {school.state}
+            </div>
+            <div className="topbar__right">{topbarRight ?? <span>Academic year 2026–27</span>}</div>
+          </header>
+        )}
+        <main className={`content ${hideTopbar ? "content--sheet" : ""}`}>{children}</main>
       </div>
     </div>
   );

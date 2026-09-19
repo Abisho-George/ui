@@ -27,12 +27,16 @@ export function StudentRosterTable({
   section,
   testStatus,
   testName,
+  fillHeight = false,
 }: {
   roster: FullRosterStudent[];
   testKey: string;
   section: string;
   testStatus: "Analysed" | "Scheduled";
   testName?: string;
+  /** Card + table grow to fill the parent's remaining height (for the
+   * single-screen test-sheet page) instead of capping at a fixed height. */
+  fillHeight?: boolean;
 }) {
   const router = useRouter();
   const [subjectFilter, setSubjectFilter] = useState("All");
@@ -57,8 +61,8 @@ export function StudentRosterTable({
   }, [roster, testKey, testStatus, subjectFilter, quickFilter]);
 
   return (
-    <>
-      <div className="filterbar" style={{ marginBottom: 0 }}>
+    <div style={fillHeight ? { display: "flex", flexDirection: "column", flex: 1, minHeight: 0 } : undefined}>
+      <div className="filterbar" style={{ marginBottom: 0, flex: "0 0 auto" }}>
         <div className="filter">
           <label htmlFor="subject-filter">Subject</label>
           <select id="subject-filter" className="select" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
@@ -70,7 +74,7 @@ export function StudentRosterTable({
         </div>
       </div>
 
-      <div className="tabs" role="tablist" style={{ marginTop: 14 }}>
+      <div className="tabs" role="tablist" style={{ marginTop: 14, flex: "0 0 auto" }}>
         {(["all", "top10", "attention", "critical"] as QuickFilter[]).map((k) => (
           <button key={k} role="tab" aria-selected={quickFilter === k} className={`tab ${quickFilter === k ? "tab--active" : ""}`} onClick={() => setQuickFilter(k)}>
             {quickFilterLabel[k]}
@@ -78,13 +82,13 @@ export function StudentRosterTable({
         ))}
       </div>
 
-      <div className="card" style={{ marginTop: 14 }}>
+      <div className="card" style={fillHeight ? { marginTop: 14, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } : { marginTop: 14 }}>
         {testStatus !== "Analysed" ? (
           <div className="placeholder">
             <p>{testName ?? "This test"} hasn&apos;t been conducted yet — no marks to show.</p>
           </div>
         ) : (
-          <div className="table-wrap table-wrap--scroll">
+          <div className={`table-wrap ${fillHeight ? "table-wrap--flex" : "table-wrap--scroll"}`}>
             <table className="table table--hover">
               <thead>
                 <tr>
@@ -126,10 +130,10 @@ export function StudentRosterTable({
             </table>
           </div>
         )}
-        <div className="card__foot small muted">
+        <div className="card__foot small muted" style={{ flex: "0 0 auto" }}>
           {quickFilter === "top10" ? `Top ${rows.length} of ${roster.length}` : `Showing ${rows.length} of ${roster.length} students.`}
         </div>
       </div>
-    </>
+    </div>
   );
 }

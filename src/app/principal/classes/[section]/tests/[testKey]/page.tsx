@@ -8,9 +8,10 @@ import { classRosterFull, sectionComparison, subjects, testsConducted } from "@/
 import { EvidenceState } from "@/components/EvidenceState";
 import { StudentRosterTable } from "@/components/StudentRosterTable";
 
-/** Principal → Classes → section → one test. Overall class performance in
- * that test, a subject-wise breakdown, then the same student roster table
- * (with the Test fixed to this one) used on the class detail page. */
+/** Principal → Classes → section → one test. A single-screen "sheet": a
+ * compact header (title + tiny KPI row, top right), a compact subject-wise
+ * strip, then the student roster table filling the rest of the viewport
+ * with its own internal scroll. No page-level scrolling. */
 export default function ClassTestPage() {
   const { section, testKey } = useParams<{ section: string; testKey: string }>();
   const router = useRouter();
@@ -36,27 +37,48 @@ export default function ClassTestPage() {
 
   return (
     <>
-      <button className="btn btn--ghost btn--sm" onClick={() => router.push(`/principal/classes/${section}`)} style={{ marginBottom: 10 }}>
-        <ArrowLeft size={13} /> Back
-      </button>
-      <div className="small muted" style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
-        <Link href="/principal/classes" className="btn--link">
-          Classes
-        </Link>
-        <ChevronRight size={13} />
-        <Link href={`/principal/classes/${section}`} className="btn--link">
-          {section}
-        </Link>
-        <ChevronRight size={13} /> {test.name}
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flex: "0 0 auto" }}>
         <div>
-          <h1 className="page-title">
-            {section} · {test.name}
-          </h1>
-          <p className="page-sub">Conducted {test.date}</p>
+          <button className="btn btn--ghost btn--sm" onClick={() => router.push(`/principal/classes/${section}`)}>
+            <ArrowLeft size={13} /> Back
+          </button>
+          <div className="small muted" style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 6 }}>
+            <Link href="/principal/classes" className="btn--link">
+              Classes
+            </Link>
+            <ChevronRight size={13} />
+            <Link href={`/principal/classes/${section}`} className="btn--link">
+              {section}
+            </Link>
+            <ChevronRight size={13} /> {test.name}
+          </div>
         </div>
-        {test.status === "Analysed" ? <span className="tag tag--green">Analysed</span> : <span className="tag">Scheduled</span>}
+
+        <div style={{ textAlign: "right" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 8 }}>
+            <h1 className="page-title" style={{ fontSize: 19 }}>
+              {section} · {test.name}
+            </h1>
+            {test.status === "Analysed" ? <span className="tag tag--green">Analysed</span> : <span className="tag">Scheduled</span>}
+          </div>
+          <div className="small muted">Conducted {test.date}</div>
+          {test.status === "Analysed" && (
+            <div style={{ display: "flex", gap: 18, marginTop: 8, justifyContent: "flex-end" }}>
+              <div style={{ textAlign: "right" }}>
+                <div className="stat__label">Class average</div>
+                <div className="stat__value stat__value--sm">{overallAvg}%</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div className="stat__label">Students</div>
+                <div className="stat__value stat__value--sm">{roster.length}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div className="stat__label">Need attention</div>
+                <div className="stat__value stat__value--sm">{needAttentionCount}</div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {test.status !== "Analysed" ? (
@@ -65,46 +87,21 @@ export default function ClassTestPage() {
         </div>
       ) : (
         <>
-          <div className="grid grid--3" style={{ marginTop: 20 }}>
-            <div className="stat">
-              <div className="stat__label">Class average</div>
-              <div className="stat__value">{overallAvg}%</div>
-            </div>
-            <div className="stat">
-              <div className="stat__label">Students</div>
-              <div className="stat__value">{roster.length}</div>
-            </div>
-            <div className="stat">
-              <div className="stat__label">Need attention</div>
-              <div className="stat__value">{needAttentionCount}</div>
-            </div>
+          <div className="grid grid--5" style={{ marginTop: 14, flex: "0 0 auto" }}>
+            {subjectAverages.map((s) => (
+              <div className="stat" key={s.subject}>
+                <div className="stat__label">{s.subject}</div>
+                <div className="stat__value stat__value--sm">{s.pct}%</div>
+                <div className="bar" style={{ marginTop: 6 }}>
+                  <div className={`bar__fill ${s.pct >= 78 ? "bar__fill--green" : s.pct >= 65 ? "bar__fill--gold" : "bar__fill--risk"}`} style={{ width: `${s.pct}%` }} />
+                </div>
+              </div>
+            ))}
           </div>
 
-          <section className="section">
-            <div className="section__head">
-              <h2 className="section-q">Subject-wise performance</h2>
-            </div>
-            <div className="card">
-              <div className="card__body" style={{ display: "grid", gap: 12 }}>
-                {subjectAverages.map((s) => (
-                  <div className="bar-row" key={s.subject}>
-                    <div className="bar-row__label">{s.subject}</div>
-                    <div className="bar">
-                      <div className={`bar__fill ${s.pct >= 78 ? "bar__fill--green" : s.pct >= 65 ? "bar__fill--gold" : "bar__fill--risk"}`} style={{ width: `${s.pct}%` }} />
-                    </div>
-                    <div className="bar-row__val">{s.pct}%</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-
-          <section className="section">
-            <div className="section__head">
-              <h2 className="section-q">Students in {section} · {test.name}</h2>
-            </div>
-            <StudentRosterTable roster={roster} testKey={testKey} section={section} testStatus="Analysed" testName={test.name} />
-          </section>
+          <div style={{ marginTop: 14, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+            <StudentRosterTable roster={roster} testKey={testKey} section={section} testStatus="Analysed" testName={test.name} fillHeight />
+          </div>
         </>
       )}
     </>

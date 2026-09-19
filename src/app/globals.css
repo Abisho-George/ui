@@ -128,6 +128,7 @@ table { border-collapse: collapse; width: 100%; }
 .topbar__school strong { color: var(--text); font-weight: 600; }
 .topbar__right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
 .content { padding: 24px 28px 64px; max-width: 1280px; width: 100%; margin: 0 auto; }
+.content--sheet { padding: 14px 24px 16px; height: 100vh; display: flex; flex-direction: column; min-height: 0; }
 
 /* ---------- typography ---------- */
 .page-title { font-size: 24px; font-weight: 650; letter-spacing: -0.01em; }
@@ -166,8 +167,9 @@ table { border-collapse: collapse; width: 100%; }
 .grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-@media (max-width: 1000px) { .grid--4 { grid-template-columns: repeat(2, minmax(0,1fr)); } .grid--3 { grid-template-columns: repeat(2, minmax(0,1fr)); } }
-@media (max-width: 700px) { .grid--2, .grid--3, .grid--4 { grid-template-columns: 1fr; } }
+.grid--5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+@media (max-width: 1000px) { .grid--4, .grid--5 { grid-template-columns: repeat(2, minmax(0,1fr)); } .grid--3 { grid-template-columns: repeat(2, minmax(0,1fr)); } }
+@media (max-width: 700px) { .grid--2, .grid--3, .grid--4, .grid--5 { grid-template-columns: 1fr; } }
 
 /* ---------- stats (context strip) ---------- */
 .stat { padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-md); }
@@ -310,6 +312,8 @@ table { border-collapse: collapse; width: 100%; }
 .table-wrap { overflow-x: auto; }
 .table-wrap--scroll { overflow-y: auto; max-height: 560px; }
 .table-wrap--scroll thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; box-shadow: 0 1px 0 var(--line); }
+.table-wrap--flex { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
+.table-wrap--flex thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; box-shadow: 0 1px 0 var(--line); }
 .table th {
   text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
   padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; white-space: nowrap;

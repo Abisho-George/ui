@@ -30,7 +30,7 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
 | --- | --- | --- |
 | Principal | `/principal/classes` | Classes overview — one card per section (students, attainment, need-attention count) |
 | Principal | `/principal/classes/[section]` | Class detail: KPIs, the clickable test calendar for this class, and the full 48-student roster (shared `StudentRosterTable`: subject filter + All Students/Top 10/Need Attention/Critical presets, scrollable in a fixed-height table) |
-| Principal | `/principal/classes/[section]/tests/[testKey]` | One test, one class: overall + subject-wise performance, then the same `StudentRosterTable` fixed to that test |
+| Principal | `/principal/classes/[section]/tests/[testKey]` | One test, one class, as a single-screen sheet (no page-level scroll): the school topbar is hidden, replaced by a compact right-aligned title + KPI row; subject-wise performance as compact tiles; then `StudentRosterTable` in `fillHeight` mode taking the rest of the viewport |
 | Principal | `/principal/classes/[section]/[studentId]` | Student detail with a test-wise assessment/subject picker, rendering the same one-page BoardX report a student sees themselves (falls back to summary intelligence, then an honest empty state) |
 | Principal | `/principal/teachers` | §5.11 Manage Teachers (add / edit / revoke, local state) |
 | Principal | `/principal/papers` | §5.9 Question Papers (simulated upload + blueprint mapping drawer, local state) |
