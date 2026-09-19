@@ -4,23 +4,50 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
-import { classRosterFull, classTeacherBySection, sectionComparison, subjects, testsConducted } from "@/lib/avai-mock-data";
+import {
+  analysedTests,
+  attentionFor,
+  classAveragePct,
+  classRosterFull,
+  classTeacherBySection,
+  latestTest,
+  sectionComparison,
+  testsConducted,
+  topGapFor,
+} from "@/lib/avai-mock-data";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
-import { StudentRosterTable } from "@/components/StudentRosterTable";
+import { DeltaCell, StudentRosterTable } from "@/components/StudentRosterTable";
 
 /** Principal → Classes → one section. KPIs, the test calendar for this
  * class (each test clickable through to its own class-in-that-test page),
- * and the full student roster with test/subject/quick filters. */
+ * and the full student roster with test/subject/quick filters.
+ *
+ * Every KPI follows the selected test, so the headline figure can never
+ * disagree with the table underneath it. */
 export default function ClassDetailPage() {
   const { section } = useParams<{ section: string }>();
   const router = useRouter();
-  const [testKey, setTestKey] = useState("unit_test_2");
+  const [testKey, setTestKey] = useState(latestTest.key);
 
   const summary = sectionComparison.find((s) => s.section === section);
   const roster = useMemo(() => classRosterFull[section] ?? [], [section]);
   const test = testsConducted.find((t) => t.key === testKey);
-  const needAttentionCount = roster.filter((s) => s.attention !== "On Track").length;
+  const analysed = test?.status === "Analysed";
+
+  const kpis = useMemo(() => {
+    if (!analysed) return null;
+    const i = analysedTests.findIndex((t) => t.key === testKey);
+    const prev = i > 0 ? analysedTests[i - 1].key : null;
+    const avg = classAveragePct(section, testKey);
+    return {
+      attainment: Math.round(avg),
+      delta: prev ? Math.round(avg - classAveragePct(section, prev)) : null,
+      needAttention: roster.filter((s) => attentionFor(s, testKey) !== "On Track").length,
+      critical: roster.filter((s) => attentionFor(s, testKey) === "Intervention").length,
+      topGap: topGapFor(section, testKey),
+    };
+  }, [section, testKey, roster, analysed]);
 
   if (!summary) {
     return <EvidenceState kind="early">No class named {section} in this demo dataset.</EvidenceState>;
@@ -40,9 +67,11 @@ export default function ClassDetailPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
         <div>
           <h1 className="page-title">Class {section}</h1>
-          <p className="page-sub">Class teacher: {classTeacherBySection[section] ?? "Not assigned"}</p>
+          <p className="page-sub">
+            Class teacher: {classTeacherBySection[section] ?? "Not assigned"} · showing {test?.name ?? "—"}
+          </p>
         </div>
-        <AttentionPill level={summary.attention} />
+        <AttentionPill level={summary.attention} label={`${summary.attention} risk`} />
       </div>
 
       <div className="grid grid--4" style={{ marginTop: 20 }}>
@@ -52,15 +81,26 @@ export default function ClassDetailPage() {
         </div>
         <div className="stat">
           <div className="stat__label">Overall attainment</div>
-          <div className="stat__value">{summary.overallAttainment}%</div>
+          <div className="stat__value" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
+            {kpis ? `${kpis.attainment}%` : <span className="muted">—</span>}
+            {kpis && <DeltaCell delta={kpis.delta} />}
+          </div>
         </div>
         <div className="stat">
           <div className="stat__label">Need attention</div>
-          <div className="stat__value">{needAttentionCount}</div>
+          <div className="stat__value">
+            {kpis ? kpis.needAttention : <span className="muted">—</span>}
+            {kpis && kpis.critical > 0 && (
+              <span className="small muted" style={{ fontWeight: 400 }}>
+                {" "}
+                · {kpis.critical} critical
+              </span>
+            )}
+          </div>
         </div>
         <div className="stat">
-          <div className="stat__label">Tests conducted</div>
-          <div className="stat__value">{testsConducted.filter((t) => t.status === "Analysed").length}</div>
+          <div className="stat__label">Biggest gap</div>
+          <div className="stat__value stat__value--sm">{kpis ? kpis.topGap : <span className="muted">—</span>}</div>
         </div>
       </div>
 
@@ -77,25 +117,22 @@ export default function ClassDetailPage() {
                   <th>Date</th>
                   <th>Status</th>
                   <th className="num">Class average</th>
+                  <th className="num">vs previous</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {testsConducted.map((t) => {
-                  const avg =
-                    t.status === "Analysed"
-                      ? Math.round(
-                          (roster.reduce((sum, s) => sum + subjects.reduce((a, subj) => a + s.scores[t.key][subj].scored / s.scores[t.key][subj].outOf, 0) / subjects.length, 0) /
-                            roster.length) *
-                            100
-                        )
-                      : null;
+                  const i = analysedTests.findIndex((a) => a.key === t.key);
+                  const avg = t.status === "Analysed" ? Math.round(classAveragePct(section, t.key)) : null;
+                  const delta = i > 0 ? Math.round(classAveragePct(section, t.key) - classAveragePct(section, analysedTests[i - 1].key)) : null;
                   return (
                     <tr key={t.key} onClick={() => router.push(`/principal/classes/${section}/tests/${t.key}`)}>
                       <td className="strong">{t.name}</td>
                       <td className="small muted">{t.date}</td>
                       <td>{t.status === "Analysed" ? <span className="tag tag--green">Analysed</span> : <span className="tag">Scheduled</span>}</td>
                       <td className="num">{avg != null ? `${avg}%` : <span className="muted">—</span>}</td>
+                      <td className="num">{t.status === "Analysed" ? <DeltaCell delta={delta} /> : <span className="muted">—</span>}</td>
                       <td style={{ textAlign: "right" }}>
                         <span className="btn--link">View →</span>
                       </td>
@@ -113,22 +150,27 @@ export default function ClassDetailPage() {
           <h2 className="section-q">Students in {section}</h2>
         </div>
 
-        <div className="filterbar" style={{ marginBottom: 0 }}>
-          <div className="filter">
-            <label htmlFor="test-filter">Test</label>
-            <select id="test-filter" className="select" value={testKey} onChange={(e) => setTestKey(e.target.value)}>
-              {testsConducted.map((t) => (
-                <option key={t.key} value={t.key}>
-                  {t.name}
-                  {t.status !== "Analysed" ? " (not yet conducted)" : ""}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
         <div style={{ marginTop: 14 }}>
-          <StudentRosterTable roster={roster} testKey={testKey} section={section} testStatus={test?.status ?? "Scheduled"} testName={test?.name} />
+          <StudentRosterTable
+            roster={roster}
+            testKey={testKey}
+            section={section}
+            testStatus={test?.status ?? "Scheduled"}
+            testName={test?.name}
+            leadingFilters={
+              <div className="filter">
+                <label htmlFor="test-filter">Test</label>
+                <select id="test-filter" className="select" value={testKey} onChange={(e) => setTestKey(e.target.value)}>
+                  {testsConducted.map((t) => (
+                    <option key={t.key} value={t.key}>
+                      {t.name}
+                      {t.status !== "Analysed" ? " (not yet conducted)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            }
+          />
         </div>
       </section>
     </>

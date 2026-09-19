@@ -233,14 +233,20 @@ export default function PapersPage() {
                 <div className="drawer__section">
                   <h4>Blueprint coverage</h4>
                   {mappingFor.blueprintCoveragePct != null ? (
-                    <dl className="kv">
-                      <dt>Coverage</dt>
-                      <dd className="strong">{mappingFor.blueprintCoveragePct}%</dd>
-                      <dt>Chapters covered</dt>
-                      <dd>
-                        {mappingFor.chaptersCovered} of {mappingFor.chaptersTotal}
-                      </dd>
-                    </dl>
+                    <>
+                      <dl className="kv">
+                        <dt>Coverage</dt>
+                        <dd className="strong">{mappingFor.blueprintCoveragePct}%</dd>
+                        <dt>Chapters covered</dt>
+                        <dd>
+                          {mappingFor.chaptersCovered} of {mappingFor.chaptersTotal}
+                        </dd>
+                      </dl>
+                      <p className="small muted" style={{ marginTop: 8 }}>
+                      Measured against the whole Board blueprint for this subject, not against the paper. A unit test is expected to cover part of it — the
+                        figure says how much of the Board syllabus this paper can give evidence about.
+                      </p>
+                    </>
                   ) : (
                     <p className="muted">Mapping not yet run for this paper.</p>
                   )}
@@ -248,18 +254,20 @@ export default function PapersPage() {
                 {paperChapterMapping[mappingFor.id] ? (
                   <div className="drawer__section">
                     <h4>Chapter-by-chapter</h4>
-                    {paperChapterMapping[mappingFor.id].map((c) => (
-                      <div className="bar-row" key={c.chapter} style={{ gridTemplateColumns: "1fr 90px" }}>
-                        <div className="bar-row__label">{c.chapter}</div>
-                        <div className="small" style={{ textAlign: "right" }}>
-                          {c.covered ? (
-                            <span className="tag tag--green">{c.questionsMapped} Q mapped</span>
-                          ) : (
-                            <span className="tag">Not tested</span>
-                          )}
+                    <div className="table-wrap--scroll" style={{ maxHeight: 300 }}>
+                      {paperChapterMapping[mappingFor.id].map((c) => (
+                        <div className="bar-row" key={c.chapter} style={{ gridTemplateColumns: "1fr 90px" }}>
+                          <div className="bar-row__label">{c.chapter}</div>
+                          <div className="small" style={{ textAlign: "right" }}>
+                            {c.covered ? (
+                              <span className="tag tag--green">{c.questionsMapped} Q mapped</span>
+                            ) : (
+                              <span className="tag">Not tested</span>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 ) : (
                   <div className="drawer__section">

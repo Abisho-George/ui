@@ -3,10 +3,26 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
-import { subjects, type FullRosterStudent } from "@/lib/avai-mock-data";
+import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
+import { analysedTests, attentionFor, mainBlockerFor, pctFor, subjects, type FullRosterStudent } from "@/lib/avai-mock-data";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
+
+/** Movement against the previous analysed test. `null` means there is no
+ * earlier test to compare with — shown as an em dash, never as "0". */
+export function DeltaCell({ delta, suffix = "pt" }: { delta: number | null; suffix?: string }) {
+  if (delta === null) return <span className="muted">—</span>;
+  if (delta === 0) return <span className="muted">no change</span>;
+  const up = delta > 0;
+  return (
+    <span className="delta" data-dir={up ? "up" : "down"}>
+      {up ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+      {up ? "+" : "−"}
+      {Math.abs(delta)}
+      {suffix}
+    </span>
+  );
+}
 
 type QuickFilter = "all" | "top10" | "attention" | "critical";
 
@@ -28,12 +44,16 @@ export function StudentRosterTable({
   testStatus,
   testName,
   fillHeight = false,
+  leadingFilters,
 }: {
   roster: FullRosterStudent[];
   testKey: string;
   section: string;
   testStatus: "Analysed" | "Scheduled";
   testName?: string;
+  /** Extra controls rendered in the same filter row (the class page puts
+   * its Test picker here so both selects sit on one line). */
+  leadingFilters?: React.ReactNode;
   /** Card + table grow to fill the parent's remaining height (for the
    * single-screen test-sheet page) instead of capping at a fixed height. */
   fillHeight?: boolean;
@@ -42,27 +62,42 @@ export function StudentRosterTable({
   const [subjectFilter, setSubjectFilter] = useState("All");
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
 
+  // The test before this one, so the table can show movement rather than
+  // a standing figure with no context.
+  const prevTestKey = useMemo(() => {
+    const i = analysedTests.findIndex((t) => t.key === testKey);
+    return i > 0 ? analysedTests[i - 1].key : null;
+  }, [testKey]);
+
   const rows = useMemo(() => {
     if (testStatus !== "Analysed") return [];
-    const withScore = roster.map((s) => {
-      const testScores = s.scores[testKey];
-      const pct =
-        subjectFilter === "All"
-          ? (subjects.reduce((sum, subj) => sum + testScores[subj].scored / testScores[subj].outOf, 0) / subjects.length) * 100
-          : (testScores[subjectFilter].scored / testScores[subjectFilter].outOf) * 100;
-      return { student: s, pct: Math.round(pct) };
-    });
+    const withScore = roster.map((s) => ({
+      student: s,
+      pct: Math.round(pctFor(s, testKey, subjectFilter)),
+      delta: prevTestKey ? Math.round(pctFor(s, testKey, subjectFilter) - pctFor(s, prevTestKey, subjectFilter)) : null,
+      attention: attentionFor(s, testKey),
+      blocker: mainBlockerFor(s, testKey),
+    }));
+
     let filtered = withScore;
-    if (quickFilter === "attention") filtered = filtered.filter((r) => r.student.attention !== "On Track");
-    if (quickFilter === "critical") filtered = filtered.filter((r) => r.student.attention === "Intervention");
-    filtered = [...filtered].sort((a, b) => (quickFilter === "top10" ? b.pct - a.pct : Number(a.student.rollNo) - Number(b.student.rollNo)));
+    if (quickFilter === "attention") filtered = filtered.filter((r) => r.attention !== "On Track");
+    if (quickFilter === "critical") filtered = filtered.filter((r) => r.attention === "Intervention");
+
+    // Top 10 is best-first; the two risk presets are worst-first, because
+    // that's the order you'd actually work down the list in.
+    filtered = [...filtered].sort((a, b) => {
+      if (quickFilter === "top10") return b.pct - a.pct;
+      if (quickFilter === "attention" || quickFilter === "critical") return a.pct - b.pct;
+      return Number(a.student.rollNo) - Number(b.student.rollNo);
+    });
     if (quickFilter === "top10") filtered = filtered.slice(0, 10);
     return filtered;
-  }, [roster, testKey, testStatus, subjectFilter, quickFilter]);
+  }, [roster, testKey, prevTestKey, testStatus, subjectFilter, quickFilter]);
 
   return (
     <div style={fillHeight ? { display: "flex", flexDirection: "column", flex: 1, minHeight: 0 } : undefined}>
       <div className="filterbar" style={{ marginBottom: 0, flex: "0 0 auto" }}>
+        {leadingFilters}
         <div className="filter">
           <label htmlFor="subject-filter">Subject</label>
           <select id="subject-filter" className="select" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
@@ -95,6 +130,7 @@ export function StudentRosterTable({
                   <th>Roll</th>
                   <th>Student</th>
                   <th className="num">{subjectFilter === "All" ? "Overall" : subjectFilter}</th>
+                  <th className="num">vs last</th>
                   <th>Main blocker</th>
                   <th>Attention</th>
                   <th></th>
@@ -103,21 +139,24 @@ export function StudentRosterTable({
               <tbody>
                 {rows.length === 0 && (
                   <tr>
-                    <td colSpan={6}>
+                    <td colSpan={7}>
                       <EvidenceState kind="early" compact>
                         No students match this filter.
                       </EvidenceState>
                     </td>
                   </tr>
                 )}
-                {rows.map(({ student: s, pct }) => (
+                {rows.map(({ student: s, pct, delta, attention, blocker }) => (
                   <tr key={s.id} onClick={() => router.push(`/principal/classes/${section}/${s.id}`)}>
                     <td className="muted">{s.rollNo}</td>
                     <td className="strong">{s.name}</td>
                     <td className="num">{pct}%</td>
-                    <td>{s.mainBlocker}</td>
+                    <td className="num">
+                      <DeltaCell delta={delta} />
+                    </td>
+                    <td>{blocker}</td>
                     <td>
-                      <AttentionPill level={s.attention} />
+                      <AttentionPill level={attention} />
                     </td>
                     <td style={{ textAlign: "right" }}>
                       <Link href={`/principal/classes/${section}/${s.id}`} className="btn btn--sm" onClick={(e) => e.stopPropagation()}>

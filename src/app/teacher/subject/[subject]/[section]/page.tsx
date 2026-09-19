@@ -5,13 +5,11 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { classRoster, findings, subjectSectionSnapshot } from "@/lib/avai-mock-data";
+import { findings, latestTest, rosterFor, subjectSnapshotFor } from "@/lib/avai-mock-data";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { FindingCard } from "@/components/FindingCard";
 import { MarksEntryGrid } from "@/components/MarksEntryGrid";
-
-const subjectFamily: Record<string, string[]> = { Science: ["Physics", "Chemistry", "Science"] };
 
 /** §6.3 Subject view — one subject, one section, with an Enter Marks tab. */
 export default function SubjectView() {
@@ -24,10 +22,9 @@ export default function SubjectView() {
   const allowed = user?.role === "teacher" && user.assignments.some((a) => a.type === "subject" && a.subject === subject && a.sections.includes(section));
   if (!allowed) return <EvidenceState kind="cause">You are not assigned to {subject} for {section}.</EvidenceState>;
 
-  const snap = subjectSectionSnapshot[subject];
-  const family = subjectFamily[subject] ?? [subject];
-  const subjectFindings = findings.filter((f) => family.includes(f.subject));
-  const roster = classRoster.filter((s) => s.section === section);
+  const snap = subjectSnapshotFor(subject, section, latestTest.key);
+  const subjectFindings = findings.filter((f) => f.subject === subject);
+  const roster = rosterFor(section, latestTest.key);
 
   return (
     <>
@@ -35,7 +32,9 @@ export default function SubjectView() {
       <h1 className="page-title" style={{ marginTop: 4 }}>
         {subject} · {section}
       </h1>
-      <p className="page-sub">{snap ? `Top gap: ${snap.topGap}` : "No subject snapshot in this dataset."}</p>
+      <p className="page-sub">
+        After {latestTest.name} · top gap: {snap.topGap}
+      </p>
 
       <div className="tabs" role="tablist" style={{ marginTop: 18 }}>
         <button role="tab" aria-selected={tab === "insights"} className={`tab ${tab === "insights" ? "tab--active" : ""}`} onClick={() => setTab("insights")}>
@@ -48,24 +47,25 @@ export default function SubjectView() {
 
       {tab === "insights" ? (
         <>
-          {snap && (
-            <div className="grid grid--3" style={{ marginTop: 18 }}>
-              <div className="stat">
-                <div className="stat__label">Marks tested</div>
-                <div className="stat__value">{snap.marksTested}</div>
-              </div>
-              <div className="stat">
-                <div className="stat__label">Avg attainment</div>
-                <div className="stat__value">
-                  {snap.avgAttainment} <span className="small muted" style={{ fontWeight: 500 }}>/ {snap.marksTested}</span>
-                </div>
-              </div>
-              <div className="stat">
-                <div className="stat__label">At expected level</div>
-                <div className="stat__value">{snap.atExpectedLevelPct}%</div>
+          <div className="grid grid--3" style={{ marginTop: 18 }}>
+            <div className="stat">
+              <div className="stat__label">Marks tested</div>
+              <div className="stat__value">{snap.marksTested}</div>
+            </div>
+            <div className="stat">
+              <div className="stat__label">Avg attainment</div>
+              <div className="stat__value">
+                {snap.avgAttainment} <span className="small muted" style={{ fontWeight: 500 }}>/ {snap.marksTested}</span>
               </div>
             </div>
-          )}
+            <div className="stat">
+              <div className="stat__label">At expected level</div>
+              <div className="stat__value">
+                {snap.atExpectedLevelPct}%
+                <span className="small muted" style={{ fontWeight: 400 }}> of {roster.length}</span>
+              </div>
+            </div>
+          </div>
 
           <section className="section">
             <div className="section__head">
@@ -89,7 +89,7 @@ export default function SubjectView() {
               </h2>
             </div>
             <div className="card">
-              <div className="table-wrap">
+              <div className="table-wrap table-wrap--scroll">
                 <table className="table">
                   <thead>
                     <tr>

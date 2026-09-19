@@ -10,9 +10,12 @@ import type { BoardUrgency, Confidence } from "@/lib/avai-mock-data";
  *   Confidence → 3-dot meter, cool blue ramp
  */
 
-export function AttentionPill({ level }: { level: string }) {
+/** `level` drives the colour; `label` overrides the text when the bare
+ * level would be ambiguous (a class-level "High" reads as high-performing
+ * unless it says what is high). */
+export function AttentionPill({ level, label }: { level: string; label?: string }) {
   const key = level.toLowerCase().replace(/\s+/g, "");
-  return <span className={`attn attn--${key}`}>{level}</span>;
+  return <span className={`attn attn--${key}`}>{label ?? level}</span>;
 }
 
 const urgencyLabel: Record<BoardUrgency, string> = {

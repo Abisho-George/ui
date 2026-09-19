@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, BookOpen, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth";
-import { assessmentContext, classSummary, subjectSectionSnapshot } from "@/lib/avai-mock-data";
+import { assessmentContext, classSummary, latestTest, subjectSnapshotFor } from "@/lib/avai-mock-data";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 
@@ -41,7 +41,7 @@ export default function TeacherHome() {
                     <div className="card__body">
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <h3 style={{ fontSize: 18 }}>Class {a.section}</h3>
-                        <AttentionPill level={s.attention} />
+                        <AttentionPill level={s.attention} label={`${s.attention} risk`} />
                       </div>
                       <div className="grid grid--2" style={{ marginTop: 12 }}>
                         <div>
@@ -81,22 +81,31 @@ export default function TeacherHome() {
             <div style={{ display: "grid", gap: 12 }}>
               {subjectAssignments.map((a) => {
                 if (a.type !== "subject") return null;
-                const snap = subjectSectionSnapshot[a.subject];
                 return (
                   <div className="card" key={a.subject}>
                     <div className="card__body">
                       <h3 style={{ fontSize: 18 }}>{a.subject}</h3>
-                      {snap && (
-                        <div className="small muted" style={{ marginTop: 4 }}>
-                          {snap.marksTested} marks tested · avg {snap.avgAttainment} · {snap.atExpectedLevelPct}% at expected level
-                        </div>
-                      )}
-                      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
-                        {a.sections.map((s) => (
-                          <Link key={s} href={`/teacher/subject/${encodeURIComponent(a.subject)}/${s}`} className="btn btn--sm">
-                            {s} <ArrowRight size={12} />
-                          </Link>
-                        ))}
+                      {/* One row per section: a subject average only means
+                          something against the class it was scored in. */}
+                      <div style={{ display: "grid", gap: 8, marginTop: 12 }}>
+                        {a.sections.map((sec) => {
+                          const snap = subjectSnapshotFor(a.subject, sec, latestTest.key);
+                          return (
+                            <Link
+                              key={sec}
+                              href={`/teacher/subject/${encodeURIComponent(a.subject)}/${sec}`}
+                              className="subject-row"
+                            >
+                              <div>
+                                <div className="strong">{sec}</div>
+                                <div className="small muted">
+                                  avg {snap.avgAttainment} / {snap.marksTested} · {snap.atExpectedLevelPct}% at expected level · {snap.topGap}
+                                </div>
+                              </div>
+                              <ArrowRight size={14} className="muted" />
+                            </Link>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

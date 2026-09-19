@@ -34,9 +34,10 @@ export function MarksEntryGrid({ subject, roster, scopeLabel }: { subject: strin
     return questions.reduce((sum, q) => sum + (Number(row[q.key]) || 0), 0);
   }
 
+  const enteredCount = roster.filter((s) => questions.some((q) => (marks[s.id]?.[q.key] ?? "") !== "")).length;
+
   function save() {
-    const entered = roster.filter((s) => questions.some((q) => (marks[s.id]?.[q.key] ?? "") !== "")).length;
-    setToast(`Saved marks for ${entered} of ${roster.length} students · ${scopeLabel} (local only).`);
+    setToast(`Saved marks for ${enteredCount} of ${roster.length} students · ${scopeLabel} (local only).`);
   }
 
   if (!questions.length) {
@@ -57,17 +58,20 @@ export function MarksEntryGrid({ subject, roster, scopeLabel }: { subject: strin
             <p>No students on record for this section in this demo dataset.</p>
           </div>
         ) : (
-          <div className="table-wrap">
+          <div className="table-wrap table-wrap--scroll">
             <table className="table">
               <thead>
                 <tr>
                   <th>Roll</th>
                   <th>Student</th>
                   {questions.map((q) => (
-                    <th key={q.key} className="num">
+                    <th key={q.key} className="num" title={q.chapter}>
                       {q.label}
                       <div className="muted" style={{ fontWeight: 400 }}>
                         /{q.maxMarks}
+                      </div>
+                      <div className="muted" style={{ fontWeight: 400, fontSize: 10.5, maxWidth: 92, whiteSpace: "normal" }}>
+                        {q.chapter}
                       </div>
                     </th>
                   ))}
@@ -104,7 +108,9 @@ export function MarksEntryGrid({ subject, roster, scopeLabel }: { subject: strin
           </div>
         )}
         <div className="card__foot" style={{ justifyContent: "space-between" }}>
-          <span className="small muted">Marks entered here are held in local state for this demo and reset on reload.</span>
+          <span className="small muted">
+            {enteredCount} of {roster.length} students started · held in local state for this demo and reset on reload.
+          </span>
           <button className="btn btn--primary btn--sm" onClick={save} disabled={roster.length === 0}>
             <Save size={13} /> Save marks
           </button>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { assessmentContext, classRoster, pageHeaders, sections, subjects } from "@/lib/avai-mock-data";
+import { assessmentContext, pageHeaders, rosterFor, sections, subjects } from "@/lib/avai-mock-data";
 import { MarksEntryGrid } from "@/components/MarksEntryGrid";
 
 /** §5.10 Enter Marks. Filters select assessment/section/subject; the grid
@@ -11,7 +11,7 @@ export default function EnterMarksPage() {
   const [section, setSection] = useState<string>(sections[0]);
   const [subject, setSubject] = useState<string>(subjects[0]);
 
-  const roster = useMemo(() => classRoster.filter((s) => s.section === section), [section]);
+  const roster = useMemo(() => rosterFor(section), [section]);
 
   return (
     <>

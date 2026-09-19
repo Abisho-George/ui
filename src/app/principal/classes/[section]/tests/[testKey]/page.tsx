@@ -4,9 +4,9 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronRight } from "lucide-react";
-import { classRosterFull, sectionComparison, subjects, testsConducted } from "@/lib/avai-mock-data";
+import { analysedTests, attentionFor, classAveragePct, classRosterFull, sectionComparison, subjects, testsConducted, topGapFor } from "@/lib/avai-mock-data";
 import { EvidenceState } from "@/components/EvidenceState";
-import { StudentRosterTable } from "@/components/StudentRosterTable";
+import { DeltaCell, StudentRosterTable } from "@/components/StudentRosterTable";
 
 /** Principal → Classes → section → one test. A single-screen "sheet": a
  * compact header (title + tiny KPI row, top right), a compact subject-wise
@@ -20,16 +20,33 @@ export default function ClassTestPage() {
   const roster = useMemo(() => classRosterFull[section] ?? [], [section]);
   const test = testsConducted.find((t) => t.key === testKey);
 
+  // The test before this one, so every figure on this sheet can show
+  // movement rather than a standing number with nothing to compare to.
+  const prevTestKey = useMemo(() => {
+    const i = analysedTests.findIndex((t) => t.key === testKey);
+    return i > 0 ? analysedTests[i - 1].key : null;
+  }, [testKey]);
+
+  const subjectAvgFor = useMemo(
+    () => (key: string, subj: string) =>
+      roster.length ? Math.round((roster.reduce((sum, s) => sum + s.scores[key][subj].scored / s.scores[key][subj].outOf, 0) / roster.length) * 100) : 0,
+    [roster]
+  );
+
   const subjectAverages = useMemo(() => {
     if (!test || test.status !== "Analysed" || roster.length === 0) return [];
-    return subjects.map((subj) => {
-      const pct = Math.round((roster.reduce((sum, s) => sum + s.scores[testKey][subj].scored / s.scores[testKey][subj].outOf, 0) / roster.length) * 100);
-      return { subject: subj, pct };
-    });
-  }, [roster, test, testKey]);
+    return subjects.map((subj) => ({
+      subject: subj,
+      pct: subjectAvgFor(testKey, subj),
+      delta: prevTestKey ? subjectAvgFor(testKey, subj) - subjectAvgFor(prevTestKey, subj) : null,
+    }));
+  }, [roster, test, testKey, prevTestKey, subjectAvgFor]);
 
-  const overallAvg = subjectAverages.length ? Math.round(subjectAverages.reduce((sum, s) => sum + s.pct, 0) / subjectAverages.length) : null;
-  const needAttentionCount = roster.filter((s) => s.attention !== "On Track").length;
+  const overallAvg = test?.status === "Analysed" ? Math.round(classAveragePct(section, testKey)) : null;
+  const overallDelta = prevTestKey ? Math.round(classAveragePct(section, testKey) - classAveragePct(section, prevTestKey)) : null;
+  const needAttentionCount = roster.filter((s) => attentionFor(s, testKey) !== "On Track").length;
+  const criticalCount = roster.filter((s) => attentionFor(s, testKey) === "Intervention").length;
+  const weakest = [...subjectAverages].sort((a, b) => a.pct - b.pct)[0];
 
   if (!summary || !test) {
     return <EvidenceState kind="early">No such test for {section} in this demo dataset.</EvidenceState>;
@@ -66,7 +83,10 @@ export default function ClassTestPage() {
             <div style={{ display: "flex", gap: 18, marginTop: 8, justifyContent: "flex-end" }}>
               <div style={{ textAlign: "right" }}>
                 <div className="stat__label">Class average</div>
-                <div className="stat__value stat__value--sm">{overallAvg}%</div>
+                <div className="stat__value stat__value--sm" style={{ display: "flex", alignItems: "baseline", justifyContent: "flex-end", gap: 6 }}>
+                  {overallAvg}%
+                  <DeltaCell delta={overallDelta} />
+                </div>
               </div>
               <div style={{ textAlign: "right" }}>
                 <div className="stat__label">Students</div>
@@ -75,6 +95,10 @@ export default function ClassTestPage() {
               <div style={{ textAlign: "right" }}>
                 <div className="stat__label">Need attention</div>
                 <div className="stat__value stat__value--sm">{needAttentionCount}</div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div className="stat__label">Critical</div>
+                <div className="stat__value stat__value--sm">{criticalCount}</div>
               </div>
             </div>
           )}
@@ -91,7 +115,10 @@ export default function ClassTestPage() {
             {subjectAverages.map((s) => (
               <div className="stat" key={s.subject}>
                 <div className="stat__label">{s.subject}</div>
-                <div className="stat__value stat__value--sm">{s.pct}%</div>
+                <div className="stat__value stat__value--sm" style={{ display: "flex", alignItems: "baseline", gap: 6 }}>
+                  {s.pct}%
+                  <DeltaCell delta={s.delta} />
+                </div>
                 <div className="bar" style={{ marginTop: 6 }}>
                   <div className={`bar__fill ${s.pct >= 78 ? "bar__fill--green" : s.pct >= 65 ? "bar__fill--gold" : "bar__fill--risk"}`} style={{ width: `${s.pct}%` }} />
                 </div>
@@ -99,7 +126,14 @@ export default function ClassTestPage() {
             ))}
           </div>
 
-          <div style={{ marginTop: 14, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+          {weakest && (
+            <p className="small muted" style={{ marginTop: 10, flex: "0 0 auto" }}>
+              Weakest subject in this paper: <strong>{weakest.subject}</strong> at {weakest.pct}%. Biggest gap across the class:{" "}
+              <strong>{topGapFor(section, testKey)}</strong>.
+            </p>
+          )}
+
+          <div style={{ marginTop: 10, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
             <StudentRosterTable roster={roster} testKey={testKey} section={section} testStatus="Analysed" testName={test.name} fillHeight />
           </div>
         </>
