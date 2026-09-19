@@ -220,6 +220,16 @@ table { border-collapse: collapse; width: 100%; }
   border-bottom: 1px solid var(--line);
   margin-bottom: 8px;
 }
+
+/* Freezes the roster's heading + filters + quick-filter tabs together as
+   one block once page scroll carries them to the top of the viewport;
+   the table underneath keeps its own internal scroll (.table-wrap--scroll)
+   so scrolling past this point moves the rows, not the frozen controls. */
+.roster-sticky {
+  position: sticky; top: 0; z-index: 16;
+  background: var(--brand-cream);
+  padding-top: 4px;
+}
 .filter { display: flex; flex-direction: column; gap: 3px; }
 .filter label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
 .select {

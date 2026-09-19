@@ -45,6 +45,7 @@ export function StudentRosterTable({
   testName,
   fillHeight = false,
   leadingFilters,
+  heading,
 }: {
   roster: FullRosterStudent[];
   testKey: string;
@@ -57,6 +58,11 @@ export function StudentRosterTable({
   /** Card + table grow to fill the parent's remaining height (for the
    * single-screen test-sheet page) instead of capping at a fixed height. */
   fillHeight?: boolean;
+  /** Rendered above the filters, inside the same frozen block (e.g. the
+   * "Students in X-D" heading) — so it freezes with the filters and tabs
+   * rather than scrolling away above them. Ignored in fillHeight mode,
+   * where the page itself never scrolls. */
+  heading?: React.ReactNode;
 }) {
   const router = useRouter();
   const [subjectFilter, setSubjectFilter] = useState("All");
@@ -96,25 +102,28 @@ export function StudentRosterTable({
 
   return (
     <div style={fillHeight ? { display: "flex", flexDirection: "column", flex: 1, minHeight: 0 } : undefined}>
-      <div className="filterbar" style={{ marginBottom: 0, flex: "0 0 auto" }}>
-        {leadingFilters}
-        <div className="filter">
-          <label htmlFor="subject-filter">Subject</label>
-          <select id="subject-filter" className="select" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
-            <option value="All">All subjects</option>
-            {subjects.map((s) => (
-              <option key={s}>{s}</option>
-            ))}
-          </select>
+      <div className={fillHeight ? undefined : "roster-sticky"} style={{ flex: "0 0 auto" }}>
+        {!fillHeight && heading}
+        <div className="filterbar" style={{ marginBottom: 0 }}>
+          {leadingFilters}
+          <div className="filter">
+            <label htmlFor="subject-filter">Subject</label>
+            <select id="subject-filter" className="select" value={subjectFilter} onChange={(e) => setSubjectFilter(e.target.value)}>
+              <option value="All">All subjects</option>
+              {subjects.map((s) => (
+                <option key={s}>{s}</option>
+              ))}
+            </select>
+          </div>
         </div>
-      </div>
 
-      <div className="tabs" role="tablist" style={{ marginTop: 14, flex: "0 0 auto" }}>
-        {(["all", "top10", "attention", "critical"] as QuickFilter[]).map((k) => (
-          <button key={k} role="tab" aria-selected={quickFilter === k} className={`tab ${quickFilter === k ? "tab--active" : ""}`} onClick={() => setQuickFilter(k)}>
-            {quickFilterLabel[k]}
-          </button>
-        ))}
+        <div className="tabs" role="tablist" style={{ marginTop: 14 }}>
+          {(["all", "top10", "attention", "critical"] as QuickFilter[]).map((k) => (
+            <button key={k} role="tab" aria-selected={quickFilter === k} className={`tab ${quickFilter === k ? "tab--active" : ""}`} onClick={() => setQuickFilter(k)}>
+              {quickFilterLabel[k]}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="card" style={fillHeight ? { marginTop: 14, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } : { marginTop: 14 }}>

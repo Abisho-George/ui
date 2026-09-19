@@ -200,32 +200,31 @@ export default function ClassDetailPage() {
       </section>
 
       <section className="section">
-        <div className="section__head">
-          <h2 className="section-q">Students in {section}</h2>
-        </div>
-
-        <div style={{ marginTop: 14 }}>
-          <StudentRosterTable
-            roster={roster}
-            testKey={testKey}
-            section={section}
-            testStatus={test?.status ?? "Scheduled"}
-            testName={test?.name}
-            leadingFilters={
-              <div className="filter">
-                <label htmlFor="test-filter">Test</label>
-                <select id="test-filter" className="select" value={testKey} onChange={(e) => setTestKey(e.target.value)}>
-                  {testsConducted.map((t) => (
-                    <option key={t.key} value={t.key}>
-                      {t.name}
-                      {t.status !== "Analysed" ? " (not yet conducted)" : ""}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            }
-          />
-        </div>
+        <StudentRosterTable
+          roster={roster}
+          testKey={testKey}
+          section={section}
+          testStatus={test?.status ?? "Scheduled"}
+          testName={test?.name}
+          heading={
+            <div className="section__head">
+              <h2 className="section-q">Students in {section}</h2>
+            </div>
+          }
+          leadingFilters={
+            <div className="filter">
+              <label htmlFor="test-filter">Test</label>
+              <select id="test-filter" className="select" value={testKey} onChange={(e) => setTestKey(e.target.value)}>
+                {testsConducted.map((t) => (
+                  <option key={t.key} value={t.key}>
+                    {t.name}
+                    {t.status !== "Analysed" ? " (not yet conducted)" : ""}
+                  </option>
+                ))}
+              </select>
+            </div>
+          }
+        />
       </section>
 
       <AnimatePresence>
