@@ -17,7 +17,7 @@ npm run build
 `/login` shows the real login form design (School Staff / Student tabs) and a
 clearly labelled **DEV LOGIN** block. Only the DEV LOGIN buttons sign you in:
 
-- Principal — Mrs. Kavitha Rajan → `/principal/boardx`
+- Principal — Mrs. Kavitha Rajan → `/principal/classes`
 - Teacher — Mrs. Lakshmi (class X-A, Maths X-A/X-B) → `/teacher/home`
 - Teacher — Mr. Ravi (Science X-A/X-C) → `/teacher/home`
 - Student — Aditi R. → `/student/home`
@@ -28,9 +28,8 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
 
 | Role | Route | Spec |
 | --- | --- | --- |
-| Principal | `/principal/boardx` | §5 BoardX: tabs, sticky filters, 11 sections, finding cards, drawers |
-| Principal | `/principal/classes` | Classes overview — one card per section (students, attainment, findings) |
-| Principal | `/principal/classes/[section]` | Class detail: KPIs, findings affecting the class, searchable student roster |
+| Principal | `/principal/classes` | Classes overview — one card per section (students, attainment, need-attention count) |
+| Principal | `/principal/classes/[section]` | Class detail: KPIs, the test calendar for this class, and the full 48-student roster with test/subject/quick filters (All Students, Top 10, Need Attention), scrollable in a fixed-height table |
 | Principal | `/principal/classes/[section]/[studentId]` | Student detail with a test-wise assessment/subject picker, rendering the same one-page BoardX report a student sees themselves (falls back to summary intelligence, then an honest empty state) |
 | Principal | `/principal/teachers` | §5.11 Manage Teachers (add / edit / revoke, local state) |
 | Principal | `/principal/papers` | §5.9 Question Papers (simulated upload + blueprint mapping drawer, local state) |
@@ -52,6 +51,13 @@ The chosen role is kept in `localStorage` so reloads stay signed in.
   Attention = solid pill, Board urgency = outlined chip with a flame,
   Confidence = three-dot meter.
 - Empty / limited-evidence states are first-class (`EvidenceState`).
+- The standalone "BoardX Intelligence" page has been removed — the Classes
+  flow (Overview → Class → Student) is the one navigation into this data
+  now. The Classes → Class detail roster is a full, deterministically
+  generated 240-student dataset (`classRosterFull` in the mock-data file,
+  48 per section) rather than a hand-authored sample; a handful of students
+  (Aditi, Divya, Riya) are pinned at their original roll numbers so their
+  richer report / intelligence drill-downs keep working.
 - The mascot and logo (`src/components/Mascot.tsx`) use the real AVAI brand
   artwork (`public/mascot/`, `public/brand/`), cropped from the brand sheet.
   `<Mascot>` keeps the spec's pose vocabulary (hello / improve / achieve /

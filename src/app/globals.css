@@ -308,6 +308,8 @@ table { border-collapse: collapse; width: 100%; }
 
 /* ---------- tables ---------- */
 .table-wrap { overflow-x: auto; }
+.table-wrap--scroll { overflow-y: auto; max-height: 560px; }
+.table-wrap--scroll thead th { position: sticky; top: 0; background: var(--surface); z-index: 1; box-shadow: 0 1px 0 var(--line); }
 .table th {
   text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted);
   padding: 10px 14px; border-bottom: 1px solid var(--line); font-weight: 600; white-space: nowrap;

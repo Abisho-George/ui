@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { ChevronRight } from "lucide-react";
-import { classRoster, individualStudentIntelligence, studentReportDetail, studentReportsByStudent, type BoardUrgency, type Confidence } from "@/lib/avai-mock-data";
+import { useParams, useRouter } from "next/navigation";
+import { ArrowLeft, ChevronRight } from "lucide-react";
+import { classRosterFull, individualStudentIntelligence, studentReportDetail, studentReportsByStudent, type BoardUrgency, type Confidence } from "@/lib/avai-mock-data";
 import { AttentionPill, ConfidenceMeter, UrgencyChip } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { BoardXReportView } from "@/components/BoardXReportView";
@@ -25,7 +25,8 @@ interface SubjectRow {
  * student has only summary-level intelligence, or none yet. */
 export default function PrincipalStudentPage() {
   const { section, studentId } = useParams<{ section: string; studentId: string }>();
-  const student = classRoster.find((s) => s.id === studentId);
+  const router = useRouter();
+  const student = (classRosterFull[section] ?? []).find((s) => s.id === studentId);
 
   const reportIds = studentReportsByStudent[studentId] ?? [];
   const reports = reportIds.map((id) => ({ id, report: studentReportDetail[id] })).filter((r) => r.report);
@@ -39,6 +40,9 @@ export default function PrincipalStudentPage() {
 
   return (
     <>
+      <button className="btn btn--ghost btn--sm" onClick={() => router.back()} style={{ marginBottom: 10 }}>
+        <ArrowLeft size={13} /> Back
+      </button>
       <div className="small muted" style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 4 }}>
         <Link href="/principal/classes" className="btn--link">
           Classes

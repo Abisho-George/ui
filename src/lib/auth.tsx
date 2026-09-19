@@ -42,7 +42,7 @@ export function resolveUser(role: Role, userId: string): CurrentUser | null {
 }
 
 export function homeFor(role: Role) {
-  return role === "principal" ? "/principal/boardx" : role === "teacher" ? "/teacher/home" : "/student/home";
+  return role === "principal" ? "/principal/classes" : role === "teacher" ? "/teacher/home" : "/student/home";
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

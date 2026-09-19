@@ -104,51 +104,8 @@ export const assessmentContext = {
   ],
 };
 
-// ============================================================
-// §5.3 (1) Assessment Diagnostic Quality — ✅ shape matches
-// GET /reports/paper/{assessment_id}
-// ============================================================
-
-export const diagnosticQuality = {
-  strength: "MODERATE" as "STRONG" | "MODERATE" | "LIMITED",
-  blueprintCoveragePct: 82,
-  chaptersCovered: 8,
-  chaptersTotal: 9,
-  applicationQuestionsPct: 22,
-  applicationExpectationPct: 30,
-  higherOrderQuestionsPct: 10,
-  higherOrderExpectationPct: 20,
-  interpretation:
-    "This paper provides strong evidence for conceptual understanding, but application readiness is under-tested. Application-related findings should therefore be interpreted with greater caution.",
-};
-
-// ============================================================
-// §5.3 (2) Standard Performance Snapshot — ✅ shape matches
-// GET /reports/cohort/{assessment_id} band_counts/band_pct
-// ============================================================
-
-export const standardPerformance = {
-  basedOn: "Unit Test 2",
-  bands: [
-    { label: "Full mastery of tested Board marks", students: 18, filterKey: "full" },
-    { label: "80%+ attainment", students: 62, filterKey: "80plus" },
-    { label: "60–80% attainment", students: 96, filterKey: "60to80" },
-    { label: "Below 60%", students: 64, filterKey: "below60" },
-  ],
-};
-
-// ============================================================
-// §5.3 (3) Subject Board Conversion Intelligence — ✅ shape matches
-// GET /reports/cohort/{assessment_id} subject_bars
-// ============================================================
-
-export const subjectConversion = [
-  { subject: "Mathematics", marksTested: 17, avgAttainment: 12.4, fullMarksCount: 12, eightyPlusCount: 74, belowExpectedCount: 154, atExpectedLevelPct: 36 },
-  { subject: "Physics", marksTested: 10, avgAttainment: 7.1, fullMarksCount: 9, eightyPlusCount: 58, belowExpectedCount: 130, atExpectedLevelPct: 42 },
-  { subject: "Chemistry", marksTested: 10, avgAttainment: 8.2, fullMarksCount: 14, eightyPlusCount: 71, belowExpectedCount: 101, atExpectedLevelPct: 58 },
-  { subject: "English", marksTested: 15, avgAttainment: 12.6, fullMarksCount: 22, eightyPlusCount: 96, belowExpectedCount: 70, atExpectedLevelPct: 71 },
-  { subject: "Social Science", marksTested: 20, avgAttainment: 16.8, fullMarksCount: 19, eightyPlusCount: 88, belowExpectedCount: 77, atExpectedLevelPct: 68 },
-];
+// Subject -> marks tested on Unit Test 2, used as the max for generated roster scores.
+const subjectMaxMarks: Record<string, number> = { Mathematics: 17, Physics: 10, Chemistry: 10, English: 15, "Social Science": 20 };
 
 // ============================================================
 // The reusable "finding" unit (§5.4) — used across Marks Loss,
@@ -245,63 +202,7 @@ export const findings: Finding[] = [
 ];
 
 // ============================================================
-// §5.3 (6) Student Potential Ladder — 🔧 BACKEND REQUIRED (Index #4)
-// ============================================================
-
-export const potentialLadder = {
-  potentialLabel: "17 / 17 Potential",
-  atPotential: 12,
-  within1Mark: 28,
-  within2Marks: 41,
-  mostCommonBlocker: "Quadratic Equations — Application",
-};
-
-// ============================================================
-// §5.3 (7) Performance Band Opportunity — 🔧 BACKEND REQUIRED (Index #4)
-// Includes the required "no dominant common blocker" state.
-// ============================================================
-
-export const performanceBandOpportunity = [
-  { band: "Full mastery", students: 18, nearNextBand: null, commonBlocker: null },
-  { band: "80%+ attainment", students: 62, nearNextBand: 14, commonBlocker: "Quadratics Application" },
-  { band: "60–80% attainment", students: 96, nearNextBand: 22, commonBlocker: null }, // "No dominant common blocker"
-  { band: "Below 60%", students: 64, nearNextBand: 9, commonBlocker: "Algebra foundations" },
-];
-
-// ============================================================
-// §5.3 (8) Risk Intelligence
-// ============================================================
-
-export const riskIntelligence = {
-  highPotentialGap: {
-    students: 34,
-    performance: "Close to next attainment band",
-    commonPattern: "Students know the concept but lose application marks",
-    topBlockers: ["Mathematics Application", "Physics Numericals"],
-    confidence: "HIGH" as Confidence,
-  },
-  highAcademicRisk: {
-    students: 28,
-    performance: "Repeated loss across tested areas",
-    commonGaps: ["Algebra foundations", "Physics application", "Chemistry reasoning"],
-    confidence: "MEDIUM" as Confidence,
-  },
-};
-
-// ============================================================
-// §5.3 (9) Subject Anomaly Intelligence — 🔧 pattern labels are
-// BACKEND REQUIRED (Index #6); % affected / confidence are real shapes.
-// ============================================================
-
-export const subjectAnomalies = [
-  { subject: "Physics", topic: "Electricity", pattern: "Application failure", pctAffected: 62, confidence: "HIGH" as Confidence },
-  { subject: "Chemistry", topic: "Acids & Bases", pattern: "Concept gap", pctAffected: 54, confidence: "HIGH" as Confidence },
-  { subject: "Mathematics", topic: "Quadratics", pattern: "Problem solving", pctAffected: 48, confidence: "MEDIUM" as Confidence },
-  { subject: "Physics", topic: "Light", pattern: "Loss spread across topic", pctAffected: 35, confidence: "HIGH" as Confidence },
-];
-
-// ============================================================
-// §5.3 (10) Section Comparison
+// §5.3 (10) Section Comparison — still used by the Classes overview/detail
 // ============================================================
 
 export const sectionComparison = [
@@ -310,24 +211,6 @@ export const sectionComparison = [
   { section: "X-C", students: 48, overallAttainment: 78, highPriorityFindings: 2, attention: "Medium" },
   { section: "X-D", students: 48, overallAttainment: 68, highPriorityFindings: 5, attention: "High" },
   { section: "X-E", students: 48, overallAttainment: 76, highPriorityFindings: 3, attention: "Medium" },
-];
-
-export const sectionComparisonInsight = {
-  headline: "X-D Requires Attention",
-  detail:
-    "Electricity Application performance is 31 percentage points below X-A on the same tested competency.",
-  confidence: "HIGH" as Confidence,
-};
-
-// ============================================================
-// §5.3 (11) Recommended Intervention Plan — 🔧 priority ranking/score
-// is BACKEND REQUIRED (Index #5); the underlying findings are real.
-// ============================================================
-
-export const interventionPlan = [
-  { priority: 1, findingId: "find_quadratics", why: "Large number of students affected + meaningful marks exposure + strong Board recurrence + high-confidence evidence." },
-  { priority: 2, findingId: "find_electricity", why: "High student impact and strong, consistent Board recurrence." },
-  { priority: "investigation_required", findingId: "find_light", why: "Problem confirmed, cause not localized — recommend manual answer-script review before prescribing an intervention." },
 ];
 
 // ============================================================
@@ -346,16 +229,9 @@ export const emptyStates = {
 };
 
 // ============================================================
-// §5.6 Student Intelligence table + individual drill-down
+// Individual student drill-down (summary tier — used when a full
+// one-page report isn't available for that student).
 // ============================================================
-
-export const studentIntelligenceTable = [
-  { rank: 1, name: "Aarav", section: "X-A", attainment: "17/17", marksLost: 0, mainBlocker: "—", attention: "On Track" },
-  { rank: 2, name: "Riya", section: "X-C", attainment: "16/17", marksLost: 1, mainBlocker: "Physics", attention: "Watch" },
-  { rank: 3, name: "Rahul", section: "X-B", attainment: "12/17", marksLost: 5, mainBlocker: "Maths Application", attention: "Intervention" },
-  { rank: 4, name: "Aditi R.", section: "X-A", attainment: "16/17", marksLost: 1, mainBlocker: "—", attention: "On Track" },
-  { rank: 5, name: "Divya", section: "X-D", attainment: "10/17", marksLost: 7, mainBlocker: "Electricity Numericals", attention: "Intervention" },
-];
 
 export const individualStudentIntelligence: Record<string, any> = {
   rahul: {
@@ -643,40 +519,6 @@ export const subjectSectionSnapshot: Record<string, { marksTested: number; avgAt
   "Social Science": { marksTested: 20, avgAttainment: 16.8, atExpectedLevelPct: 68, topGap: "Map work" },
 };
 
-// §5.3 filter bar options
-export const standardOptions = [{ label: "Class X", selectable: true }, { label: "Class IX", selectable: false }, { label: "Class XII", selectable: false }];
-
-// §5.3 (4) Marks loss — ordering of the finding cards for the overview
-export const marksLossFindingIds = ["find_quadratics", "find_electricity", "find_light", "find_carbon"];
-
-// §5.5 finding drawer — extra detail that is only needed in the drawer
-export const findingDetail: Record<string, { evidence: string[]; sectionBreakdown: { section: string; pct: number }[]; boardYears: string[]; questionsTested: number }> = {
-  find_quadratics: {
-    evidence: ["Q7 (3 marks) — 58% partial credit", "Q12 (4 marks) — 41% attempted, 19% full marks", "Concept MCQ Q2 — 87% correct"],
-    sectionBreakdown: [{ section: "X-A", pct: 41 }, { section: "X-B", pct: 66 }, { section: "X-C", pct: 55 }, { section: "X-D", pct: 72 }, { section: "X-E", pct: 58 }],
-    boardYears: ["2022", "2023", "2024", "2025"],
-    questionsTested: 3,
-  },
-  find_electricity: {
-    evidence: ["Q9 (3 marks) — 52% full marks on law statement", "Q9(b) numerical — 23% full marks", "Q15 numerical (5 marks) — avg 2.1"],
-    sectionBreakdown: [{ section: "X-A", pct: 38 }, { section: "X-B", pct: 49 }, { section: "X-C", pct: 52 }, { section: "X-D", pct: 69 }, { section: "X-E", pct: 47 }],
-    boardYears: ["2023", "2024", "2025"],
-    questionsTested: 2,
-  },
-  find_light: {
-    evidence: ["Loss distributed across Q4, Q8, Q11 with no dominant question", "No subtopic exceeds 30% of total loss", "No competency tier explains >25% of loss"],
-    sectionBreakdown: [{ section: "X-A", pct: 30 }, { section: "X-B", pct: 36 }, { section: "X-C", pct: 33 }, { section: "X-D", pct: 41 }, { section: "X-E", pct: 35 }],
-    boardYears: ["2022", "2024", "2025"],
-    questionsTested: 3,
-  },
-  find_carbon: {
-    evidence: ["Q6 reasoning (2 marks) — 61% partial credit"],
-    sectionBreakdown: [{ section: "X-A", pct: 22 }, { section: "X-B", pct: 31 }, { section: "X-C", pct: 28 }, { section: "X-D", pct: 35 }, { section: "X-E", pct: 30 }],
-    boardYears: ["2024"],
-    questionsTested: 1,
-  },
-};
-
 // §5.6 — student drill-down keyed by table row name (lower-case)
 individualStudentIntelligence.divya = {
   name: "Divya",
@@ -738,9 +580,9 @@ export const papersList: PaperRecord[] = [
     uploadedBy: "Mrs. Kavitha Rajan",
     uploadedAt: "2026-08-14",
     status: "Mapped",
-    blueprintCoveragePct: diagnosticQuality.blueprintCoveragePct,
-    chaptersCovered: diagnosticQuality.chaptersCovered,
-    chaptersTotal: diagnosticQuality.chaptersTotal,
+    blueprintCoveragePct: 82,
+    chaptersCovered: 8,
+    chaptersTotal: 9,
   },
   {
     id: "paper_ut1_maths",
@@ -873,3 +715,154 @@ export const studentReportsByStudent: Record<string, string[]> = {
 export const classTeacherBySection: Record<string, string> = Object.fromEntries(
   mockTeachers.flatMap((t) => t.assignments.filter((a) => a.type === "class").map((a) => [(a as { section: string }).section, t.name]))
 );
+
+// ============================================================
+// Full class rosters (48 students × 5 sections = 240) with two tests'
+// worth of per-subject scores, for the Classes → student table.
+// Deterministically generated (seeded per section, not Math.random on
+// every render) so the same names/numbers show up on every visit.
+// 🔧 BACKEND REQUIRED — this whole roster is dummy data.
+// ============================================================
+
+function mulberry32(seed: number) {
+  return function () {
+    seed |= 0;
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function seedFromString(s: string) {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0;
+  return h;
+}
+
+const firstNamePool = [
+  "Aarav", "Vivaan", "Aditya", "Vihaan", "Arjun", "Sai", "Reyansh", "Krishna", "Ishaan", "Rohan",
+  "Kabir", "Aryan", "Dhruv", "Karthik", "Rahul", "Nikhil", "Varun", "Yash", "Aniket", "Siddharth",
+  "Aditi", "Ananya", "Diya", "Ishita", "Kavya", "Meera", "Priya", "Riya", "Sneha", "Tanvi",
+  "Aarohi", "Anika", "Divya", "Gauri", "Isha", "Kritika", "Lavanya", "Nandini", "Pooja", "Shreya",
+  "Manoj", "Sanjay", "Farhan", "Aisha", "Zara", "Vikram", "Naveen", "Ritika",
+];
+const lastInitialPool = ["R.", "K.", "S.", "M.", "P.", "N.", "V.", "T.", "G.", "D.", "B.", "J.", "A.", "L."];
+
+const sectionMeanPct: Record<string, number> = { "X-A": 81, "X-B": 74, "X-C": 78, "X-D": 68, "X-E": 76 };
+
+const blockerPool: Record<string, string[]> = {
+  Mathematics: ["Quadratic Equations — Application", "Arithmetic Progressions", "Trigonometry Identities"],
+  Physics: ["Electricity — Numericals", "Light — Ray Diagrams"],
+  Chemistry: ["Chemical Equations", "Carbon Compounds"],
+  English: ["Reading Comprehension", "Grammar — Tenses"],
+  "Social Science": ["Map Work", "Economics — Numericals"],
+};
+
+export interface TestScore {
+  scored: number;
+  outOf: number;
+}
+export interface FullRosterStudent {
+  id: string;
+  rollNo: string;
+  name: string;
+  section: string;
+  attention: "On Track" | "Watch" | "Intervention";
+  mainBlocker: string;
+  scores: Record<string, Record<string, TestScore>>; // testKey -> subject -> score
+}
+
+function attentionFor(pct: number): FullRosterStudent["attention"] {
+  if (pct >= 75) return "On Track";
+  if (pct >= 55) return "Watch";
+  return "Intervention";
+}
+
+function generateSectionRoster(section: string, count: number): FullRosterStudent[] {
+  const rnd = mulberry32(seedFromString(section));
+  const mean = sectionMeanPct[section] ?? 75;
+  const used = new Set<string>();
+  const students: FullRosterStudent[] = [];
+
+  for (let i = 1; i <= count; i++) {
+    const rollNo = String(i).padStart(2, "0");
+    let name = "";
+    do {
+      const fn = firstNamePool[Math.floor(rnd() * firstNamePool.length)];
+      const ln = lastInitialPool[Math.floor(rnd() * lastInitialPool.length)];
+      name = `${fn} ${ln}`;
+    } while (used.has(name));
+    used.add(name);
+
+    // Each student has their own skill level (wide spread around the
+    // section mean) so overall attainment doesn't collapse toward the
+    // mean the way averaging independently-random subjects would.
+    const studentSkill = mean + (rnd() - 0.5) * 44;
+
+    const scores: FullRosterStudent["scores"] = {};
+    let ut2Ratio = 0;
+    for (const testKey of ["unit_test_1", "unit_test_2"]) {
+      const testSkill = testKey === "unit_test_1" ? studentSkill - 3 : studentSkill;
+      scores[testKey] = {};
+      for (const subject of subjects) {
+        const max = subjectMaxMarks[subject];
+        const pct = Math.min(100, Math.max(20, testSkill + (rnd() - 0.5) * 16));
+        const scored = Math.max(0, Math.round((pct / 100) * max));
+        scores[testKey][subject] = { scored, outOf: max };
+        if (testKey === "unit_test_2") ut2Ratio += scored / max;
+      }
+    }
+    const overallPct = (ut2Ratio / subjects.length) * 100;
+    const attention = attentionFor(overallPct);
+
+    let mainBlocker = "—";
+    if (attention !== "On Track") {
+      let worstSubject: string = subjects[0];
+      let worstRatio = Infinity;
+      for (const subject of subjects) {
+        const s = scores.unit_test_2[subject];
+        const ratio = s.scored / s.outOf;
+        if (ratio < worstRatio) {
+          worstRatio = ratio;
+          worstSubject = subject;
+        }
+      }
+      const options = blockerPool[worstSubject] ?? [worstSubject];
+      mainBlocker = options[Math.floor(rnd() * options.length)];
+    }
+
+    students.push({ id: `student_${section.replace("-", "")}_${rollNo}`, rollNo, name, section, attention, mainBlocker, scores });
+  }
+  return students;
+}
+
+export const classRosterFull: Record<string, FullRosterStudent[]> = Object.fromEntries(sections.map((s) => [s, generateSectionRoster(s, 48)]));
+
+// Keep the hand-authored students (who have a real one-page report or an
+// individual-intelligence drill-down) at their original roll numbers, so
+// those flows keep working inside the full roster table.
+function overrideStudent(section: string, rollNo: string, patch: Partial<FullRosterStudent>) {
+  const roster = classRosterFull[section];
+  const idx = roster.findIndex((s) => s.rollNo === rollNo);
+  if (idx >= 0) roster[idx] = { ...roster[idx], ...patch };
+}
+overrideStudent("X-A", "01", { id: "student_aditi", name: "Aditi R.", attention: "On Track", mainBlocker: "—" });
+overrideStudent("X-C", "05", { id: "student_riya", name: "Riya", attention: "Watch", mainBlocker: "Physics — Light" });
+overrideStudent("X-D", "14", { id: "student_divya", name: "Divya", attention: "Intervention", mainBlocker: "Electricity — Numericals" });
+
+export interface ConductedTest {
+  key: string;
+  name: string;
+  date: string;
+  status: "Analysed" | "Scheduled";
+}
+
+/** Same test calendar for every section — only Unit Test 1 & 2 have marks entered so far. */
+export const testsConducted: ConductedTest[] = [
+  { key: "unit_test_1", name: "Unit Test 1", date: "2026-06-02", status: "Analysed" },
+  { key: "unit_test_2", name: "Unit Test 2", date: "2026-08-14", status: "Analysed" },
+  { key: "quarterly", name: "Quarterly Exam", date: "2026-09-25", status: "Scheduled" },
+  { key: "half_yearly", name: "Half Yearly Exam", date: "2026-11-10", status: "Scheduled" },
+  { key: "pre_board_1", name: "Pre-Board 1", date: "2027-01-15", status: "Scheduled" },
+  { key: "pre_board_2", name: "Pre-Board 2", date: "2027-02-10", status: "Scheduled" },
+];
