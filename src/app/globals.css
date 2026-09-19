@@ -50,7 +50,6 @@
   --font-display: "Georgia", "Times New Roman", serif;
 
   --sidebar-w: 232px;
-  --topbar-h: 60px;
 }
 
 * { box-sizing: border-box; }
@@ -90,6 +89,20 @@ table { border-collapse: collapse; width: 100%; }
 }
 .sidebar__brand-name { font-family: var(--font-display); font-size: 22px; letter-spacing: 0.08em; }
 .sidebar__brand-sub { font-size: 11px; color: #a9b6bf; letter-spacing: 0.04em; }
+.sidebar__meta {
+  padding: 12px 18px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display: flex; flex-direction: column; gap: 6px;
+}
+.sidebar__meta-school { font-size: 12.5px; font-weight: 600; color: #e9eef1; line-height: 1.35; }
+.sidebar__meta-sub { font-size: 11px; color: #a9b6bf; line-height: 1.4; }
+.sidebar__evidence {
+  align-self: flex-start;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.02em;
+  color: #bfe3d6; background: rgba(60, 179, 143, 0.16);
+  border: 1px solid rgba(60, 179, 143, 0.3);
+  border-radius: 999px; padding: 3px 9px;
+}
 .sidebar__nav { padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .sidebar__group { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em; color: #8b99a3; padding: 14px 10px 6px; }
 .navlink {
@@ -116,17 +129,6 @@ table { border-collapse: collapse; width: 100%; }
 .sidebar__signout:hover { background: rgba(255,255,255,0.08); }
 
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.topbar {
-  height: var(--topbar-h);
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 28px;
-  background: var(--surface);
-  border-bottom: 1px solid var(--line);
-  position: sticky; top: 0; z-index: 20;
-}
-.topbar__school { font-size: 13px; color: var(--muted); }
-.topbar__school strong { color: var(--text); font-weight: 600; }
-.topbar__right { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--muted); }
 .content { padding: 24px 28px 64px; max-width: 1280px; width: 100%; margin: 0 auto; }
 .content--sheet { padding: 14px 24px 16px; height: 100vh; display: flex; flex-direction: column; min-height: 0; }
 
@@ -211,7 +213,7 @@ table { border-collapse: collapse; width: 100%; }
 
 /* ---------- filter bar ---------- */
 .filterbar {
-  position: sticky; top: var(--topbar-h); z-index: 15;
+  position: sticky; top: 0; z-index: 15;
   background: var(--brand-cream);
   padding: 12px 0 14px;
   display: flex; gap: 10px; align-items: center; flex-wrap: wrap;

@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { LogOut, type LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { homeFor, initials, useAuth, type CurrentUser } from "@/lib/auth";
-import { school, type Role } from "@/lib/avai-mock-data";
+import { academicYear, school, type Role } from "@/lib/avai-mock-data";
 import { Logomark, Mascot } from "./Mascot";
 
 export interface NavItem {
@@ -50,22 +50,23 @@ export function StaffShell({
   nav,
   roleLabel,
   children,
-  topbarRight,
+  sidebarMeta,
 }: {
   user: CurrentUser;
   nav: NavItem[];
   roleLabel: string;
   children: React.ReactNode;
-  topbarRight?: React.ReactNode;
+  /** Extra content (e.g. an evidence badge) shown under the school/academic
+   * year line at the top of the sidebar. */
+  sidebarMeta?: React.ReactNode;
 }) {
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
 
-  // The single-test page is a dense, one-screen "sheet" — its own compact
-  // header replaces the school topbar so the whole thing fits without
-  // scrolling the page itself.
-  const hideTopbar = /^\/principal\/classes\/[^/]+\/tests\/[^/]+\/?$/.test(pathname);
+  // The single-test page is a dense, one-screen "sheet" that fills the
+  // viewport on its own — everything else scrolls normally.
+  const isSheetRoute = /^\/principal\/classes\/[^/]+\/tests\/[^/]+\/?$/.test(pathname);
 
   let lastGroup: string | undefined;
   return (
@@ -77,6 +78,13 @@ export function StaffShell({
             <div className="sidebar__brand-name">AVAI</div>
             <div className="sidebar__brand-sub">{roleLabel}</div>
           </div>
+        </div>
+        <div className="sidebar__meta">
+          <div className="sidebar__meta-school">{school.name}</div>
+          <div className="sidebar__meta-sub">
+            {school.board} · {school.state} · Academic year {academicYear}
+          </div>
+          {sidebarMeta}
         </div>
         <nav className="sidebar__nav" aria-label="Primary">
           {nav.map((item) => {
@@ -114,15 +122,7 @@ export function StaffShell({
         </div>
       </aside>
       <div className="main">
-        {!hideTopbar && (
-          <header className="topbar">
-            <div className="topbar__school">
-              <strong>{school.name}</strong> · {school.board} · {school.state}
-            </div>
-            <div className="topbar__right">{topbarRight ?? <span>Academic year 2026–27</span>}</div>
-          </header>
-        )}
-        <main className={`content ${hideTopbar ? "content--sheet" : ""}`}>{children}</main>
+        <main className={`content ${isSheetRoute ? "content--sheet" : ""}`}>{children}</main>
       </div>
     </div>
   );

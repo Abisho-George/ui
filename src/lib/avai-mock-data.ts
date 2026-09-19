@@ -22,6 +22,8 @@ export const school = {
   state: "Tamil Nadu",
 };
 
+export const academicYear = "2026–27";
+
 export const sections = ["X-A", "X-B", "X-C", "X-D", "X-E"] as const;
 export const subjects = [
   "Mathematics",

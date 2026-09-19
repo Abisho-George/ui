@@ -20,12 +20,7 @@ export default function PrincipalLayout({ children }: { children: React.ReactNod
           user={user}
           nav={nav}
           roleLabel="Principal"
-          topbarRight={
-            <>
-              <span className="tag tag--teal">Evidence: {assessmentContext.assessmentEvidence}</span>
-              <span>Academic year 2026–27</span>
-            </>
-          }
+          sidebarMeta={<span className="sidebar__evidence">Evidence: {assessmentContext.assessmentEvidence}</span>}
         >
           {children}
         </StaffShell>
