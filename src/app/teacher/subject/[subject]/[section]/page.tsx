@@ -11,14 +11,17 @@ import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 import { FindingCard } from "@/components/FindingCard";
 import { MarksEntryGrid } from "@/components/MarksEntryGrid";
+import { QuestionPaperPanel } from "@/components/QuestionPaperPanel";
 
-/** §6.3 Subject view — one subject, one section, with an Enter Marks tab. */
+/** §6.3 Subject view — one subject, one section, with Question Paper and
+ * Enter Marks tabs (both moved here from the principal's nav — a subject's
+ * paper and marks are a subject teacher's job, not the principal's). */
 export default function SubjectView() {
   const params = useParams<{ subject: string; section: string }>();
   const subject = decodeURIComponent(params.subject);
   const section = params.section;
   usePageHeader({ title: `${subject} · ${section}`, backHref: "/teacher/home" });
-  const [tab, setTab] = useState<"insights" | "marks">("insights");
+  const [tab, setTab] = useState<"insights" | "paper" | "marks">("insights");
   const { user } = useAuth();
 
   const allowed = user?.role === "teacher" && user.assignments.some((a) => a.type === "subject" && a.subject === subject && a.sections.includes(section));
@@ -37,6 +40,9 @@ export default function SubjectView() {
       <div className="tabs" role="tablist" style={{ marginTop: 18 }}>
         <button role="tab" aria-selected={tab === "insights"} className={`tab ${tab === "insights" ? "tab--active" : ""}`} onClick={() => setTab("insights")}>
           Insights
+        </button>
+        <button role="tab" aria-selected={tab === "paper"} className={`tab ${tab === "paper" ? "tab--active" : ""}`} onClick={() => setTab("paper")}>
+          Question paper
         </button>
         <button role="tab" aria-selected={tab === "marks"} className={`tab ${tab === "marks" ? "tab--active" : ""}`} onClick={() => setTab("marks")}>
           Enter marks
@@ -122,6 +128,10 @@ export default function SubjectView() {
             </div>
           </section>
         </>
+      ) : tab === "paper" ? (
+        <div style={{ marginTop: 18 }}>
+          <QuestionPaperPanel subject={subject} section={section} />
+        </div>
       ) : (
         <MarksEntryGrid key={`${subject}-${section}`} subject={subject} roster={roster} scopeLabel={`${subject} · ${section}`} testKey={latestTest.key} />
       )}

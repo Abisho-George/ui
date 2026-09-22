@@ -1496,3 +1496,233 @@ export function studentReportIds(studentId: string): string[] {
 export const classTeacherBySection: Record<string, string> = Object.fromEntries(
   mockTeachers.flatMap((t) => t.assignments.filter((a) => a.type === "class").map((a) => [(a as { section: string }).section, t.name]))
 );
+
+// ============================================================
+// Principal home — "Class X" grade dashboard: Board-mark-band tables,
+// section/subject pies, and the intelligence layer (toppers, late
+// bloomers, weakest class/subject, anomalies).
+//
+// A student's assessment % is projected onto a 100-mark Board scale per
+// subject (and summed for the 500-mark total) so the bands read the way
+// a principal actually thinks about Board marks. This is a projection
+// from internal assessments, not a calibrated Board-score prediction —
+// every screen that uses it says "projected" for that reason.
+// 🔧 BACKEND REQUIRED — real Board-mark projection is a modelling
+// problem; this mock scales the analysed-assessment % directly.
+// ============================================================
+
+/** One subject's assessment % projected onto a 100-mark Board scale. */
+export function projectedSubjectMarks(student: FullRosterStudent, testKey: string, subject: string): number {
+  return Math.round(pctFor(student, testKey, subject));
+}
+
+/** Sum of all 5 subjects' projected marks — a 500-mark Board-scale total. */
+export function projectedTotalMarks(student: FullRosterStudent, testKey: string): number {
+  return subjects.reduce((sum, s) => sum + projectedSubjectMarks(student, testKey, s), 0);
+}
+
+export interface MarkBand {
+  label: string;
+  min: number;
+  max: number;
+}
+
+/** Bands over the 500-mark projected total. */
+export const totalMarkBands: MarkBand[] = [
+  { label: "450 – 500", min: 450, max: 500 },
+  { label: "400 – 449", min: 400, max: 449 },
+  { label: "350 – 399", min: 350, max: 399 },
+  { label: "Below 350", min: 0, max: 349 },
+];
+
+/** Bands over one subject's 100-mark projected score. */
+export const subjectMarkBands: MarkBand[] = [
+  { label: "90 – 100", min: 90, max: 100 },
+  { label: "80 – 89", min: 80, max: 89 },
+  { label: "70 – 79", min: 70, max: 79 },
+  { label: "60 – 69", min: 60, max: 69 },
+  { label: "Below 60", min: 0, max: 59 },
+];
+
+/** Students in `section` (or every section when "All") whose projected
+ *  total falls in `band`, highest total first. */
+export function studentsInTotalBand(section: string | "All", testKey: string, band: MarkBand): FullRosterStudent[] {
+  const roster = section === "All" ? allStudents : (classRosterFull[section] ?? []);
+  return roster
+    .filter((s) => {
+      const total = projectedTotalMarks(s, testKey);
+      return total >= band.min && total <= band.max;
+    })
+    .sort((a, b) => projectedTotalMarks(b, testKey) - projectedTotalMarks(a, testKey));
+}
+
+/** Same, for one subject's projected marks. */
+export function studentsInSubjectBand(section: string | "All", testKey: string, subject: string, band: MarkBand): FullRosterStudent[] {
+  const roster = section === "All" ? allStudents : (classRosterFull[section] ?? []);
+  return roster
+    .filter((s) => {
+      const m = projectedSubjectMarks(s, testKey, subject);
+      return m >= band.min && m <= band.max;
+    })
+    .sort((a, b) => projectedSubjectMarks(b, testKey, subject) - projectedSubjectMarks(a, testKey, subject));
+}
+
+/** How many students in `section` (or "All") fall in each band, in band order. */
+export function totalBandCounts(section: string | "All", testKey: string): { band: MarkBand; count: number }[] {
+  return totalMarkBands.map((band) => ({ band, count: studentsInTotalBand(section, testKey, band).length }));
+}
+
+export function subjectBandCounts(section: string | "All", testKey: string, subject: string): { band: MarkBand; count: number }[] {
+  return subjectMarkBands.map((band) => ({ band, count: studentsInSubjectBand(section, testKey, subject, band).length }));
+}
+
+/** A student's 1-based rank within their own section, by overall % (or by
+ *  one subject's %). Ties keep the roster's roll-number order. */
+export function overallRankFor(student: FullRosterStudent, testKey: string): number {
+  const roster = classRosterFull[student.section] ?? [];
+  const ranked = [...roster].sort((a, b) => overallPctFor(b, testKey) - overallPctFor(a, testKey) || Number(a.rollNo) - Number(b.rollNo));
+  return ranked.findIndex((s) => s.id === student.id) + 1;
+}
+
+export function subjectRankFor(student: FullRosterStudent, testKey: string, subject: string): number {
+  const roster = classRosterFull[student.section] ?? [];
+  const ranked = [...roster].sort((a, b) => pctFor(b, testKey, subject) - pctFor(a, testKey, subject) || Number(a.rollNo) - Number(b.rollNo));
+  return ranked.findIndex((s) => s.id === student.id) + 1;
+}
+
+/** Top N students school-wide, or within one section, by overall %. */
+export function topStudents(n: number, testKey: string = latestTest.key, section: string | "All" = "All"): FullRosterStudent[] {
+  const roster = section === "All" ? allStudents : (classRosterFull[section] ?? []);
+  return [...roster].sort((a, b) => overallPctFor(b, testKey) - overallPctFor(a, testKey)).slice(0, n);
+}
+
+export interface LateBloomer {
+  student: FullRosterStudent;
+  prevPct: number;
+  nowPct: number;
+  gain: number;
+}
+
+/** Students who moved up the most since the previous analysed test —
+ *  "late bloomers" rather than the (usually already-strong) toppers. */
+export function lateBloomers(n: number, section: string | "All" = "All"): LateBloomer[] {
+  if (analysedTests.length < 2) return [];
+  const prevKey = analysedTests[analysedTests.length - 2].key;
+  const roster = section === "All" ? allStudents : (classRosterFull[section] ?? []);
+  return roster
+    .map((student) => {
+      const prevPct = overallPctFor(student, prevKey);
+      const nowPct = overallPctFor(student, latestTest.key);
+      return { student, prevPct: Math.round(prevPct), nowPct: Math.round(nowPct), gain: Math.round(nowPct - prevPct) };
+    })
+    .filter((r) => r.gain > 0)
+    .sort((a, b) => b.gain - a.gain)
+    .slice(0, n);
+}
+
+export interface SubjectStanding {
+  subject: string;
+  avgPct: number;
+}
+
+/** School-wide average % per subject, weakest first. */
+export function subjectsByAverage(testKey: string = latestTest.key): SubjectStanding[] {
+  return subjects
+    .map((subject) => ({
+      subject,
+      avgPct: Math.round((allStudents.reduce((sum, s) => sum + pctFor(s, testKey, subject), 0) / allStudents.length) * 10) / 10,
+    }))
+    .sort((a, b) => a.avgPct - b.avgPct);
+}
+
+export interface AnomalyInsight {
+  id: string;
+  kind: "hidden-strength" | "all-rounder" | "section-subject-slump";
+  headline: string;
+  detail: string;
+  numbers: { label: string; value: string }[];
+  section?: string;
+  subject?: string;
+  studentId?: string;
+}
+
+/** Real, numbers-backed surprises — never a bare claim. Computed once from
+ *  the same roster every other KPI reads, so nothing here can disagree
+ *  with the table underneath it. */
+function computeAnomalies(testKey: string): AnomalyInsight[] {
+  const insights: AnomalyInsight[] = [];
+  const schoolSubjectAvg = Object.fromEntries(subjectsByAverage(testKey).map((s) => [s.subject, s.avgPct]));
+
+  // 1. Hidden strength: overall in the bottom third of their section, but
+  // ranked #1 in one subject within it.
+  for (const section of sections) {
+    const roster = classRosterFull[section];
+    for (const subject of subjects) {
+      const topInSubject = [...roster].sort((a, b) => pctFor(b, testKey, subject) - pctFor(a, testKey, subject))[0];
+      if (!topInSubject) continue;
+      const overallRank = overallRankFor(topInSubject, testKey);
+      if (overallRank <= Math.ceil((roster.length * 2) / 3)) continue; // not bottom third overall
+      insights.push({
+        id: `hidden_${section}_${subject}`,
+        kind: "hidden-strength",
+        headline: `${topInSubject.name} tops ${subject} in ${section}, despite an overall struggle`,
+        detail: `Ranked #${overallRank} of ${roster.length} overall in ${section}, but #1 in ${subject} — a real strength the overall average hides.`,
+        numbers: [
+          { label: `${subject} score`, value: `${Math.round(pctFor(topInSubject, testKey, subject))}%` },
+          { label: "Overall rank", value: `#${overallRank} of ${roster.length}` },
+        ],
+        section,
+        subject,
+        studentId: topInSubject.id,
+      });
+    }
+  }
+
+  // 2. All-rounder: ranked #1 in every subject within their section.
+  for (const section of sections) {
+    const roster = classRosterFull[section];
+    for (const student of roster) {
+      const ranks = subjects.map((subject) => subjectRankFor(student, testKey, subject));
+      if (ranks.every((r) => r === 1)) {
+        insights.push({
+          id: `allrounder_${student.id}`,
+          kind: "all-rounder",
+          headline: `${student.name} is ranked #1 in every subject in ${section}`,
+          detail: `Not one strongest subject — #1 in all ${subjects.length} subjects tested in ${section}.`,
+          numbers: subjects.map((s) => ({ label: s, value: `${Math.round(pctFor(student, testKey, s))}%` })),
+          section,
+          studentId: student.id,
+        });
+      }
+    }
+  }
+
+  // 3. Section-subject slump: a section scoring well below the school's
+  // subject average, with most of its students below that average.
+  for (const section of sections) {
+    const roster = classRosterFull[section];
+    for (const subject of subjects) {
+      const sectionAvg = roster.reduce((sum, s) => sum + pctFor(s, testKey, subject), 0) / roster.length;
+      const gap = schoolSubjectAvg[subject] - sectionAvg;
+      if (gap < 12) continue;
+      const belowSchoolAvg = roster.filter((s) => pctFor(s, testKey, subject) < schoolSubjectAvg[subject]).length;
+      insights.push({
+        id: `slump_${section}_${subject}`,
+        kind: "section-subject-slump",
+        headline: `${section} is trailing the school in ${subject}`,
+        detail: `${section}'s ${subject} average is ${Math.round(sectionAvg)}% against a school average of ${Math.round(schoolSubjectAvg[subject])}% — ${belowSchoolAvg} of ${roster.length} students in ${section} score below the school average.`,
+        numbers: [
+          { label: `${section} average`, value: `${Math.round(sectionAvg)}%` },
+          { label: "School average", value: `${Math.round(schoolSubjectAvg[subject])}%` },
+          { label: "Below school average", value: `${belowSchoolAvg} of ${roster.length}` },
+        ],
+        section,
+        subject,
+      });
+    }
+  }
+
+  return insights;
+}
+
+export const anomalyInsights: AnomalyInsight[] = computeAnomalies(latestTest.key);

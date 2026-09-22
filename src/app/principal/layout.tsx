@@ -1,14 +1,12 @@
 "use client";
 
-import { ClipboardList, FileText, HelpCircle, LayoutGrid, Users } from "lucide-react";
+import { CalendarClock, HelpCircle, LayoutGrid } from "lucide-react";
 import { RoleGuard, StaffShell, type NavItem } from "@/components/Shell";
 import { assessmentContext } from "@/lib/avai-mock-data";
 
 const nav: NavItem[] = [
-  { href: "/principal/classes", label: "Classes", icon: LayoutGrid },
-  { href: "/principal/teachers", label: "Manage Teachers", icon: Users, group: "School" },
-  { href: "/principal/papers", label: "Question Papers", icon: FileText },
-  { href: "/principal/enter-marks", label: "Enter Marks", icon: ClipboardList },
+  { href: "/principal/classes", label: "Class X", icon: LayoutGrid },
+  { href: "/principal/exams", label: "Exams", icon: CalendarClock },
   { href: "/principal/help", label: "Help & Contact", icon: HelpCircle },
 ];
 
