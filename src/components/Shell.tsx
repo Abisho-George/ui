@@ -96,10 +96,6 @@ export function StaffShell({
   const router = useRouter();
   const { signOut } = useAuth();
 
-  // The single-test page is a dense, one-screen "sheet" that fills the
-  // viewport on its own — everything else scrolls normally.
-  const isSheetRoute = /^\/principal\/classes\/[^/]+\/tests\/[^/]+\/?$/.test(pathname);
-
   let lastGroup: string | undefined;
   return (
     <div className="shell">
@@ -155,8 +151,8 @@ export function StaffShell({
       </aside>
       <div className="main">
         <PageHeaderProvider>
-          {!isSheetRoute && <PageHeaderBar />}
-          <main className={`content ${isSheetRoute ? "content--sheet" : ""}`}>{children}</main>
+          <PageHeaderBar />
+          <main className="content">{children}</main>
         </PageHeaderProvider>
       </div>
     </div>

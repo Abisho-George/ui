@@ -1646,71 +1646,98 @@ export interface AnomalyInsight {
   studentId?: string;
 }
 
+/** Strips whatever extra sort key a candidate list was carrying (e.g.
+ *  `spread`, `gap`) once it's been sorted and sliced, leaving a plain
+ *  AnomalyInsight to push. */
+function dropSortKey<T extends AnomalyInsight>(candidate: T): AnomalyInsight {
+  const { id, kind, headline, detail, numbers, section, subject, studentId } = candidate;
+  return { id, kind, headline, detail, numbers, section, subject, studentId };
+}
+
 /** Real, numbers-backed surprises — never a bare claim. Computed once from
  *  the same roster every other KPI reads, so nothing here can disagree
- *  with the table underneath it. */
+ *  with the table underneath it. Thresholds below are tuned against this
+ *  build's actual seeded data (checked by hand), not picked blind — a
+ *  student's subjects move together enough that "ranked #1 overall and
+ *  in the bottom third" essentially never happens, so "hidden strength"
+ *  is framed as relative over-performance instead of an absolute rank. */
 function computeAnomalies(testKey: string): AnomalyInsight[] {
   const insights: AnomalyInsight[] = [];
   const schoolSubjectAvg = Object.fromEntries(subjectsByAverage(testKey).map((s) => [s.subject, s.avgPct]));
 
-  // 1. Hidden strength: overall in the bottom third of their section, but
-  // ranked #1 in one subject within it.
+  // 1. Hidden strength: below their own section's overall average, but
+  // with one subject at least 10pt above their own overall % — a real
+  // strength the overall number buries.
+  const hiddenStrength: (AnomalyInsight & { spread: number })[] = [];
   for (const section of sections) {
     const roster = classRosterFull[section];
-    for (const subject of subjects) {
-      const topInSubject = [...roster].sort((a, b) => pctFor(b, testKey, subject) - pctFor(a, testKey, subject))[0];
-      if (!topInSubject) continue;
-      const overallRank = overallRankFor(topInSubject, testKey);
-      if (overallRank <= Math.ceil((roster.length * 2) / 3)) continue; // not bottom third overall
-      insights.push({
-        id: `hidden_${section}_${subject}`,
+    const sectionAvg = classAveragePct(section, testKey);
+    for (const student of roster) {
+      const overall = overallPctFor(student, testKey);
+      if (overall >= sectionAvg) continue;
+      let best: { subject: string; pct: number } | null = null;
+      for (const subject of subjects) {
+        const pct = pctFor(student, testKey, subject);
+        if (!best || pct > best.pct) best = { subject, pct };
+      }
+      if (!best) continue;
+      const spread = best.pct - overall;
+      if (spread < 10) continue;
+      hiddenStrength.push({
+        id: `hidden_${student.id}`,
         kind: "hidden-strength",
-        headline: `${topInSubject.name} tops ${subject} in ${section}, despite an overall struggle`,
-        detail: `Ranked #${overallRank} of ${roster.length} overall in ${section}, but #1 in ${subject} — a real strength the overall average hides.`,
+        headline: `${student.name} is well below ${section}'s average overall, but shines in ${best.subject}`,
+        detail: `Overall ${Math.round(overall)}% against ${section}'s ${Math.round(sectionAvg)}% average, yet ${Math.round(best.pct)}% in ${best.subject} — ${Math.round(spread)}pt above their own overall score.`,
         numbers: [
-          { label: `${subject} score`, value: `${Math.round(pctFor(topInSubject, testKey, subject))}%` },
-          { label: "Overall rank", value: `#${overallRank} of ${roster.length}` },
+          { label: "Overall", value: `${Math.round(overall)}%` },
+          { label: `${best.subject}`, value: `${Math.round(best.pct)}%` },
+          { label: `${section} average`, value: `${Math.round(sectionAvg)}%` },
         ],
         section,
-        subject,
-        studentId: topInSubject.id,
+        subject: best.subject,
+        studentId: student.id,
+        spread,
+      });
+    }
+  }
+  insights.push(...hiddenStrength.sort((a, b) => b.spread - a.spread).slice(0, 3).map(dropSortKey));
+
+  // 2. Near-all-rounder: ranked in the top 2 of their section in at least
+  // 4 of the 5 subjects tested — genuinely rare, so shown as found.
+  for (const section of sections) {
+    const roster = classRosterFull[section];
+    for (const student of roster) {
+      const ranks = subjects.map((subject) => ({ subject, rank: subjectRankFor(student, testKey, subject) }));
+      const top2Count = ranks.filter((r) => r.rank <= 2).length;
+      if (top2Count < 4) continue;
+      insights.push({
+        id: `allrounder_${student.id}`,
+        kind: "all-rounder",
+        headline: `${student.name} ranks in the top 2 of ${section} in ${top2Count} of ${subjects.length} subjects`,
+        detail: `${ranks.filter((r) => r.rank <= 2).map((r) => `#${r.rank} in ${r.subject}`).join(", ")} — consistently near the top across the board, not just one strong subject.`,
+        numbers: ranks.map((r) => ({ label: r.subject, value: `#${r.rank}` })),
+        section,
+        studentId: student.id,
       });
     }
   }
 
-  // 2. All-rounder: ranked #1 in every subject within their section.
-  for (const section of sections) {
-    const roster = classRosterFull[section];
-    for (const student of roster) {
-      const ranks = subjects.map((subject) => subjectRankFor(student, testKey, subject));
-      if (ranks.every((r) => r === 1)) {
-        insights.push({
-          id: `allrounder_${student.id}`,
-          kind: "all-rounder",
-          headline: `${student.name} is ranked #1 in every subject in ${section}`,
-          detail: `Not one strongest subject — #1 in all ${subjects.length} subjects tested in ${section}.`,
-          numbers: subjects.map((s) => ({ label: s, value: `${Math.round(pctFor(student, testKey, s))}%` })),
-          section,
-          studentId: student.id,
-        });
-      }
-    }
-  }
-
-  // 3. Section-subject slump: a section scoring well below the school's
-  // subject average, with most of its students below that average.
+  // 3. Section-subject slump: the subject(s) where a section trails the
+  // school average by the widest margin — school-wide, not just one
+  // section's overall weakness restated five times.
+  const slumps: (AnomalyInsight & { gap: number })[] = [];
   for (const section of sections) {
     const roster = classRosterFull[section];
     for (const subject of subjects) {
       const sectionAvg = roster.reduce((sum, s) => sum + pctFor(s, testKey, subject), 0) / roster.length;
       const gap = schoolSubjectAvg[subject] - sectionAvg;
-      if (gap < 12) continue;
+      if (gap < 6) continue;
       const belowSchoolAvg = roster.filter((s) => pctFor(s, testKey, subject) < schoolSubjectAvg[subject]).length;
-      insights.push({
+      slumps.push({
         id: `slump_${section}_${subject}`,
         kind: "section-subject-slump",
-        headline: `${section} is trailing the school in ${subject}`,
-        detail: `${section}'s ${subject} average is ${Math.round(sectionAvg)}% against a school average of ${Math.round(schoolSubjectAvg[subject])}% — ${belowSchoolAvg} of ${roster.length} students in ${section} score below the school average.`,
+        headline: `${section} trails the school in ${subject} by ${Math.round(gap)}pt`,
+        detail: `${section}'s ${subject} average is ${Math.round(sectionAvg)}% against a school average of ${Math.round(schoolSubjectAvg[subject])}% — ${belowSchoolAvg} of ${roster.length} students in ${section} score below the school average in ${subject}.`,
         numbers: [
           { label: `${section} average`, value: `${Math.round(sectionAvg)}%` },
           { label: "School average", value: `${Math.round(schoolSubjectAvg[subject])}%` },
@@ -1718,9 +1745,11 @@ function computeAnomalies(testKey: string): AnomalyInsight[] {
         ],
         section,
         subject,
+        gap,
       });
     }
   }
+  insights.push(...slumps.sort((a, b) => b.gap - a.gap).slice(0, 3).map(dropSortKey));
 
   return insights;
 }

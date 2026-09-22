@@ -145,7 +145,6 @@ table { border-collapse: collapse; width: 100%; }
 }
 .page-header-bar__title { font-size: 16px; font-weight: 650; letter-spacing: -0.005em; }
 .content { padding: 24px 28px 64px; max-width: 1280px; width: 100%; margin: 0 auto; }
-.content--sheet { padding: 14px 24px 16px; height: 100vh; display: flex; flex-direction: column; min-height: 0; }
 
 /* ---------- typography ---------- */
 .page-title { font-size: 24px; font-weight: 650; letter-spacing: -0.01em; }
@@ -176,6 +175,31 @@ table { border-collapse: collapse; width: 100%; }
 .card__foot { padding: 12px 22px 16px; border-top: 1px solid var(--line); display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .card--flat { box-shadow: none; }
 .card--soft { background: var(--surface-2); }
+
+/* Intelligence layer's segmented band — one card divided into clickable
+   sections instead of four separate boxes, each carrying its own accent
+   color via the --accent custom property set inline per segment. */
+.intel-band { display: flex; flex-wrap: wrap; overflow: hidden; }
+.intel-band__seg {
+  flex: 1 1 220px; min-width: 220px; text-align: left; position: relative;
+  background: none; border: none; border-right: 1px solid var(--line); cursor: pointer;
+  padding: 18px 40px 18px 20px; font: inherit; color: inherit;
+  border-top: 3px solid var(--accent);
+  transition: background-color .12s;
+}
+.intel-band__seg:last-child { border-right: none; }
+.intel-band__seg:hover:not(:disabled) { background: var(--surface-2); }
+.intel-band__seg:disabled { cursor: default; opacity: .55; }
+.intel-band__icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 16%, white); color: var(--accent);
+}
+.intel-band__arrow { position: absolute; top: 18px; right: 14px; color: var(--muted); }
+@media (max-width: 900px) {
+  .intel-band__seg { border-right: none; border-bottom: 1px solid var(--line); }
+  .intel-band__seg:last-child { border-bottom: none; }
+}
 .section { margin-top: 36px; }
 .section__head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
 .section__lead { color: var(--muted); font-size: 13.5px; margin-top: 4px; max-width: 780px; }

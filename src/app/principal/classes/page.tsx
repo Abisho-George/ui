@@ -3,13 +3,14 @@
 import { useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
-import { Download, Sparkles, TrendingUp, Trophy, X } from "lucide-react";
+import { BookX, ChevronRight, Download, Sparkles, TrendingDown, TrendingUp, Trophy, X } from "lucide-react";
 import {
   anomalyInsights,
   classRosterFull,
   lateBloomers,
   latestTest,
   overallPctFor,
+  pctFor,
   schoolSnapshot,
   sectionComparison,
   sections,
@@ -19,6 +20,7 @@ import {
   subjectMarkBands,
   subjects,
   subjectsByAverage,
+  topGapFor,
   topStudents,
   totalBandCounts,
   totalMarkBands,
@@ -210,74 +212,62 @@ export default function ClassXDashboard() {
           </div>
         </div>
 
-        <div className="grid grid--4">
-          <div className="card">
-            <div className="card__body">
-              <div className="stat__label">Toppers</div>
-              <div className="stat__value stat__value--sm" style={{ marginTop: 4 }}>
-                {schoolToppers[0]?.name ?? "—"}
-              </div>
-              <div className="small muted" style={{ marginTop: 2 }}>
-                {schoolToppers[0] ? `${Math.round(overallPctFor(schoolToppers[0], testKey))}% overall — Class X's highest this assessment` : "—"}
-              </div>
+        <div className="card intel-band">
+          <button className="intel-band__seg" style={{ "--accent": "#e0a62a" } as React.CSSProperties} onClick={() => setIntelPanel("toppers")}>
+            <span className="intel-band__icon">
+              <Trophy size={15} />
+            </span>
+            <div className="stat__label">Toppers</div>
+            <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
+              {schoolToppers[0]?.name ?? "—"}
             </div>
-            <div className="card__foot" style={{ justifyContent: "flex-end" }}>
-              <button className="btn btn--sm" onClick={() => setIntelPanel("toppers")}>
-                <Trophy size={13} /> View toppers
-              </button>
+            <div className="small muted" style={{ marginTop: 2 }}>
+              {schoolToppers[0] ? `${Math.round(overallPctFor(schoolToppers[0], testKey))}% overall — highest in Class X` : "Not enough data"}
             </div>
-          </div>
+            <ChevronRight size={15} className="intel-band__arrow" />
+          </button>
 
-          <div className="card">
-            <div className="card__body">
-              <div className="stat__label">Late bloomers</div>
-              <div className="stat__value stat__value--sm" style={{ marginTop: 4 }}>
-                {bloomers[0]?.student.name ?? "Not enough evidence"}
-              </div>
-              <div className="small muted" style={{ marginTop: 2 }}>
-                {bloomers[0] ? `+${bloomers[0].gain}pt since ${latestTest.name}'s previous test` : "Needs a second analysed test"}
-              </div>
+          <button className="intel-band__seg" style={{ "--accent": "#3a9d6a" } as React.CSSProperties} disabled={bloomers.length === 0} onClick={() => setIntelPanel("lateBloomers")}>
+            <span className="intel-band__icon">
+              <TrendingUp size={15} />
+            </span>
+            <div className="stat__label">Late bloomers</div>
+            <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
+              {bloomers.length > 0 ? `${bloomers.length} climbing` : "None this term"}
             </div>
-            <div className="card__foot" style={{ justifyContent: "flex-end" }}>
-              <button className="btn btn--sm" disabled={bloomers.length === 0} onClick={() => setIntelPanel("lateBloomers")}>
-                <TrendingUp size={13} /> View movers
-              </button>
+            <div className="small muted" style={{ marginTop: 2 }}>
+              {bloomers[0] ? `Led by ${bloomers[0].student.name}, +${bloomers[0].gain}pt since the previous test` : "Needs a second analysed test"}
             </div>
-          </div>
+            <ChevronRight size={15} className="intel-band__arrow" />
+          </button>
 
-          <div className="card">
-            <div className="card__body">
-              <div className="stat__label">Weakest class</div>
-              <div className="stat__value stat__value--sm" style={{ marginTop: 4 }}>
-                {weakestSection?.section}
-              </div>
-              <div className="small muted" style={{ marginTop: 2 }}>
-                {weakestSection?.overallAttainment}% overall attainment
-              </div>
+          <button className="intel-band__seg" style={{ "--accent": "#c94a3a" } as React.CSSProperties} onClick={() => setIntelPanel("weakestClass")}>
+            <span className="intel-band__icon">
+              <TrendingDown size={15} />
+            </span>
+            <div className="stat__label">Weakest class</div>
+            <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
+              {weakestSection?.section}
             </div>
-            <div className="card__foot" style={{ justifyContent: "flex-end" }}>
-              <button className="btn btn--sm" onClick={() => setIntelPanel("weakestClass")}>
-                View all sections
-              </button>
+            <div className="small muted" style={{ marginTop: 2 }}>
+              {weakestSection?.overallAttainment}% overall attainment — lowest of {sections.length} sections
             </div>
-          </div>
+            <ChevronRight size={15} className="intel-band__arrow" />
+          </button>
 
-          <div className="card">
-            <div className="card__body">
-              <div className="stat__label">Weakest subject</div>
-              <div className="stat__value stat__value--sm" style={{ marginTop: 4 }}>
-                {weakestSubject?.subject}
-              </div>
-              <div className="small muted" style={{ marginTop: 2 }}>
-                {weakestSubject?.avgPct}% school average
-              </div>
+          <button className="intel-band__seg" style={{ "--accent": "#2f6fd3" } as React.CSSProperties} onClick={() => setIntelPanel("weakestSubject")}>
+            <span className="intel-band__icon">
+              <BookX size={15} />
+            </span>
+            <div className="stat__label">Weakest subject</div>
+            <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
+              {weakestSubject?.subject}
             </div>
-            <div className="card__foot" style={{ justifyContent: "flex-end" }}>
-              <button className="btn btn--sm" onClick={() => setIntelPanel("weakestSubject")}>
-                View all subjects
-              </button>
+            <div className="small muted" style={{ marginTop: 2 }}>
+              {weakestSubject?.avgPct}% school average — lowest of {subjects.length} subjects
             </div>
-          </div>
+            <ChevronRight size={15} className="intel-band__arrow" />
+          </button>
         </div>
 
         {/* Anomalies */}
@@ -393,6 +383,9 @@ export default function ClassXDashboard() {
               <div className="drawer__body">
                 {intelPanel === "toppers" && (
                   <>
+                    <p className="small muted" style={{ marginTop: 0 }}>
+                      Ranked by overall % across all {subjects.length} subjects, {latestTest.name}.
+                    </p>
                     <div className="drawer__section" style={{ marginTop: 0 }}>
                       <h4>School-wide top 10</h4>
                       <div style={{ display: "grid", gap: 8 }}>
@@ -415,7 +408,9 @@ export default function ClassXDashboard() {
                 )}
                 {intelPanel === "lateBloomers" && (
                   <div className="drawer__section" style={{ marginTop: 0 }}>
-                    <h4>Biggest gains since the previous test</h4>
+                    <h4>
+                      {bloomers.length} student{bloomers.length === 1 ? "" : "s"} gained ground since {latestTest.name}&apos;s previous test
+                    </h4>
                     <div style={{ display: "grid", gap: 8 }}>
                       {bloomers.map((b) => (
                         <StudentRow key={b.student.id} student={b.student} showSection meta={`${b.prevPct}% → ${b.nowPct}% (+${b.gain}pt)`} />
@@ -426,36 +421,86 @@ export default function ClassXDashboard() {
                 )}
                 {intelPanel === "weakestClass" && (
                   <div className="drawer__section" style={{ marginTop: 0 }}>
-                    {[...sectionComparison]
-                      .sort((a, b) => a.overallAttainment - b.overallAttainment)
-                      .map((s) => (
-                        <div className="bar-row" key={s.section} style={{ gridTemplateColumns: "70px 1fr 50px" }}>
-                          <div className="bar-row__label strong">{s.section}</div>
-                          <div className="bar">
-                            <div
-                              className={`bar__fill ${s.overallAttainment >= 78 ? "bar__fill--green" : s.overallAttainment >= 70 ? "bar__fill--gold" : "bar__fill--risk"}`}
-                              style={{ width: `${s.overallAttainment}%` }}
-                            />
+                    <h4>Overall attainment — average % across all 5 subjects, {latestTest.name}</h4>
+                    <div style={{ display: "grid", gap: 14 }}>
+                      {[...sectionComparison]
+                        .sort((a, b) => a.overallAttainment - b.overallAttainment)
+                        .map((s) => (
+                          <div key={s.section}>
+                            <div className="bar-row" style={{ gridTemplateColumns: "70px 1fr 50px" }}>
+                              <div className="bar-row__label strong">{s.section}</div>
+                              <div className="bar">
+                                <div
+                                  className={`bar__fill ${s.overallAttainment >= 78 ? "bar__fill--green" : s.overallAttainment >= 70 ? "bar__fill--gold" : "bar__fill--risk"}`}
+                                  style={{ width: `${s.overallAttainment}%` }}
+                                />
+                              </div>
+                              <div className="bar-row__val">{s.overallAttainment}%</div>
+                            </div>
+                            <div className="small muted" style={{ marginTop: 2 }}>
+                              Biggest gap: <strong>{topGapFor(s.section, testKey)}</strong> · {s.needAttention} of {s.students} need attention
+                              {s.critical > 0 ? ` (${s.critical} critical)` : ""}.
+                            </div>
                           </div>
-                          <div className="bar-row__val">{s.overallAttainment}%</div>
-                        </div>
-                      ))}
+                        ))}
+                    </div>
                   </div>
                 )}
                 {intelPanel === "weakestSubject" && (
                   <div className="drawer__section" style={{ marginTop: 0 }}>
-                    {subjectStandings.map((s) => (
-                      <div className="bar-row" key={s.subject} style={{ gridTemplateColumns: "140px 1fr 50px" }}>
-                        <div className="bar-row__label strong">{s.subject}</div>
-                        <div className="bar">
-                          <div
-                            className={`bar__fill ${s.avgPct >= 78 ? "bar__fill--green" : s.avgPct >= 70 ? "bar__fill--gold" : "bar__fill--risk"}`}
-                            style={{ width: `${s.avgPct}%` }}
-                          />
+                    <h4>School average per subject, {latestTest.name}</h4>
+                    <div style={{ display: "grid", gap: 6 }}>
+                      {subjectStandings.map((s) => (
+                        <div className="bar-row" key={s.subject} style={{ gridTemplateColumns: "140px 1fr 50px" }}>
+                          <div className="bar-row__label strong">{s.subject}</div>
+                          <div className="bar">
+                            <div
+                              className={`bar__fill ${s.avgPct >= 78 ? "bar__fill--green" : s.avgPct >= 70 ? "bar__fill--gold" : "bar__fill--risk"}`}
+                              style={{ width: `${s.avgPct}%` }}
+                            />
+                          </div>
+                          <div className="bar-row__val">{s.avgPct}%</div>
                         </div>
-                        <div className="bar-row__val">{s.avgPct}%</div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
+                    <h4 style={{ marginTop: 22 }}>Where — each subject, broken down by section</h4>
+                    <p className="small muted" style={{ marginTop: -4, marginBottom: 10 }}>
+                      Every subject&apos;s weakest section is highlighted, so a low school average never hides which class is actually pulling it down.
+                    </p>
+                    <div className="table-wrap">
+                      <table className="table">
+                        <thead>
+                          <tr>
+                            <th>Subject</th>
+                            {sections.map((sec) => (
+                              <th key={sec} className="num">
+                                {sec}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {subjectStandings.map((s) => {
+                            const bySection = sections.map((sec) => {
+                              const roster = classRosterFull[sec] ?? [];
+                              const avg = roster.length ? roster.reduce((sum, st) => sum + pctFor(st, testKey, s.subject), 0) / roster.length : 0;
+                              return { section: sec, pct: Math.round(avg) };
+                            });
+                            const min = Math.min(...bySection.map((b) => b.pct));
+                            return (
+                              <tr key={s.subject}>
+                                <td className="strong">{s.subject}</td>
+                                {bySection.map((b) => (
+                                  <td key={b.section} className="num" style={b.pct === min ? { color: "var(--risk)", fontWeight: 700 } : undefined}>
+                                    {b.pct}%
+                                  </td>
+                                ))}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 )}
               </div>
