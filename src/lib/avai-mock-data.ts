@@ -264,7 +264,7 @@ export interface FullRosterStudent {
 
 export type Attention = "On Track" | "Watch" | "Intervention";
 
-function attentionFromPct(pct: number): Attention {
+export function attentionFromPct(pct: number): Attention {
   if (pct >= 75) return "On Track";
   if (pct >= 55) return "Watch";
   return "Intervention";

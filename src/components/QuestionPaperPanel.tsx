@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { CheckCircle2, FileUp, Sparkles, Upload, X } from "lucide-react";
+import { CheckCircle2, ChevronDown, FileUp, Sparkles, Upload, X } from "lucide-react";
 import {
   initialSubjectPapers,
   paperChapterMapping,
@@ -32,6 +32,8 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
   const [papers, setPapers] = useState<Record<string, SubjectPaper>>(() =>
     Object.fromEntries(testsConducted.map((t) => [t.key, initialSubjectPapers[t.key]?.[subject]]).filter(([, p]) => p))
   );
+  // Nothing expanded by default — click a test to see its paper.
+  const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   const [uploadFor, setUploadFor] = useState<string | null>(null);
   const [uploadFileName, setUploadFileName] = useState("");
@@ -77,6 +79,15 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
     setToast("Answer card generated.");
   }
 
+  function toggleExpand(testKey: string) {
+    setExpanded((s) => {
+      const next = new Set(s);
+      if (next.has(testKey)) next.delete(testKey);
+      else next.add(testKey);
+      return next;
+    });
+  }
+
   const testForMapping = mappingFor ? testsConducted.find((t) => t.key === mappingFor) : null;
   const paperForMapping = mappingFor ? papers[mappingFor] : null;
   const testForCard = cardFor ? testsConducted.find((t) => t.key === cardFor) : null;
@@ -85,72 +96,100 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
 
   return (
     <>
-      <div className="card">
-        <div className="table-wrap">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Assessment</th>
-                <th>File</th>
-                <th>Blueprint coverage</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {testsConducted.map((t) => {
-                const p = papers[t.key];
-                if (!p) return null;
-                return (
-                  <tr key={t.key}>
-                    <td className="strong">
+      <div style={{ display: "grid", gap: 12 }}>
+        {testsConducted.map((t) => {
+          const p = papers[t.key];
+          if (!p) return null;
+          const isOpen = expanded.has(t.key);
+          return (
+            <div className="card" key={t.key}>
+              <button
+                onClick={() => toggleExpand(t.key)}
+                style={{ width: "100%", textAlign: "left", background: "none", border: "none", padding: 0, cursor: "pointer" }}
+                aria-expanded={isOpen}
+              >
+                <div className="card__head">
+                  <div>
+                    <div className="strong" style={{ fontSize: 15 }}>
                       {t.name}
-                      <div className="small muted">{t.date}</div>
-                    </td>
-                    <td>
-                      {p.fileName ? (
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          <FileUp size={13} style={{ color: "var(--muted)" }} />
-                          <span className="small">{p.fileName}</span>
-                        </div>
-                      ) : (
-                        <span className="muted small">No file yet</span>
-                      )}
-                    </td>
-                    <td style={{ minWidth: 140 }}>
-                      {p.status === "Mapped" || p.status === "Needs mapping" ? (
-                        <div className="bar-row" style={{ gridTemplateColumns: "1fr 40px", padding: 0 }}>
-                          <div className="bar">
-                            <div className="bar__fill" style={{ width: `${coverage?.pct ?? 0}%` }} />
-                          </div>
-                          <div className="bar-row__val">{coverage?.pct ?? 0}%</div>
-                        </div>
-                      ) : (
-                        <span className="muted small">Not yet available</span>
-                      )}
-                    </td>
-                    <td>
-                      <StatusTag status={p.status} />
-                    </td>
-                    <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
-                      {p.status === "Not uploaded" && (
-                        <button className="btn btn--sm" onClick={() => setUploadFor(t.key)}>
-                          <Upload size={13} /> Upload
-                        </button>
-                      )}
-                      {p.status === "Processing" && <span className="small muted">Processing…</span>}
-                      {(p.status === "Needs mapping" || p.status === "Mapped") && (
-                        <button className="btn btn--sm" onClick={() => setMappingFor(t.key)}>
-                          View mapping
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                    </div>
+                    <div className="small muted" style={{ marginTop: 2 }}>
+                      {t.date} · {subject}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <StatusTag status={p.status} />
+                    <ChevronDown size={16} className="muted" style={{ transform: isOpen ? "rotate(180deg)" : undefined, transition: "transform .15s" }} />
+                  </div>
+                </div>
+              </button>
+
+              {isOpen && (
+                <div className="table-wrap">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Subject</th>
+                        <th>File</th>
+                        <th>Blueprint coverage</th>
+                        <th>Status</th>
+                        <th></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td className="strong">{subject}</td>
+                        <td>
+                          {p.fileName ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <FileUp size={13} style={{ color: "var(--muted)" }} />
+                              <span className="small">{p.fileName}</span>
+                            </div>
+                          ) : (
+                            <span className="muted small">No file yet</span>
+                          )}
+                        </td>
+                        <td style={{ minWidth: 140 }}>
+                          {p.status === "Mapped" || p.status === "Needs mapping" ? (
+                            <div className="bar-row" style={{ gridTemplateColumns: "1fr 40px", padding: 0 }}>
+                              <div className="bar">
+                                <div className="bar__fill" style={{ width: `${coverage?.pct ?? 0}%` }} />
+                              </div>
+                              <div className="bar-row__val">{coverage?.pct ?? 0}%</div>
+                            </div>
+                          ) : (
+                            <span className="muted small">Not yet available</span>
+                          )}
+                        </td>
+                        <td>
+                          <StatusTag status={p.status} />
+                        </td>
+                        <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                          {p.status === "Not uploaded" && (
+                            <button className="btn btn--sm" onClick={() => setUploadFor(t.key)}>
+                              <Upload size={13} /> Upload
+                            </button>
+                          )}
+                          {p.status === "Processing" && <span className="small muted">Processing…</span>}
+                          {(p.status === "Needs mapping" || p.status === "Mapped") && (
+                            <button className="btn btn--sm" onClick={() => setMappingFor(t.key)}>
+                              View mapping
+                            </button>
+                          )}
+                          {p.status === "Mapped" && p.answerCardGenerated && (
+                            <button className="btn btn--sm" style={{ marginLeft: 6 }} onClick={() => setCardFor(t.key)}>
+                              <FileUp size={13} /> Answer card
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       <p className="small muted" style={{ marginTop: 14 }}>
