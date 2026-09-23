@@ -8,17 +8,17 @@ import { assessmentContext, classRosterFull, findStudent, sections, type FullRos
  * member ever signs in. Module-level store + hook, same contract as
  * shareState.ts, with one difference: this run is mirrored to localStorage
  * so a teenager who reloads mid-test on a phone does not start over.
- * 🔧 BACKEND REQUIRED — nothing is submitted anywhere; "saved" means saved
+ * 🔧 BACKEND REQUIRED, nothing is submitted anywhere; "saved" means saved
  * in this browser.
  */
 
 /** Everyone in the demo shares one password, printed on the slip. */
 export const DEMO_PASSWORD = "avai@2026";
 
-/** Fixed submission date — the app must not read the clock at render time. */
+/** Fixed submission date, the app must not read the clock at render time. */
 export const ONBOARDING_DATE = "22 Sep 2026";
 
-/** Age as of the fixed "today" the whole app uses — never Date.now(). */
+/** Age as of the fixed "today" the whole app uses, never Date.now(). */
 export function ageFrom(dob: string): number | null {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) return null;
   const [by, bm, bd] = dob.split("-").map(Number);
@@ -43,19 +43,19 @@ export interface AttendDraft {
   // Basic information
   dob: string;
   gender: string;
-  // Section 1 — Your Background
+  // Section 1, Your Background
   livesIn: string;
   decisionHelper: string;
   hasResponsibilities: string;
-  // Section 2 — Your Learning Profile
+  // Section 2, Your Learning Profile
   favoriteSubject: string;
   comfortableSubject: string;
   learningType: string;
-  // Section 3 — Your Interests
+  // Section 3, Your Interests
   interests: string[];
   workInterest: string;
   newLearning: string;
-  // Section 4 — Your Future Plans
+  // Section 4, Your Future Plans
   futurePlan: string;
   futurePlanUnsure: boolean;
   class11Group: string;
@@ -64,7 +64,7 @@ export interface AttendDraft {
   careersKnown: string[];
   futureConcerns: string[];
   submitted: boolean;
-  /** Increments on every write — the autosave indicator watches it. */
+  /** Increments on every write, the autosave indicator watches it. */
   rev: number;
 }
 
@@ -112,7 +112,7 @@ function persist() {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {
-    /* private mode / blocked storage — the run still works, it just won't survive a reload */
+    /* private mode / blocked storage, the run still works, it just won't survive a reload */
   }
 }
 
@@ -130,7 +130,7 @@ function hydrate() {
     state = { ...EMPTY, ...saved, identity };
     emit();
   } catch {
-    /* unreadable or corrupt — start clean */
+    /* unreadable or corrupt, start clean */
   }
 }
 
@@ -168,7 +168,7 @@ export function useAttend(): AttendDraft {
 }
 
 // ------------------------------------------------------------
-// Credentials — derived from the real roster, never stored
+// Credentials, derived from the real roster, never stored
 // ------------------------------------------------------------
 
 /** "X-A" + "01" -> "AVAI-XA-01", the ID printed on the student's slip. */
@@ -226,5 +226,5 @@ export const demoLogins = [
   .filter((s): s is FullRosterStudent => Boolean(s))
   .map((s) => ({ loginId: loginIdFor(s), name: s.name, section: s.section }));
 
-/** Every student in the school can sign in — the entry screen says so. */
+/** Every student in the school can sign in, the entry screen says so. */
 export const onboardingCohort = sections.reduce((n, s) => n + (classRosterFull[s]?.length ?? 0), 0);

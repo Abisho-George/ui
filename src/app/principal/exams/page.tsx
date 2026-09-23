@@ -24,9 +24,9 @@ function daysUntil(dateStr: string): number {
 }
 
 /** Principal → Exams. A read-only calendar of every test: conducted, with
- * a full section × subject breakdown (every number labeled — no bare
+ * a full section × subject breakdown (every number labeled, no bare
  * percentages), and upcoming. Papers and marks are entered by subject
- * teachers now — this is where the principal sees the assessment calendar
+ * teachers now, this is where the principal sees the assessment calendar
  * and opens a test's own class-by-class report. */
 export default function ExamsPage() {
   usePageHeader({ title: "Exams" });
@@ -58,7 +58,7 @@ export default function ExamsPage() {
 
       <div className="grid grid--3" style={{ marginTop: 20 }}>
         <div className="stat">
-          <div className="stat__label">{latestTest.name} — school average</div>
+          <div className="stat__label">{latestTest.name}, school average</div>
           <div className="stat__value" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
             {latestSchoolAvg}%
             {prevSchoolAvg !== null && <DeltaCell delta={latestSchoolAvg - prevSchoolAvg} />}
@@ -92,7 +92,7 @@ export default function ExamsPage() {
               <CalendarCheck size={16} style={{ verticalAlign: "-3px", marginRight: 6 }} /> Conducted
             </h2>
             <p className="section__lead">
-              Percentages below are each section&apos;s average score in that subject for that test — e.g. &quot;X-A · Mathematics · 82%&quot; means
+              Percentages below are each section&apos;s average score in that subject for that test, e.g. &quot;X-A · Mathematics · 82%&quot; means
               X-A&apos;s students scored 82% of the marks on average in the Mathematics paper.
             </p>
           </div>

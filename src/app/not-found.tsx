@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FileQuestion } from "lucide-react";
 
 /** Replaces Next's bare "404 This page could not be found." with something
- * on-brand and with a way back — for any URL, valid session or not. */
+ * on-brand and with a way back, for any URL, valid session or not. */
 export default function NotFound() {
   return (
     <div className="error-fallback">

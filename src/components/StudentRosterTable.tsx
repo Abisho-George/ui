@@ -9,9 +9,9 @@ import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 
 /** Movement against the previous analysed test. `null` means there is no
- * earlier test to compare with — shown as an em dash, never as "0". */
+ * earlier test to compare with, shown as an em dash, never as "0". */
 export function DeltaCell({ delta, suffix = "pt" }: { delta: number | null; suffix?: string }) {
-  if (delta === null) return <span className="muted">—</span>;
+  if (delta === null) return <span className="muted">-</span>;
   if (delta === 0) return <span className="muted">no change</span>;
   const up = delta > 0;
   return (
@@ -59,7 +59,7 @@ export function StudentRosterTable({
    * single-screen test-sheet page) instead of capping at a fixed height. */
   fillHeight?: boolean;
   /** Rendered above the filters, inside the same frozen block (e.g. the
-   * "Students in X-A" heading) — so it freezes with the filters and tabs
+   * "Students in X-A" heading), so it freezes with the filters and tabs
    * rather than scrolling away above them. Ignored in fillHeight mode,
    * where the page itself never scrolls. */
   heading?: React.ReactNode;
@@ -71,7 +71,7 @@ export function StudentRosterTable({
   // The frozen heading + filters + tabs block's own height, measured so the
   // table's <thead> can stick right below it (rather than at the very top,
   // which would tuck it under the frozen block once both are stuck). Only
-  // needed outside fillHeight mode — that one has no page-level scroll to
+  // needed outside fillHeight mode, that one has no page-level scroll to
   // freeze against in the first place.
   const stickyRef = useRef<HTMLDivElement>(null);
   const [stickyHeight, setStickyHeight] = useState(0);
@@ -146,7 +146,7 @@ export function StudentRosterTable({
       <div className="card" style={fillHeight ? { marginTop: 14, flex: 1, minHeight: 0, display: "flex", flexDirection: "column" } : { marginTop: 14 }}>
         {testStatus !== "Analysed" ? (
           <div className="placeholder">
-            <p>{testName ?? "This test"} hasn&apos;t been conducted yet — no marks to show.</p>
+            <p>{testName ?? "This test"} hasn&apos;t been conducted yet, no marks to show.</p>
           </div>
         ) : (
           <div

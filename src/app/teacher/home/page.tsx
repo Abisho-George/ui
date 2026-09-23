@@ -7,7 +7,7 @@ import { assessmentContext, latestTest, subjectSnapshotFor } from "@/lib/avai-mo
 import { usePageHeader } from "@/lib/pageHeader";
 import { EvidenceState } from "@/components/EvidenceState";
 
-/** §6.1 Teacher home — the signed-in teacher's own subjects. */
+/** §6.1 Teacher home, the signed-in teacher's own subjects. */
 export default function TeacherHome() {
   usePageHeader({ title: "Teacher Home" });
   const { user } = useAuth();

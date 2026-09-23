@@ -8,7 +8,7 @@ import { school } from "@/lib/avai-mock-data";
 import { useAttend } from "@/lib/attendState";
 
 /**
- * The student onboarding surface — the first AVAI screen a new school ever
+ * The student onboarding surface, the first AVAI screen a new school ever
  * sees. The entry screen is a full-bleed split, so it gets no chrome; every
  * step after it sits under a light glass bar that keeps the school's name
  * and the student's own name in view.

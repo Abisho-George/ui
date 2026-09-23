@@ -8,11 +8,11 @@ import { avaiStaff, staffById, staffByEmail, type StaffMember } from "./avai-adm
  * state an ops person can actually change in a demo: access keys they have
  * generated and reminders they have sent.
  *
- * Deliberately separate from src/lib/auth.tsx — a school principal signing
+ * Deliberately separate from src/lib/auth.tsx, a school principal signing
  * in must never land in here, and an AVAI staff session must survive a
  * principal signing out. Module-level store + useSyncExternalStore, the
  * same contract as attendState.ts.
- * 🔧 BACKEND REQUIRED — nothing is verified; any listed email signs in.
+ * 🔧 BACKEND REQUIRED, nothing is verified; any listed email signs in.
  */
 
 const STORAGE_KEY = "avai.admin.v1";
@@ -49,7 +49,7 @@ function persist() {
     const { staffId, keys, rotations, reminded } = state;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ staffId, keys, rotations, reminded }));
   } catch {
-    /* blocked storage — the console still works, it just won't survive a reload */
+    /* blocked storage, the console still works, it just won't survive a reload */
   }
 }
 
@@ -62,7 +62,7 @@ function hydrate() {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) saved = JSON.parse(raw) as Partial<AdminState>;
   } catch {
-    /* unreadable — start clean */
+    /* unreadable, start clean */
   }
   const staffId = saved.staffId && staffById(saved.staffId) ? saved.staffId : null;
   state = { ...EMPTY, ...saved, staffId, ready: true };
@@ -95,7 +95,7 @@ export function signInStaff(email: string, password: string): StaffSignInResult 
     return { ok: false, field: "email", message: "No AVAI staff account with that email. Use one of the demo accounts below." };
   }
   if (password.trim().length === 0) {
-    return { ok: false, field: "password", message: "Enter any password — this build does not check it." };
+    return { ok: false, field: "password", message: "Enter any password, this build does not check it." };
   }
   state = { ...state, staffId: staff.id, ready: true };
   persist();
@@ -110,7 +110,7 @@ export function signOutStaff() {
 }
 
 // ------------------------------------------------------------
-// Access keys — AVAI generates these, not the school
+// Access keys, AVAI generates these, not the school
 // ------------------------------------------------------------
 
 const KEY_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -132,7 +132,7 @@ function seedFromString(s: string) {
 }
 
 /** Deterministic for a given rotation, so the same teacher at the same
- *  rotation always gets the same key back — but a new rotation produces a
+ *  rotation always gets the same key back, but a new rotation produces a
  *  genuinely different one, for "change key". */
 export function accessKeyFor(schoolId: string, teacherId: string, rotation = 0): string {
   const rnd = mulberry32(seedFromString(`key|${schoolId}|${teacherId}|${rotation}`));

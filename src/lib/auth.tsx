@@ -10,7 +10,7 @@ import {
 } from "./avai-mock-data";
 
 /**
- * Mock auth. 🔧 BACKEND REQUIRED — this is a dev-only role switcher, not real
+ * Mock auth. 🔧 BACKEND REQUIRED, this is a dev-only role switcher, not real
  * sign-in. The "current user" lives in React state and is mirrored to
  * localStorage so reloads keep the chosen shell.
  */
@@ -44,7 +44,7 @@ export function resolveUser(role: Role, userId: string): CurrentUser | null {
 export function homeFor(user: CurrentUser | Role) {
   const role = typeof user === "string" ? user : user.role;
   if (role === "teacher" && typeof user !== "string" && user.role === "teacher" && user.examsOnly) return "/teacher/papers";
-  // Students never sign in — their only visit is the onboarding assessment.
+  // Students never sign in, their only visit is the onboarding assessment.
   return role === "principal" ? "/principal/classes" : role === "teacher" ? "/teacher/home" : "/attend";
 }
 
@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(resolveUser(role, id));
       }
     } catch {
-      /* storage unavailable — stay signed out */
+      /* storage unavailable, stay signed out */
     }
     setReady(true);
   }, []);

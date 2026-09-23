@@ -5,10 +5,18 @@ import { CountUp, Stagger, StaggerItem } from "@/components/motion";
 import { percentShares, type AttentionBreakdown } from "@/lib/avai-mock-data";
 
 /** The four headline tiles on the Class X overview. The three tier tiles
- * are the attention tiers relabelled for a principal — On Track / Watch /
- * Intervention read here as On Track / Need Support / At Risk — and their
+ * are the attention tiers relabelled for a principal, On Track / Watch /
+ * Intervention read here as On Track / Need Support / At Risk, and their
  * shares are rounded together so they add to exactly 100%. */
-export function OverviewKpis({ breakdown, sectionCount }: { breakdown: AttentionBreakdown; sectionCount: number }) {
+export function OverviewKpis({
+  breakdown,
+  sectionCount,
+  onOpen,
+}: {
+  breakdown: AttentionBreakdown;
+  sectionCount: number;
+  onOpen?: (key: string, label: string) => void;
+}) {
   const [onTrackShare, supportShare, riskShare] = percentShares([breakdown.onTrack, breakdown.watch, breakdown.intervention]);
 
   const tiles = [
@@ -50,7 +58,19 @@ export function OverviewKpis({ breakdown, sectionCount }: { breakdown: Attention
     <Stagger className="grid grid--4" gap={0.07} style={{ marginTop: 20 }}>
       {tiles.map((tile, i) => (
         <StaggerItem key={tile.key}>
-          <div className="kpi" style={{ "--accent": tile.accent, height: "100%" } as React.CSSProperties}>
+          <div
+            className="kpi"
+            role={onOpen ? "button" : undefined}
+            tabIndex={onOpen ? 0 : undefined}
+            onClick={() => onOpen?.(tile.key, tile.label)}
+            onKeyDown={(e) => {
+              if (onOpen && (e.key === "Enter" || e.key === " ")) {
+                e.preventDefault();
+                onOpen(tile.key, tile.label);
+              }
+            }}
+            style={{ "--accent": tile.accent, height: "100%", cursor: onOpen ? "pointer" : undefined } as React.CSSProperties}
+          >
             <span className="kpi__icon">{tile.icon}</span>
             <div className="kpi__text">
               <div className="kpi__label">{tile.label}</div>

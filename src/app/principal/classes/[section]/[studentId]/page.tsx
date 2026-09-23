@@ -105,14 +105,14 @@ export default function PrincipalStudentPage() {
         <div className="stat">
           <div className="stat__label">Marks lost</div>
           <div className="stat__value stat__value--sm">
-            {intel?.marksLost ?? "—"}
+            {intel?.marksLost ?? "-"}
             <span className="small muted" style={{ fontWeight: 400 }}> of {totalMarks}</span>
           </div>
         </div>
         <div className="stat">
           <div className="stat__label">In the top 2 gaps</div>
           <div className="stat__value stat__value--sm">
-            {intel?.recoverableOpportunity ?? "—"}
+            {intel?.recoverableOpportunity ?? "-"}
             <span className="small muted" style={{ fontWeight: 400 }}> marks</span>
           </div>
         </div>
@@ -161,12 +161,12 @@ export default function PrincipalStudentPage() {
         </section>
       ) : (
         <div style={{ marginTop: 20 }}>
-          <EvidenceState kind="early">{student.name} scored every mark tested in this assessment — there is no loss to localize.</EvidenceState>
+          <EvidenceState kind="early">{student.name} scored every mark tested in this assessment, there is no loss to localize.</EvidenceState>
         </div>
       )}
 
       <section className="section">
-        <h2 className="section-q">{subject} — one-page report</h2>
+        <h2 className="section-q">{subject}, one-page report</h2>
         <div style={{ marginTop: 12 }}>
           {report ? (
             <BoardXReportView report={report} studentName={student.name} section={section} />

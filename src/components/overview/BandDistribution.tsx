@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { CountUp, EASE_OUT } from "@/components/motion";
 
 export interface BandSegment {
-  /** The band's range, e.g. "450 – 500". */
+  /** The band's range, e.g. "450 - 500". */
   label: string;
   count: number;
   /** Whole-percent share; the set is rounded to add to 100 by the caller. */
@@ -53,7 +53,7 @@ export function BandDistribution({
                 animate={{ flexGrow: seg.count }}
                 transition={{ duration: 0.8, delay: 0.1 + i * 0.07, ease: EASE_OUT }}
                 onClick={() => onSelect(i)}
-                aria-label={`${seg.count} students scoring ${seg.label} — open the list`}
+                aria-label={`${seg.count} students scoring ${seg.label}, open the list`}
               >
                 {seg.share >= 8 ? `${seg.share}%` : ""}
               </motion.button>
@@ -83,7 +83,7 @@ export function BandDistribution({
                 font: "inherit",
                 cursor: "pointer",
               } as React.CSSProperties}
-              aria-label={`${seg.count} students scoring ${seg.label} — open the list`}
+              aria-label={`${seg.count} students scoring ${seg.label}, open the list`}
             >
               <span style={{ display: "grid", gap: 1, minWidth: 0 }}>
                 <span style={{ display: "flex", alignItems: "baseline", gap: 6, flexWrap: "wrap" }}>

@@ -8,7 +8,7 @@ import { EASE_OUT } from "@/components/motion";
 import { homeFor, useAuth } from "@/lib/auth";
 import { school } from "@/lib/avai-mock-data";
 
-/** "/" is a router, not a screen — but it is the first paint, so it carries
+/** "/" is a router, not a screen, but it is the first paint, so it carries
  *  the brand while auth resolves from storage. */
 export default function Index() {
   const { user, ready } = useAuth();

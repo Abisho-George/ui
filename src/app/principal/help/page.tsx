@@ -9,7 +9,7 @@ import { usePageHeader } from "@/lib/pageHeader";
 
 const categories = ["A number looks wrong", "Something isn't working", "A feature I need", "Something else"];
 
-/** Help & Contact — replaces the old Settings screen. Nothing here is
+/** Help & Contact, replaces the old Settings screen. Nothing here is
  * configuration; it's the one place to reach AVAI when a number looks
  * wrong or something breaks. The message form is local-only: it confirms
  * with a toast and nothing is actually sent anywhere. */
@@ -30,7 +30,7 @@ export default function HelpPage() {
   function send() {
     if (!message.trim()) return;
     setSent(true);
-    setToast("Message sent to AVAI support (demo only) — we'll follow up by email.");
+    setToast("Message sent to AVAI support (demo only), we'll follow up by email.");
     setMessage("");
     setTimeout(() => setSent(false), 2400);
   }
@@ -66,7 +66,7 @@ export default function HelpPage() {
               </div>
             </a>
           </div>
-          <div className="card__foot small muted">Demo only — these details don&apos;t connect to a real support line yet.</div>
+          <div className="card__foot small muted">Demo only, these details don&apos;t connect to a real support line yet.</div>
         </div>
 
         <div className="card">
@@ -90,7 +90,7 @@ export default function HelpPage() {
                 id="help-message"
                 className="input"
                 rows={5}
-                placeholder="Tell us what you're seeing — the page, the class or student, and what looks off."
+                placeholder="Tell us what you're seeing, the page, the class or student, and what looks off."
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
               />

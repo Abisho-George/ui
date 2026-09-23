@@ -1,10 +1,10 @@
 /**
- * AVAI — Mock data for a fully-mocked, backend-free UI build.
+ * AVAI, Mock data for a fully-mocked, backend-free UI build.
  *
  * Every page in the app should import from here. NOTHING in this project
  * should call fetch()/axios/etc. against a real server. When the real
  * backend exists later, these exports get replaced by real API calls with
- * the same shapes — that's the whole point of keeping this in one file.
+ * the same shapes, that's the whole point of keeping this in one file.
  *
  * Shapes here follow avai-frontend-design-spec.md exactly (section refs in
  * comments). Where a shape represents something that doesn't exist in any
@@ -22,23 +22,22 @@ export const school = {
   state: "Tamil Nadu",
 };
 
-export const academicYear = "2026–27";
+export const academicYear = "2026-27";
 
 export const sections = ["X-A", "X-B"] as const;
-/** Students per section — X-A and X-B are not the same size, the way a
+/** Students per section, X-A and X-B are not the same size, the way a
  *  real school's sections rarely are. */
 export const sectionSize: Record<string, number> = { "X-A": 45, "X-B": 53 };
 export const subjects = [
   "Mathematics",
-  "Physics",
-  "Chemistry",
+  "Science",
   "English",
   "Social Science",
 ] as const;
 
 // ============================================================
-// Auth / role mocks (§4 login flow — dev-only role switcher)
-// 🔧 Teacher + Student are BACKEND REQUIRED (Index #1, #2) — this is a
+// Auth / role mocks (§4 login flow, dev-only role switcher)
+// 🔧 Teacher + Student are BACKEND REQUIRED (Index #1, #2), this is a
 // stand-in for real sign-in until those exist.
 // ============================================================
 
@@ -60,7 +59,7 @@ export const mockTeachers: Array<{
   role: "teacher";
   assignments: TeacherAssignment[];
   /** An "exam cell" account: every subject, every section, question papers
-   *  and marks only — no class-teacher view, no subject insights. AVAI
+   *  and marks only, no class-teacher view, no subject insights. AVAI
    *  issues this to the one staff member who runs the exam desk. */
   examsOnly?: boolean;
 }> = [
@@ -78,8 +77,7 @@ export const mockTeachers: Array<{
     name: "Mr. Ravi",
     role: "teacher",
     assignments: [
-      { type: "subject", subject: "Physics", sections: ["X-A", "X-B"] },
-      { type: "subject", subject: "Chemistry", sections: ["X-A", "X-B"] },
+      { type: "subject", subject: "Science", sections: ["X-A", "X-B"] },
     ],
   },
   {
@@ -135,18 +133,18 @@ export const testsConducted: ConductedTest[] = [
   { key: "pre_board_2", name: "Pre-Board 2", date: "2027-02-10", status: "Scheduled" },
 ];
 
-/** Analysed tests, oldest first — the spine of every derived number. */
+/** Analysed tests, oldest first, the spine of every derived number. */
 export const analysedTests = testsConducted.filter((t) => t.status === "Analysed");
 /** The most recent analysed test: what "current standing" means everywhere. */
 export const latestTest = analysedTests[analysedTests.length - 1];
 
 // ============================================================
-// Chapter blueprint — what each subject's marks are made of, and how
+// Chapter blueprint, what each subject's marks are made of, and how
 // much each chapter is typically worth in the 80-mark Board paper.
 // Chapter marks sum exactly to the subject's marks tested, so a
 // student's real score can be split across chapters without inventing
 // marks that don't exist.
-// 🔧 BACKEND REQUIRED — the blueprint would come from paper mapping.
+// 🔧 BACKEND REQUIRED, the blueprint would come from paper mapping.
 // ============================================================
 
 export interface ChapterSpec {
@@ -168,11 +166,9 @@ export const subjectChapters: Record<string, ChapterSpec[]> = {
     { chapter: "Trigonometry", marks: 3, boardMarks: 10, difficulty: 1.25 },
     { chapter: "Coordinate Geometry", marks: 3, boardMarks: null, difficulty: 0.7 },
   ],
-  Physics: [
+  Science: [
     { chapter: "Electricity", marks: 6, boardMarks: 9, difficulty: 1.55 },
     { chapter: "Light", marks: 4, boardMarks: 7, difficulty: 1.0 },
-  ],
-  Chemistry: [
     { chapter: "Carbon and its Compounds", marks: 5, boardMarks: 8, difficulty: 1.2 },
     { chapter: "Chemical Reactions & Equations", marks: 3, boardMarks: 6, difficulty: 0.9 },
     { chapter: "Periodic Classification", marks: 2, boardMarks: null, difficulty: 0.7 },
@@ -204,7 +200,7 @@ const subjectMaxMarks: Record<string, number> = Object.fromEntries(
 // names and numbers show up on every visit. This roster is the single
 // source of truth: class averages, attention, reports and trend are
 // all derived from it rather than stated separately.
-// 🔧 BACKEND REQUIRED — the whole roster is dummy data.
+// 🔧 BACKEND REQUIRED, the whole roster is dummy data.
 // ============================================================
 
 function mulberry32(seed: number) {
@@ -294,7 +290,7 @@ function generateSectionRoster(section: string, count: number): FullRosterStuden
     // mean the way averaging independently-random subjects would.
     const studentSkill = mean + (rnd() - 0.5) * 44;
     // How this student moved across the term. Mostly up, some flat, a few
-    // down — a class where everyone gains the same amount reads as fake.
+    // down, a class where everyone gains the same amount reads as fake.
     const drift = -4 + rnd() * 12;
 
     const scores: FullRosterStudent["scores"] = {};
@@ -334,7 +330,7 @@ export function findStudent(id: string): FullRosterStudent | undefined {
   return allStudents.find((s) => s.id === id);
 }
 
-/** Class average % for a section in a test — the number every class-level
+/** Class average % for a section in a test, the number every class-level
  * figure in the app is built from. */
 export function classAveragePct(section: string, testKey: string): number {
   const roster = classRosterFull[section] ?? [];
@@ -347,7 +343,7 @@ export function classAveragePct(section: string, testKey: string): number {
 // ============================================================
 
 export const assessmentContext = {
-  /** "Now" for the whole mock build — every "x days ago" is measured from
+  /** "Now" for the whole mock build, every "x days ago" is measured from
    *  here, so the copy never drifts as real time passes. */
   today: "2026-09-19",
   assessmentName: latestTest.name,
@@ -361,9 +357,9 @@ export const assessmentContext = {
 };
 
 // ============================================================
-// The reusable "finding" unit (§5.4) — used across Marks Loss,
+// The reusable "finding" unit (§5.4), used across Marks Loss,
 // Urgency vs Impact, Anomalies, and Interventions.
-// confidence: ✅ exists at question level (QuestionTier.confidence) —
+// confidence: ✅ exists at question level (QuestionTier.confidence) -
 // aggregation to cohort level should be verified before real wiring.
 // causeStatus "not_localized": 🔧 BACKEND REQUIRED (Index #3)
 // ============================================================
@@ -410,7 +406,7 @@ export const findings: Finding[] = [
   },
   {
     id: "find_electricity",
-    subject: "Physics",
+    subject: "Science",
     topic: "Electricity",
     subskill: "Numericals",
     studentsAffected: 50,
@@ -425,21 +421,21 @@ export const findings: Finding[] = [
   },
   {
     id: "find_light",
-    subject: "Physics",
+    subject: "Science",
     topic: "Light",
     subskill: undefined as unknown as string,
     studentsAffected: 34,
     avgMarksLost: 2.7,
     boardUrgency: "HIGH",
     boardRecurrence: "3/4 years",
-    confidence: "HIGH", // confidence a problem exists — NOT confidence in a cause
+    confidence: "HIGH", // confidence a problem exists, NOT confidence in a cause
     causeStatus: "not_localized", // 🔧 BACKEND REQUIRED (Index #3)
     observation:
       "Students are consistently losing marks across this chapter, but no single subtopic, competency or question pattern explains enough of the loss to identify a reliable cause.",
   },
   {
     id: "find_carbon",
-    subject: "Chemistry",
+    subject: "Science",
     topic: "Carbon and its Compounds",
     subskill: "Reasoning",
     studentsAffected: 29,
@@ -449,12 +445,12 @@ export const findings: Finding[] = [
     confidence: "MEDIUM",
     causeStatus: "localized",
     observation:
-      "A smaller, lower-urgency pattern — included to show contrast against high-urgency findings in the Urgency vs. Impact table.",
+      "A smaller, lower-urgency pattern, included to show contrast against high-urgency findings in the Urgency vs. Impact table.",
   },
 ];
 
 // ============================================================
-// §5.3 (10) Section Comparison — DERIVED from the roster, so a class's
+// §5.3 (10) Section Comparison, DERIVED from the roster, so a class's
 // headline attainment always equals the average of the students shown
 // in its own table (these used to be stated separately and disagreed).
 // ============================================================
@@ -498,7 +494,7 @@ export const schoolSnapshot = {
 };
 
 // ============================================================
-// §5.7 Empty / limited-evidence states — reusable copy
+// §5.7 Empty / limited-evidence states, reusable copy
 // ============================================================
 
 export const emptyStates = {
@@ -515,19 +511,19 @@ export const emptyStates = {
 };
 
 // ============================================================
-// §5.11 Manage Teachers screen — reuses mockTeachers above
+// §5.11 Manage Teachers screen, reuses mockTeachers above
 // (🔧 BACKEND REQUIRED, Index #1)
 // ============================================================
 
 export const manageTeachersList = mockTeachers;
 
 // ============================================================
-// §7 Student-facing experience — 🔧 entire section BACKEND REQUIRED
+// §7 Student-facing experience, 🔧 entire section BACKEND REQUIRED
 // (Index #2). This is what the Student login/home/report screens render.
 // ============================================================
 
-// §7.3 One-page BoardX student report — mirrors the real
-// "AVAI BoardX — Your One-Page Assessment Report" hand-off design:
+// §7.3 One-page BoardX student report, mirrors the real
+// "AVAI BoardX, Your One-Page Assessment Report" hand-off design:
 // where you stand, how you handled questions, where marks went, and
 // what to practise next. Evidence-first: nothing here invents a score
 // or a pattern the underlying paper doesn't support.
@@ -557,7 +553,7 @@ export interface ReportActionGroup {
 export interface BoardXStudentReport {
   subject: string;
   assessmentName: string; // "Unit Test 2"
-  score: string; // "16 / 17" — headline for the report list / hero
+  score: string; // "16 / 17", headline for the report list / hero
   trend: "up" | "down" | "flat"; // drives Improve/Achieve mascot pose
   encouragingLine: string;
   totalBoardMarks: number;
@@ -576,7 +572,7 @@ export interface BoardXStudentReport {
 }
 
 /** The one thing a chapter's lost marks usually mean, and the exact
- *  NCERT practice that addresses it. Curated per chapter — this is the
+ *  NCERT practice that addresses it. Curated per chapter, this is the
  *  pedagogy, not the arithmetic. */
 export interface ChapterPattern {
   /** Short all-caps tag shown on the report, e.g. "MULTI-STEP APPLICATION". */
@@ -598,9 +594,9 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     label: "MULTI-STEP APPLICATION",
     lossKind: "Application",
     headline: "You scored higher on questions asking you to state a rule than on questions asking you to apply it in a new situation.",
-    body: "The clearest pattern here is on multi-step application questions in Quadratic Equations — the same pattern BoardX sees across Class X.",
+    body: "The clearest pattern here is on multi-step application questions in Quadratic Equations, the same pattern BoardX sees across Class X.",
     insight: "The marks lost are on questions that ask you to build the equation from a situation, not to solve one already given.",
-    practice: ["Ex 4.3 Q7 — word problem leading to a quadratic", "Ex 4.4 Q2 — two-step \"nature of roots\" application", "Ex 4.4 Q5 — forming the equation from a story sum"],
+    practice: ["Ex 4.3 Q7, word problem leading to a quadratic", "Ex 4.4 Q2, two-step \"nature of roots\" application", "Ex 4.4 Q5, forming the equation from a story sum"],
   },
   "Arithmetic Progressions": {
     label: "TERM SELECTION",
@@ -608,15 +604,15 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher on questions giving you the term to find than on questions where you had to work out which term is being asked for.",
     body: "The clearest pattern here is in choosing n before applying the formula in Arithmetic Progressions.",
     insight: "The formula is being applied correctly; the marks go on identifying which term the question is actually asking about.",
-    practice: ["Ex 5.2 Q11 — find n given the term value", "Ex 5.3 Q3 — sum-to-n word problems", "Ex 5.3 Q10 — AP formed from a real-world sequence"],
+    practice: ["Ex 5.2 Q11, find n given the term value", "Ex 5.3 Q3, sum-to-n word problems", "Ex 5.3 Q10, AP formed from a real-world sequence"],
   },
   Trigonometry: {
     label: "IDENTITY CHOICE",
     lossKind: "Identity choice",
     headline: "You scored higher on direct ratio questions than on questions where you had to pick the identity to use first.",
-    body: "The clearest pattern here is identity selection in Trigonometry — the step before the calculation.",
+    body: "The clearest pattern here is identity selection in Trigonometry, the step before the calculation.",
     insight: "The lost marks are on proofs where the first substitution decides whether the rest works out.",
-    practice: ["Ex 8.4 Q5 (i–iii) — prove using a chosen identity", "Ex 9.1 Q3 — heights and distances, two-angle setup", "Ex 8.3 Q7 — complementary-angle simplification"],
+    practice: ["Ex 8.4 Q5 (i-iii), prove using a chosen identity", "Ex 9.1 Q3, heights and distances, two-angle setup", "Ex 8.3 Q7, complementary-angle simplification"],
   },
   "Coordinate Geometry": {
     label: "FORMULA SETUP",
@@ -624,7 +620,7 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher when the coordinates were given than when you had to derive them before substituting.",
     body: "The clearest pattern here is setting up the right formula in Coordinate Geometry.",
     insight: "The arithmetic is sound; the marks go on deciding which of section / distance / area applies.",
-    practice: ["Ex 7.2 Q6 — section formula with an unknown ratio", "Ex 7.1 Q8 — distance with an unknown coordinate", "Ex 7.3 Q4 — area of a triangle from vertices"],
+    practice: ["Ex 7.2 Q6, section formula with an unknown ratio", "Ex 7.1 Q8, distance with an unknown coordinate", "Ex 7.3 Q4, area of a triangle from vertices"],
   },
   Electricity: {
     label: "NUMERICAL CONVERSION",
@@ -632,15 +628,15 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher on questions asking you to state a law than on questions asking you to calculate a numerical answer.",
     body: "The clearest pattern here is on numerical questions in Electricity.",
     insight: "The lost marks are all on questions that ask you to calculate a value, not to state a rule.",
-    practice: ["V = IR — single-step numericals, practice set A", "Power (P = VI) — two-step problems", "Series + parallel combination circuits"],
+    practice: ["V = IR, single-step numericals, practice set A", "Power (P = VI), two-step problems", "Series + parallel combination circuits"],
   },
   Light: {
     label: "SIGN CONVENTION",
     lossKind: "Sign convention",
     headline: "You scored higher on ray-diagram questions than on questions needing the mirror or lens formula with signs.",
-    body: "The clearest pattern here is sign convention in Light — Reflection and Refraction.",
+    body: "The clearest pattern here is sign convention in Light, Reflection and Refraction.",
     insight: "The method is right; the marks go on the sign of u, v or f before substituting.",
-    practice: ["Mirror formula — 10 mixed concave/convex numericals", "Lens formula with magnification, both signs", "Draw-and-label: image position for each mirror case"],
+    practice: ["Mirror formula, 10 mixed concave/convex numericals", "Lens formula with magnification, both signs", "Draw-and-label: image position for each mirror case"],
   },
   "Carbon and its Compounds": {
     label: "REASONING",
@@ -648,7 +644,7 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher on naming and structure questions than on questions asking why a reaction behaves the way it does.",
     body: "The clearest pattern here is reasoning questions in Carbon and its Compounds.",
     insight: "Structures are being drawn correctly; the marks go on explaining the behaviour behind them.",
-    practice: ["Why soaps form micelles — write the full reason", "Addition vs substitution: give a reason for each", "Homologous series — explain the trend in properties"],
+    practice: ["Why soaps form micelles, write the full reason", "Addition vs substitution: give a reason for each", "Homologous series, explain the trend in properties"],
   },
   "Chemical Reactions & Equations": {
     label: "BALANCING",
@@ -664,7 +660,7 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher on recalling the position of an element than on using a trend to compare two of them.",
     body: "The clearest pattern here is applying periodic trends in Periodic Classification.",
     insight: "Positions are known; the marks go on using them to predict or compare a property.",
-    practice: ["Compare atomic radius across a period — 8 pairs", "Predict valency from group number", "Explain metallic character down a group"],
+    practice: ["Compare atomic radius across a period, 8 pairs", "Predict valency from group number", "Explain metallic character down a group"],
   },
   "Unseen Passage": {
     label: "INFERENCE",
@@ -672,15 +668,15 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher on questions whose answer is stated in the passage than on questions asking what the passage implies.",
     body: "The clearest pattern here is inference questions on the unseen passage.",
     insight: "Directly-stated answers are being found; the marks go on questions that need a conclusion drawn from the text.",
-    practice: ["Two unseen passages — answer only the inference questions", "Underline the line your answer is built on, every time", "Vocabulary-in-context: 20 items"],
+    practice: ["Two unseen passages, answer only the inference questions", "Underline the line your answer is built on, every time", "Vocabulary-in-context: 20 items"],
   },
   "Writing Skills": {
     label: "FORMAT",
     lossKind: "Format",
     headline: "You scored higher on the content of your writing than on the format marks around it.",
     body: "The clearest pattern here is format marks in letters and notices.",
-    insight: "The content is there; the marks go on the fixed format — heading, address, closing, word limit.",
-    practice: ["Three formal letters — format checklist marked first", "Two notices inside the word limit", "Rewrite one past answer, fixing format only"],
+    insight: "The content is there; the marks go on the fixed format, heading, address, closing, word limit.",
+    practice: ["Three formal letters, format checklist marked first", "Two notices inside the word limit", "Rewrite one past answer, fixing format only"],
   },
   "Prose Literature": {
     label: "TEXTUAL EVIDENCE",
@@ -696,7 +692,7 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher on questions asking what happened than on questions asking why it happened.",
     body: "The clearest pattern here is cause-and-effect reasoning in Nationalism in India.",
     insight: "Events and dates are secure; the marks go on linking a cause to its consequence.",
-    practice: ["Non-Cooperation: three causes, three effects", "Why Civil Disobedience was withdrawn — full answer", "Compare the two movements in a table"],
+    practice: ["Non-Cooperation: three causes, three effects", "Why Civil Disobedience was withdrawn, full answer", "Compare the two movements in a table"],
   },
   "Resources and Development": {
     label: "CLASSIFICATION",
@@ -704,7 +700,7 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher on defining a resource than on classifying one correctly with a reason.",
     body: "The clearest pattern here is classification with justification in Resources and Development.",
     insight: "Definitions are known; the marks go on placing an example in the right category and saying why.",
-    practice: ["Classify 20 resources on all four bases", "Soil types — one distinguishing feature each", "Land-use change: read and interpret the table"],
+    practice: ["Classify 20 resources on all four bases", "Soil types, one distinguishing feature each", "Land-use change: read and interpret the table"],
   },
   "Power Sharing & Federalism": {
     label: "EXAMPLE USE",
@@ -712,7 +708,7 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher on stating a principle than on backing it with the right example.",
     body: "The clearest pattern here is using examples to support an argument in Power Sharing & Federalism.",
     insight: "The principle is stated correctly; the marks go on the supporting example the question asks for.",
-    practice: ["Belgium vs Sri Lanka — two contrasts each", "List the three lists with two subjects each", "Decentralisation in India — one example per point"],
+    practice: ["Belgium vs Sri Lanka, two contrasts each", "List the three lists with two subjects each", "Decentralisation in India, one example per point"],
   },
   "Map Work": {
     label: "LOCATION ACCURACY",
@@ -720,12 +716,12 @@ export const chapterPatterns: Record<string, ChapterPattern> = {
     headline: "You scored higher on naming a place than on locating it correctly on the map.",
     body: "The clearest pattern here is location accuracy in Map Work.",
     insight: "The places are identified; the marks go on marking them in the right position.",
-    practice: ["Blank India map — 15 listed locations, twice", "Soil and mineral belts on one outline map", "Label the Congress-session sites in order"],
+    practice: ["Blank India map, 15 listed locations, twice", "Soil and mineral belts on one outline map", "Label the Congress-session sites in order"],
   },
 };
 
 // ============================================================
-// Report engine — turns a student's real scores into the one-page
+// Report engine, turns a student's real scores into the one-page
 // BoardX report. Deterministic (seeded by student + test + subject)
 // so the same student always gets the same breakdown, and the totals
 // always reconcile with the marks shown everywhere else in the app.
@@ -809,10 +805,10 @@ function trendFor(student: FullRosterStudent, testKey: string, subject: string):
 }
 
 function encouragementFor(pct: number, trend: "up" | "down" | "flat", prevExists: boolean): string {
-  if (trend === "up") return "Up from your last assessment. Keep going — you're on the right path.";
+  if (trend === "up") return "Up from your last assessment. Keep going, you're on the right path.";
   if (trend === "down" && prevExists) return "Down a little from last time. One focused chapter will turn this around.";
   if (pct >= 85) return "Strong, steady work. Hold this standard into the Board paper.";
-  if (pct >= 70) return "Solid foundations — a bit more practice will help.";
+  if (pct >= 70) return "Solid foundations, a bit more practice will help.";
   if (pct >= 55) return "The base is there. The chapter below is where the marks are waiting.";
   return "Start with one chapter, not five. The plan below is the shortest way up.";
 }
@@ -846,7 +842,7 @@ export function buildStudentReport(student: FullRosterStudent, testKey: string, 
       scoreLabel: `${r.scored} / ${r.outOf}`,
       scored: r.scored,
       outOf: r.outOf,
-      subLabel: `${r.notScored} of ${r.outOf} mark${r.outOf === 1 ? "" : "s"} not scored — ${p.lossKind.toLowerCase()}`,
+      subLabel: `${r.notScored} of ${r.outOf} mark${r.outOf === 1 ? "" : "s"} not scored, ${p.lossKind.toLowerCase()}`,
       insight: p.insight,
     };
   });
@@ -854,7 +850,7 @@ export function buildStudentReport(student: FullRosterStudent, testKey: string, 
   const actionPlan = losses.slice(0, 2).map((r) => {
     const p = patternFor(r.chapter);
     return {
-      heading: `${r === losses[0] ? "START WITH" : "THEN"}: ${r.chapter} — ${p.lossKind.toLowerCase()}`,
+      heading: `${r === losses[0] ? "START WITH" : "THEN"}: ${r.chapter}, ${p.lossKind.toLowerCase()}`,
       items: p.practice,
     };
   });
@@ -886,7 +882,7 @@ export function buildStudentReport(student: FullRosterStudent, testKey: string, 
       ? {
           chapter: clean.chapter,
           scoreLabel: `${clean.scored} / ${clean.outOf}`,
-          note: "Full marks here — there isn't a loss to explain, so no pattern is shown for this chapter.",
+          note: "Full marks here, there isn't a loss to explain, so no pattern is shown for this chapter.",
         }
       : null,
     actionPlan,
@@ -911,7 +907,7 @@ export function parseReportId(id: string): { studentId: string; testKey: string;
   return { studentId, testKey, subject };
 }
 
-/** Look a report up by id — the single entry point every report screen uses. */
+/** Look a report up by id, the single entry point every report screen uses. */
 export function getStudentReport(id: string): BoardXStudentReport | null {
   const parsed = parseReportId(id);
   if (!parsed) return null;
@@ -1037,7 +1033,7 @@ export function studentIntelligenceFor(student: FullRosterStudent, testKey: stri
   if (!top) {
     summary = `${student.name} scored every mark tested in ${test?.name ?? "this assessment"}. There is no gap to localize at this stage.`;
   } else {
-    const first = `${student.name}'s loss is concentrated in ${top.subskill.toLowerCase()} in ${top.subject} — ${top.topic}.`;
+    const first = `${student.name}'s loss is concentrated in ${top.subskill.toLowerCase()} in ${top.subject}, ${top.topic}.`;
     const second =
       urgent && urgent !== top
         ? ` The ${urgent.subject} gap in ${urgent.topic} is smaller but carries very high Board urgency, so both should be addressed together.`
@@ -1062,12 +1058,12 @@ export function studentIntelligenceFor(student: FullRosterStudent, testKey: stri
   };
 }
 
-/** The one chapter a student should fix first — shown in roster tables. */
+/** The one chapter a student should fix first, shown in roster tables. */
 export function mainBlockerFor(student: FullRosterStudent, testKey: string = latestTest.key): string {
   const intel = studentIntelligenceFor(student, testKey);
   const top = intel?.subjects[0];
-  if (!top) return "—";
-  return `${top.topic} — ${top.subskill}`;
+  if (!top) return "-";
+  return `${top.topic}, ${top.subskill}`;
 }
 
 // ============================================================
@@ -1092,7 +1088,7 @@ export function teacherReportFor(student: FullRosterStudent, testKey: string = l
   const subjectReports: TeacherSubjectReport[] = subjects.map((subject, i) => {
     const score = student.scores[testKey]?.[subject];
     if (!score) {
-      return { subject, assessment: test?.name ?? testKey, score: "— / —", strengths: [], focusAreas: [], issued: false, sharedWithStudent: false };
+      return { subject, assessment: test?.name ?? testKey, score: "- / -", strengths: [], focusAreas: [], issued: false, sharedWithStudent: false };
     }
     const rows = chapterBreakdown(student, testKey, subject);
     const clean = rows.filter((r) => r.notScored === 0).map((r) => r.chapter);
@@ -1119,18 +1115,18 @@ export function teacherReportFor(student: FullRosterStudent, testKey: string = l
 
 // ============================================================
 // ADDITIONS for the UI-only build (same shapes/style as above).
-// Everything below is 🔧 BACKEND REQUIRED — no real endpoint yet.
+// Everything below is 🔧 BACKEND REQUIRED, no real endpoint yet.
 // ============================================================
 
-// §4 login form — dev-only switcher entries
+// §4 login form, dev-only switcher entries
 export const devLoginOptions = [
   { key: "principal", label: "Sign in as Principal", sub: mockPrincipal.name, role: "principal" as Role, userId: mockPrincipal.id },
   { key: "teacher_1", label: "Sign in as Teacher", sub: "Mrs. Lakshmi · X-A class teacher · Maths X-A, X-B", role: "teacher" as Role, userId: "staff_teacher_1" },
-  { key: "teacher_2", label: "Sign in as Teacher", sub: "Mr. Ravi · Physics & Chemistry · X-A, X-B", role: "teacher" as Role, userId: "staff_teacher_2" },
+  { key: "teacher_2", label: "Sign in as Teacher", sub: "Mr. Ravi · Science · X-A, X-B", role: "teacher" as Role, userId: "staff_teacher_2" },
   { key: "student", label: "Sign in as Student", sub: "Aditi R. · X-A · Roll 01", role: "student" as Role, userId: mockStudentUser.id },
 ];
 
-// §6.2 / §6.3 Teacher class & subject views — roster per section
+// §6.2 / §6.3 Teacher class & subject views, roster per section
 export interface RosterStudent {
   id: string;
   rollNo: string;
@@ -1152,8 +1148,8 @@ export function rosterFor(section: string, testKey: string = latestTest.key): Ro
       rollNo: s.rollNo,
       name: s.name,
       section: s.section,
-      // A scheduled test has no scores yet — "—" rather than a crash.
-      attainment: Object.fromEntries(subjects.map((sub) => [sub, row ? `${row[sub].scored}/${row[sub].outOf}` : "—"])),
+      // A scheduled test has no scores yet, "-" rather than a crash.
+      attainment: Object.fromEntries(subjects.map((sub) => [sub, row ? `${row[sub].scored}/${row[sub].outOf}` : "-"])),
       attention: attentionFor(s, testKey),
       mainBlocker: mainBlockerFor(s, testKey),
     };
@@ -1176,7 +1172,7 @@ export const classSummary: Record<string, { students: number; overallAttainment:
   ])
 );
 
-// §6.3 Subject view — per-section subject snapshot, computed from the
+// §6.3 Subject view, per-section subject snapshot, computed from the
 // roster rather than stated, so a subject's average always matches the
 // students listed underneath it.
 export interface SubjectSnapshot {
@@ -1205,7 +1201,7 @@ function topGapIn(section: string, testKey: string, subject: string): { chapter:
 }
 
 function gapLabel(chapter: string): string {
-  return `${chapter} — ${patternFor(chapter).lossKind}`;
+  return `${chapter}, ${patternFor(chapter).lossKind}`;
 }
 
 /** The section's single biggest gap across all subjects. */
@@ -1232,7 +1228,7 @@ export function subjectSnapshotFor(subject: string, section: string, testKey: st
   };
 }
 
-// §5.9 Papers / §5.10 Enter marks / Help — page headers
+// §5.9 Papers / §5.10 Enter marks / Help, page headers
 export const pageHeaders = {
   papers: { title: "Question Papers", blurb: "Upload and map each subject's paper to the Board blueprint. Once a subject's paper is mapped, generate its answer card for marking." },
   enterMarks: { title: "Enter Marks", blurb: "Upload a filled answer card to read marks automatically, or enter them question-wise by hand. Teachers can also enter marks from their Subject view." },
@@ -1240,11 +1236,11 @@ export const pageHeaders = {
 };
 
 // ============================================================
-// §5.9 Question Papers — one paper per (test, subject). A test's papers
+// §5.9 Question Papers, one paper per (test, subject). A test's papers
 // are managed together, but each subject's paper is uploaded, mapped and
-// turned into an answer card independently — that's how a real school
+// turned into an answer card independently, that's how a real school
 // runs it: different subject teachers hand theirs in on their own schedule.
-// 🔧 BACKEND REQUIRED — upload / mapping / answer-card generation are all
+// 🔧 BACKEND REQUIRED, upload / mapping / answer-card generation are all
 // simulated with local state and timed status transitions; nothing here is
 // actually parsed, scanned or stored.
 // ============================================================
@@ -1258,7 +1254,7 @@ export interface SubjectPaper {
   uploadedBy: string | null;
   uploadedAt: string | null;
   status: SubjectPaperStatus;
-  /** Whether "Generate answer card" has been run for this paper — gates
+  /** Whether "Generate answer card" has been run for this paper, gates
    *  the answer-card upload flow in Enter Marks. */
   answerCardGenerated: boolean;
 }
@@ -1268,8 +1264,7 @@ export interface SubjectPaper {
 // against any one paper, so it's a property of the subject, not the test.
 const blueprintExtras: Record<string, string[]> = {
   Mathematics: ["Real Numbers", "Polynomials", "Pair of Linear Equations", "Triangles", "Circles", "Statistics", "Probability"],
-  Physics: ["Magnetic Effects of Current", "Sources of Energy"],
-  Chemistry: ["Acids, Bases and Salts", "Metals and Non-metals"],
+  Science: ["Magnetic Effects of Current", "Sources of Energy", "Acids, Bases and Salts", "Metals and Non-metals"],
   English: ["Grammar", "Poetry", "Supplementary Reader"],
   "Social Science": ["The Making of a Global World", "Agriculture", "Political Parties", "Money and Credit"],
 };
@@ -1290,7 +1285,7 @@ function splitIntoQuestions(marks: number): number[] {
 }
 
 /** The questions in a subject's paper, derived from the same chapter
- *  blueprint the student reports are built on — so "View mapping", the
+ *  blueprint the student reports are built on, so "View mapping", the
  *  answer card and a student's report all describe the same paper. */
 function questionsForSubjects(paperSubjects: string[]): PaperQuestion[] {
   const questions: PaperQuestion[] = [];
@@ -1324,7 +1319,7 @@ export interface PaperQuestion {
   marks: number;
 }
 
-/** Chapter-by-chapter blueprint mapping, keyed by subject — every analysed
+/** Chapter-by-chapter blueprint mapping, keyed by subject, every analysed
  *  test's paper for a subject is assumed to test the same chapter set (the
  *  same assumption the report engine makes via `subjectChapters`), so
  *  coverage is a property of the subject rather than of one test's file. */
@@ -1333,7 +1328,7 @@ export const paperChapterMapping: Record<string, { chapter: string; covered: boo
 );
 
 /** Question-by-question breakdown behind each chapter's questionsMapped
- *  count — shown when a subject's paper is opened. */
+ *  count, shown when a subject's paper is opened. */
 export const paperQuestions: Record<string, PaperQuestion[]> = Object.fromEntries(subjects.map((s) => [s, questionsForSubjects([s])]));
 
 /** Coverage of the Board blueprint by a subject's paper, derived from its
@@ -1345,10 +1340,10 @@ export function paperCoverage(subject: string) {
   return { covered, total: rows.length, pct: Math.round((covered / rows.length) * 100) };
 }
 
-/** Question-wise entry grid per subject, derived from the same blueprint —
+/** Question-wise entry grid per subject, derived from the same blueprint -
  *  the columns a teacher types (or an answer card fills) into are the
  *  questions the paper actually contains. */
-/** One question per mark — a real paper's marking scheme is far more
+/** One question per mark, a real paper's marking scheme is far more
  *  granular than the chapter-level split used for blueprint mapping
  *  (`paperQuestions`), and Enter Marks is where that granularity actually
  *  matters: a teacher is transcribing individual question scores off a
@@ -1373,12 +1368,12 @@ export interface QuestionSpec {
   key: string;
   label: string;
   maxMarks: number;
-  /** Which chapter this question came from — the same blueprint the paper
+  /** Which chapter this question came from, the same blueprint the paper
    *  mapping and the student reports use. */
   chapter: string;
 }
 
-/** First teacher assigned to a subject — used as the default uploader on a
+/** First teacher assigned to a subject, used as the default uploader on a
  *  seeded paper record. */
 function teacherForSubject(subject: string): string {
   const t = mockTeachers.find((t) => t.assignments.some((a) => a.type === "subject" && a.subject === subject));
@@ -1401,15 +1396,15 @@ function seedPaper(testKey: string, subject: string, status: SubjectPaperStatus)
 
 /** testKey -> subject -> paper. The two analysed tests already have every
  *  subject mapped (marks couldn't exist otherwise); the Quarterly Exam has
- *  a Physics paper mid-review; every other combination starts "Not
- *  uploaded" — what a school's paper tracker actually looks like mid-term. */
+ *  a Science paper mid-review; every other combination starts "Not
+ *  uploaded", what a school's paper tracker actually looks like mid-term. */
 export const initialSubjectPapers: Record<string, Record<string, SubjectPaper>> = Object.fromEntries(
   testsConducted.map((t) => [
     t.key,
     Object.fromEntries(
       subjects.map((s) => {
         if (t.status === "Analysed") return [s, seedPaper(t.key, s, "Mapped")];
-        if (t.key === "quarterly" && s === "Physics") return [s, seedPaper(t.key, s, "Needs mapping")];
+        if (t.key === "quarterly" && s === "Science") return [s, seedPaper(t.key, s, "Needs mapping")];
         return [s, seedPaper(t.key, s, "Not uploaded")];
       })
     ),
@@ -1420,7 +1415,7 @@ export const initialSubjectPapers: Record<string, Record<string, SubjectPaper>> 
  *  subject score across that subject's questions (largest-remainder,
  *  weighted by question marks and a stable per-student draw), so an
  *  uploaded answer card reconciles with the score already on record.
- *  Only meaningful for an analysed test — a scheduled one has no marks to
+ *  Only meaningful for an analysed test, a scheduled one has no marks to
  *  read yet, so callers should gate the upload flow on that. */
 export function ocrMarksFor(studentId: string, testKey: string, subject: string): Record<string, number> | null {
   const student = findStudent(studentId);
@@ -1447,7 +1442,7 @@ export function ocrMarksFor(studentId: string, testKey: string, subject: string)
 }
 
 // ============================================================
-// Help & Contact — replaces the old Settings screen. A mock-only build
+// Help & Contact, replaces the old Settings screen. A mock-only build
 // has nothing to configure; what a principal actually needs is a way to
 // reach AVAI when something looks wrong.
 // ============================================================
@@ -1455,22 +1450,22 @@ export function ocrMarksFor(studentId: string, testKey: string, subject: string)
 export const helpContact = {
   supportEmail: "support@avai.school",
   supportPhone: "+91 44 4567 8900",
-  hours: "Mon–Sat, 9:00 AM – 6:00 PM IST",
+  hours: "Mon-Sat, 9:00 AM - 6:00 PM IST",
   faqs: [
-    { q: "A student's marks look wrong — what do I do?", a: "Open Enter Marks for that assessment and correct the question-wise score; every report and KPI that depends on it updates immediately." },
-    { q: "Why does a chapter say \"Not enough evidence\"?", a: "That chapter wasn't tested enough in the mapped papers to say anything reliable about it yet — map a paper against it to change that." },
-    { q: "Can I undo sending a report to students?", a: "Not from here — check the test before sending. Message us below if a report needs to be recalled." },
+    { q: "A student's marks look wrong, what do I do?", a: "Open Enter Marks for that assessment and correct the question-wise score; every report and KPI that depends on it updates immediately." },
+    { q: "Why does a chapter say \"Not enough evidence\"?", a: "That chapter wasn't tested enough in the mapped papers to say anything reliable about it yet, map a paper against it to change that." },
+    { q: "Can I undo sending a report to students?", a: "Not from here, check the test before sending. Message us below if a report needs to be recalled." },
   ],
 };
 
 // ============================================================
 // Principal → Classes (classwise drill-down: Overview → Class →
 // Student, with a test-wise report picker on the student page).
-// Reuses sectionComparison / classRoster / studentReportDetail —
+// Reuses sectionComparison / classRoster / studentReportDetail -
 // no new cohort-level numbers are invented here.
 // ============================================================
 
-/** Every report id available for a student — one per analysed test per
+/** Every report id available for a student, one per analysed test per
  *  subject, so every student drills down to a real report. */
 export function studentReportIds(studentId: string): string[] {
   return reportsForStudent(studentId).map((r) => r.id);
@@ -1482,16 +1477,16 @@ export const classTeacherBySection: Record<string, string> = Object.fromEntries(
 );
 
 // ============================================================
-// Principal home — "Class X" grade dashboard: Board-mark-band tables,
+// Principal home, "Class X" grade dashboard: Board-mark-band tables,
 // section/subject pies, and the intelligence layer (toppers, late
 // bloomers, weakest class/subject, anomalies).
 //
 // A student's assessment % is projected onto a 100-mark Board scale per
 // subject (and summed for the 500-mark total) so the bands read the way
 // a principal actually thinks about Board marks. This is a projection
-// from internal assessments, not a calibrated Board-score prediction —
+// from internal assessments, not a calibrated Board-score prediction -
 // every screen that uses it says "projected" for that reason.
-// 🔧 BACKEND REQUIRED — real Board-mark projection is a modelling
+// 🔧 BACKEND REQUIRED, real Board-mark projection is a modelling
 // problem; this mock scales the analysed-assessment % directly.
 // ============================================================
 
@@ -1500,7 +1495,7 @@ export function projectedSubjectMarks(student: FullRosterStudent, testKey: strin
   return Math.round(pctFor(student, testKey, subject));
 }
 
-/** Sum of all 5 subjects' projected marks — a 500-mark Board-scale total. */
+/** Sum of all 5 subjects' projected marks, a 500-mark Board-scale total. */
 export function projectedTotalMarks(student: FullRosterStudent, testKey: string): number {
   return subjects.reduce((sum, s) => sum + projectedSubjectMarks(student, testKey, s), 0);
 }
@@ -1513,18 +1508,18 @@ export interface MarkBand {
 
 /** Bands over the 500-mark projected total. */
 export const totalMarkBands: MarkBand[] = [
-  { label: "450 – 500", min: 450, max: 500 },
-  { label: "400 – 449", min: 400, max: 449 },
-  { label: "350 – 399", min: 350, max: 399 },
+  { label: "450 - 500", min: 450, max: 500 },
+  { label: "400 - 449", min: 400, max: 449 },
+  { label: "350 - 399", min: 350, max: 399 },
   { label: "Below 350", min: 0, max: 349 },
 ];
 
 /** Bands over one subject's 100-mark projected score. */
 export const subjectMarkBands: MarkBand[] = [
-  { label: "90 – 100", min: 90, max: 100 },
-  { label: "80 – 89", min: 80, max: 89 },
-  { label: "70 – 79", min: 70, max: 79 },
-  { label: "60 – 69", min: 60, max: 69 },
+  { label: "90 - 100", min: 90, max: 100 },
+  { label: "80 - 89", min: 80, max: 89 },
+  { label: "70 - 79", min: 70, max: 79 },
+  { label: "60 - 69", min: 60, max: 69 },
   { label: "Below 60", min: 0, max: 59 },
 ];
 
@@ -1594,7 +1589,7 @@ export function previousAnalysedTestKey(testKey: string): string | null {
 }
 
 /** Students who moved up the most between `testKey` and the analysed test
- *  before it — "late bloomers" rather than the (usually already-strong)
+ *  before it, "late bloomers" rather than the (usually already-strong)
  *  toppers. Empty when `testKey` is the first analysed test. */
 export function lateBloomersFor(n: number, testKey: string = latestTest.key, section: string | "All" = "All"): LateBloomer[] {
   const prevKey = previousAnalysedTestKey(testKey);
@@ -1611,7 +1606,7 @@ export function lateBloomersFor(n: number, testKey: string = latestTest.key, sec
     .slice(0, n);
 }
 
-/** Same as lateBloomersFor, but the gain is measured in one subject only —
+/** Same as lateBloomersFor, but the gain is measured in one subject only -
  *  for a subject teacher's own view, where "late bloomer" should mean
  *  rising in their subject, not overall. */
 export function lateBloomersForSubject(subject: string, testKey: string, section: string | "All" = "All"): LateBloomer[] {
@@ -1667,10 +1662,10 @@ function dropSortKey<T extends AnomalyInsight>(candidate: T): AnomalyInsight {
   return { id, kind, headline, detail, numbers, section, subject, studentId };
 }
 
-/** Real, numbers-backed surprises — never a bare claim. Computed once from
+/** Real, numbers-backed surprises, never a bare claim. Computed once from
  *  the same roster every other KPI reads, so nothing here can disagree
  *  with the table underneath it. Thresholds below are tuned against this
- *  build's actual seeded data (checked by hand), not picked blind — a
+ *  build's actual seeded data (checked by hand), not picked blind, a
  *  student's subjects move together enough that "ranked #1 overall and
  *  in the bottom third" essentially never happens, so "hidden strength"
  *  is framed as relative over-performance instead of an absolute rank. */
@@ -1679,7 +1674,7 @@ function computeAnomalies(testKey: string): AnomalyInsight[] {
   const schoolSubjectAvg = Object.fromEntries(subjectsByAverage(testKey).map((s) => [s.subject, s.avgPct]));
 
   // 1. Hidden strength: below their own section's overall average, but
-  // with one subject at least 10pt above their own overall % — a real
+  // with one subject at least 10pt above their own overall %, a real
   // strength the overall number buries.
   const hiddenStrength: (AnomalyInsight & { spread: number })[] = [];
   for (const section of sections) {
@@ -1700,7 +1695,7 @@ function computeAnomalies(testKey: string): AnomalyInsight[] {
         id: `hidden_${student.id}`,
         kind: "hidden-strength",
         headline: `${student.name} is well below ${section}'s average overall, but shines in ${best.subject}`,
-        detail: `Overall ${Math.round(overall)}% against ${section}'s ${Math.round(sectionAvg)}% average, yet ${Math.round(best.pct)}% in ${best.subject} — ${Math.round(spread)}pt above their own overall score.`,
+        detail: `Overall ${Math.round(overall)}% against ${section}'s ${Math.round(sectionAvg)}% average, yet ${Math.round(best.pct)}% in ${best.subject}, ${Math.round(spread)}pt above their own overall score.`,
         numbers: [
           { label: "Overall", value: `${Math.round(overall)}%` },
           { label: `${best.subject}`, value: `${Math.round(best.pct)}%` },
@@ -1716,7 +1711,7 @@ function computeAnomalies(testKey: string): AnomalyInsight[] {
   insights.push(...hiddenStrength.sort((a, b) => b.spread - a.spread).slice(0, 3).map(dropSortKey));
 
   // 2. Near-all-rounder: ranked in the top 2 of their section in at least
-  // 4 of the 5 subjects tested — genuinely rare, so shown as found.
+  // 4 of the 5 subjects tested, genuinely rare, so shown as found.
   for (const section of sections) {
     const roster = classRosterFull[section];
     for (const student of roster) {
@@ -1727,7 +1722,7 @@ function computeAnomalies(testKey: string): AnomalyInsight[] {
         id: `allrounder_${student.id}`,
         kind: "all-rounder",
         headline: `${student.name} ranks in the top 2 of ${section} in ${top2Count} of ${subjects.length} subjects`,
-        detail: `${ranks.filter((r) => r.rank <= 2).map((r) => `#${r.rank} in ${r.subject}`).join(", ")} — consistently near the top across the board, not just one strong subject.`,
+        detail: `${ranks.filter((r) => r.rank <= 2).map((r) => `#${r.rank} in ${r.subject}`).join(", ")}, consistently near the top across the board, not just one strong subject.`,
         numbers: ranks.map((r) => ({ label: r.subject, value: `#${r.rank}` })),
         section,
         studentId: student.id,
@@ -1736,7 +1731,7 @@ function computeAnomalies(testKey: string): AnomalyInsight[] {
   }
 
   // 3. Section-subject slump: the subject(s) where a section trails the
-  // school average by the widest margin — school-wide, not just one
+  // school average by the widest margin, school-wide, not just one
   // section's overall weakness restated five times.
   const slumps: (AnomalyInsight & { gap: number })[] = [];
   for (const section of sections) {
@@ -1750,7 +1745,7 @@ function computeAnomalies(testKey: string): AnomalyInsight[] {
         id: `slump_${section}_${subject}`,
         kind: "section-subject-slump",
         headline: `${section} trails the school in ${subject} by ${Math.round(gap)}pt`,
-        detail: `${section}'s ${subject} average is ${Math.round(sectionAvg)}% against a school average of ${Math.round(schoolSubjectAvg[subject])}% — ${belowSchoolAvg} of ${roster.length} students in ${section} score below the school average in ${subject}.`,
+        detail: `${section}'s ${subject} average is ${Math.round(sectionAvg)}% against a school average of ${Math.round(schoolSubjectAvg[subject])}%, ${belowSchoolAvg} of ${roster.length} students in ${section} score below the school average in ${subject}.`,
         numbers: [
           { label: `${section} average`, value: `${Math.round(sectionAvg)}%` },
           { label: "School average", value: `${Math.round(schoolSubjectAvg[subject])}%` },
@@ -1768,7 +1763,7 @@ function computeAnomalies(testKey: string): AnomalyInsight[] {
 }
 
 /** computeAnomalies walks every student against every subject rank, so the
- *  per-test result is cached — switching the assessment on the Class X
+ *  per-test result is cached, switching the assessment on the Class X
  *  dashboard re-reads it rather than recomputing. */
 const anomalyCache = new Map<string, AnomalyInsight[]>();
 
@@ -1784,7 +1779,7 @@ export function anomaliesFor(testKey: string): AnomalyInsight[] {
 export const anomalyInsights: AnomalyInsight[] = anomaliesFor(latestTest.key);
 
 // ============================================================
-// Class X overview roll-ups — attention tiers, per-test section
+// Class X overview roll-ups, attention tiers, per-test section
 // standings, and share rounding. All derived from the same roster as
 // everything above, so nothing on the overview can disagree with a
 // class or student page.
@@ -1820,7 +1815,7 @@ export interface SectionStanding {
 }
 
 /** sectionComparison, but for any analysed test rather than only the
- *  latest — so a dashboard with an assessment picker never shows last
+ *  latest, so a dashboard with an assessment picker never shows last
  *  test's standings next to this test's numbers. */
 export function sectionStandings(testKey: string = latestTest.key): SectionStanding[] {
   const prevKey = previousAnalysedTestKey(testKey);

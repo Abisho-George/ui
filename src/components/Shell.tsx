@@ -37,7 +37,7 @@ export function RoleGuard({ role, children }: { role: Role; children: (user: Cur
   return <>{children(user)}</>;
 }
 
-/** Loading state — one of the sanctioned mascot placements (§0). */
+/** Loading state, one of the sanctioned mascot placements (§0). */
 export function LoadingScreen({ label = "Loading AVAI…" }: { label?: string }) {
   return (
     <div className="loading">
@@ -87,7 +87,7 @@ function PageHeaderBar() {
         <h1 className="page-header-bar__title">{header.title}</h1>
         {header.subtitle && <div className="page-header-bar__sub">{header.subtitle}</div>}
       </div>
-      {/* Filled by <HeaderActions> via a portal — see src/lib/pageHeader.tsx. */}
+      {/* Filled by <HeaderActions> via a portal, see src/lib/pageHeader.tsx. */}
       <div className="page-header-bar__actions" id={PAGE_HEADER_ACTIONS_ID} />
     </div>
   );

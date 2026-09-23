@@ -80,7 +80,7 @@ export function StepBasicInfo({ draft, patch, showErrors }: StepProps) {
           />
           <FieldError show={showErrors && !draft.dob}>Enter your date of birth.</FieldError>
         </div>
-        <LockedField label="Age" value={age !== null ? String(age) : "—"} />
+        <LockedField label="Age" value={age !== null ? String(age) : "-"} />
       </div>
 
       <Question label="Gender">
@@ -91,11 +91,11 @@ export function StepBasicInfo({ draft, patch, showErrors }: StepProps) {
   );
 }
 
-// ---------------------------------------------------------------- Section 1 — Your Background
+// ---------------------------------------------------------------- Section 1, Your Background
 
 export function StepBackground({ draft, patch, showErrors }: StepProps) {
   return (
-    <StepCard icon={Compass} eyebrow="Step 2 of 6" title="Section 1 — Your Background" accent="var(--brand-orange)">
+    <StepCard icon={Compass} eyebrow="Step 2 of 6" title="Section 1, Your Background" accent="var(--brand-orange)">
       <Question label="Where do you live?">
         <ChipGroup
           groupLabel="Where you live"
@@ -132,11 +132,11 @@ export function StepBackground({ draft, patch, showErrors }: StepProps) {
   );
 }
 
-// ---------------------------------------------------------------- Section 2 — Your Learning Profile
+// ---------------------------------------------------------------- Section 2, Your Learning Profile
 
 export function StepLearningProfile({ draft, patch, showErrors }: StepProps) {
   return (
-    <StepCard icon={Heart} eyebrow="Step 3 of 6" title="Section 2 — Your Learning Profile" accent="var(--brand-blue)">
+    <StepCard icon={Heart} eyebrow="Step 3 of 6" title="Section 2, Your Learning Profile" accent="var(--brand-blue)">
       <Question label="Which subject do you enjoy learning the most?">
         <ChipGroup
           groupLabel="Subject you enjoy most"
@@ -173,13 +173,13 @@ export function StepLearningProfile({ draft, patch, showErrors }: StepProps) {
   );
 }
 
-// ---------------------------------------------------------------- Section 3 — Your Interests
+// ---------------------------------------------------------------- Section 3, Your Interests
 
 export function StepInterests({ draft, patch, showErrors }: StepProps) {
   const atMax = draft.interests.length >= MAX_INTERESTS;
 
   return (
-    <StepCard icon={Sparkles} eyebrow="Step 4 of 6" title="Section 3 — Your Interests" accent="var(--brand-green)">
+    <StepCard icon={Sparkles} eyebrow="Step 4 of 6" title="Section 3, Your Interests" accent="var(--brand-green)">
       <Question label="What do you enjoy doing outside studies?" hint={`Select up to ${MAX_INTERESTS}.`}>
         <ChipGroup
           groupLabel="Interests outside studies"
@@ -191,7 +191,7 @@ export function StepInterests({ draft, patch, showErrors }: StepProps) {
         />
         {atMax && (
           <div className="muted" style={{ fontSize: 12 }}>
-            That&apos;s {MAX_INTERESTS} — picking another will replace the first.
+            That&apos;s {MAX_INTERESTS}, picking another will replace the first.
           </div>
         )}
         <FieldError show={showErrors && draft.interests.length === 0}>Pick at least one.</FieldError>
@@ -222,13 +222,13 @@ export function StepInterests({ draft, patch, showErrors }: StepProps) {
   );
 }
 
-// ---------------------------------------------------------------- Section 4 — Your Future Plans
+// ---------------------------------------------------------------- Section 4, Your Future Plans
 
 export function StepFuturePlans({ draft, patch, showErrors }: StepProps) {
   const atMaxReasons = draft.groupReasons.length >= MAX_GROUP_REASONS;
 
   return (
-    <StepCard icon={Target} eyebrow="Step 5 of 6" title="Section 4 — Your Future Plans" accent="var(--brand-gold)">
+    <StepCard icon={Target} eyebrow="Step 5 of 6" title="Section 4, Your Future Plans" accent="var(--brand-gold)">
       <Question label="What would you like to become or explore in the future?" htmlFor="future-plan">
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
           <input
@@ -275,7 +275,7 @@ export function StepFuturePlans({ draft, patch, showErrors }: StepProps) {
         />
         {atMaxReasons && (
           <div className="muted" style={{ fontSize: 12 }}>
-            That&apos;s {MAX_GROUP_REASONS} — picking another will replace the first.
+            That&apos;s {MAX_GROUP_REASONS}, picking another will replace the first.
           </div>
         )}
         <FieldError show={showErrors && draft.groupReasons.length === 0}>Pick at least one.</FieldError>

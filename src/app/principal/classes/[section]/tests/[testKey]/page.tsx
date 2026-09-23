@@ -11,7 +11,7 @@ import { EvidenceState } from "@/components/EvidenceState";
 import { DeltaCell, StudentRosterTable } from "@/components/StudentRosterTable";
 
 /** Principal → Classes → section → one test. Scrolls normally like every
- * other page now — a compact KPI + subject strip up top, then the full
+ * other page now, a compact KPI + subject strip up top, then the full
  * student roster underneath with its own sticky header, the same pattern
  * as the Class detail page. */
 export default function ClassTestPage() {
@@ -82,7 +82,7 @@ export default function ClassTestPage() {
 
       {test.status !== "Analysed" ? (
         <div style={{ marginTop: 20 }}>
-          <EvidenceState kind="early">{test.name} hasn&apos;t been conducted yet for {section} — no marks to show.</EvidenceState>
+          <EvidenceState kind="early">{test.name} hasn&apos;t been conducted yet for {section}, no marks to show.</EvidenceState>
         </div>
       ) : (
         <>

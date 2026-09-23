@@ -8,12 +8,12 @@ import { ocrMarksFor, questionSets, type RosterStudent } from "@/lib/avai-mock-d
 type MarksState = Record<string, Record<string, string>>; // studentId -> questionKey -> value
 type Cell = { studentId: string; qKey: string };
 
-// A paper can run 15–20+ single-mark questions; cycling a small palette by
+// A paper can run 15-20+ single-mark questions; cycling a small palette by
 // chapter (rather than one colour per question) groups them visually
 // without needing as many colours as there are chapters.
 const CHAPTER_PALETTE = ["var(--brand-teal)", "var(--brand-gold)", "var(--brand-green)", "var(--info)", "var(--risk)", "var(--brand-ink-soft)"];
 
-/** §5.10 / §6.3 Question-wise marks entry grid. Local state only — "Save"
+/** §5.10 / §6.3 Question-wise marks entry grid. Local state only, "Save"
  * confirms with a toast and nothing persists. Shared by Principal → Enter
  * Marks and the Teacher subject view's Enter Marks tab.
  *
@@ -228,7 +228,7 @@ export function MarksEntryGrid({
                             className="input"
                             style={{ width: 40, padding: "6px 4px", textAlign: "right" }}
                             inputMode="numeric"
-                            placeholder="—"
+                            placeholder="-"
                             value={marks[s.id]?.[q.key] ?? ""}
                             onChange={(e) => setMark(s.id, q.key, e.target.value, q.maxMarks)}
                           />
@@ -286,7 +286,7 @@ export function MarksEntryGrid({
                           className="input"
                           style={{ width: 64, padding: "6px 8px", textAlign: "right" }}
                           inputMode="numeric"
-                          placeholder="—"
+                          placeholder="-"
                           value={reviewValues[key] ?? ""}
                           onChange={(e) => {
                             const max = q?.maxMarks ?? 0;

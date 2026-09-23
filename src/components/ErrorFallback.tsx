@@ -6,7 +6,7 @@ import { AlertTriangle, RotateCcw } from "lucide-react";
 /**
  * Shared body for every route segment's error.tsx. A crash anywhere below
  * this point used to unmount the whole React tree and leave a blank
- * screen — Next only shows something in its place if an error.tsx exists
+ * screen, Next only shows something in its place if an error.tsx exists
  * for that segment, so every segment gets one, all rendering through here.
  *
  * `reset` re-mounts the segment (Next.js's built-in recovery); "Go home"
@@ -33,7 +33,7 @@ export function ErrorFallback({
         <AlertTriangle size={26} />
       </div>
       <h2>Something went wrong</h2>
-      <p>This page hit an error and couldn&apos;t finish loading. Nothing you did caused this — try again, or head back home.</p>
+      <p>This page hit an error and couldn&apos;t finish loading. Nothing you did caused this, try again, or head back home.</p>
       <div className="error-fallback__actions">
         <button className="btn btn--primary" onClick={reset}>
           <RotateCcw size={14} /> Try again

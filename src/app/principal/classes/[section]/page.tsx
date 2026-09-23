@@ -39,7 +39,7 @@ export default function ClassDetailPage() {
   const test = testsConducted.find((t) => t.key === testKey);
   const analysed = test?.status === "Analysed";
 
-  // Which tests' reports have been sent to this class's students — set from
+  // Which tests' reports have been sent to this class's students, set from
   // each test's own page, read back here as a KPI.
   const sharedTestKeys = useSharedTestKeys(section);
   const lastSharedTest = sharedTestKeys
@@ -69,7 +69,7 @@ export default function ClassDetailPage() {
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
         <p className="page-sub" style={{ marginTop: 0 }}>
-          Class teacher: {classTeacherBySection[section] ?? "Not assigned"} · showing {test?.name ?? "—"}
+          Class teacher: {classTeacherBySection[section] ?? "Not assigned"} · showing {test?.name ?? "-"}
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <button className="btn btn--sm" disabled={!analysed} onClick={() => downloadClassReport(section, testKey)}>
@@ -87,14 +87,14 @@ export default function ClassDetailPage() {
         <div className="stat">
           <div className="stat__label">Overall attainment</div>
           <div className="stat__value" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-            {kpis ? `${kpis.attainment}%` : <span className="muted">—</span>}
+            {kpis ? `${kpis.attainment}%` : <span className="muted">-</span>}
             {kpis && <DeltaCell delta={kpis.delta} />}
           </div>
         </div>
         <div className="stat">
           <div className="stat__label">Need attention</div>
           <div className="stat__value">
-            {kpis ? kpis.needAttention : <span className="muted">—</span>}
+            {kpis ? kpis.needAttention : <span className="muted">-</span>}
             {kpis && kpis.critical > 0 && (
               <span className="small muted" style={{ fontWeight: 400 }}>
                 {" "}
@@ -105,7 +105,7 @@ export default function ClassDetailPage() {
         </div>
         <div className="stat">
           <div className="stat__label">Biggest gap</div>
-          <div className="stat__value stat__value--sm">{kpis ? kpis.topGap : <span className="muted">—</span>}</div>
+          <div className="stat__value stat__value--sm">{kpis ? kpis.topGap : <span className="muted">-</span>}</div>
         </div>
         <div className="stat">
           <div className="stat__label">Reports shared</div>
@@ -158,8 +158,8 @@ export default function ClassDetailPage() {
                       </td>
                       <td className="small muted">{t.date}</td>
                       <td>{t.status === "Analysed" ? <span className="tag tag--green">Analysed</span> : <span className="tag">Scheduled</span>}</td>
-                      <td className="num">{avg != null ? `${avg}%` : <span className="muted">—</span>}</td>
-                      <td className="num">{t.status === "Analysed" ? <DeltaCell delta={delta} /> : <span className="muted">—</span>}</td>
+                      <td className="num">{avg != null ? `${avg}%` : <span className="muted">-</span>}</td>
+                      <td className="num">{t.status === "Analysed" ? <DeltaCell delta={delta} /> : <span className="muted">-</span>}</td>
                       <td style={{ textAlign: "right" }}>
                         <span className="btn--link">View →</span>
                       </td>

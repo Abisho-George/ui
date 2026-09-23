@@ -1,5 +1,5 @@
 /* ============================================================
-   AVAI — design tokens (spec §0 brand system)
+   AVAI, design tokens (spec §0 brand system)
    ============================================================ */
 :root {
   --brand-ink: #15252e;
@@ -30,7 +30,7 @@
   --muted: #6c7880;
   --text: var(--brand-ink);
 
-  /* status dimensions — deliberately three SEPARATE visual systems */
+  /* status dimensions, deliberately three SEPARATE visual systems */
   /* 1. Attention (section / student): filled pill, ink/teal family */
   --attention-low: var(--brand-green);
   --attention-medium: var(--brand-gold);
@@ -48,7 +48,7 @@
   --radius-sm: 6px;
   --radius-md: 10px;
   --radius-lg: 16px;
-  /* Elevation scale — every step is a tight contact shadow plus a wide
+  /* Elevation scale, every step is a tight contact shadow plus a wide
      ambient one, tinted with the warm ink rather than pure black. */
   --shadow-xs: 0 1px 1px rgba(21, 37, 46, 0.04), 0 1px 3px rgba(21, 37, 46, 0.05);
   --shadow-sm: 0 1px 2px rgba(21, 37, 46, 0.05), 0 3px 8px rgba(21, 37, 46, 0.06);
@@ -63,7 +63,7 @@
 
   --sidebar-w: 232px;
   /* Height of the sticky page-header bar, set at runtime by PageHeaderBar
-     once it mounts (see src/components/Shell.tsx) — 0 until then. */
+     once it mounts (see src/components/Shell.tsx), 0 until then. */
   --page-header-h: 0px;
 }
 
@@ -165,7 +165,7 @@ table { border-collapse: collapse; width: 100%; }
 .sidebar__signout:hover { background: rgba(255,255,255,0.08); }
 
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-/* Sticky "which page am I on" bar — pinned to the top of the content area
+/* Sticky "which page am I on" bar, pinned to the top of the content area
    through any scroll, fed by whichever page is mounted (see
    src/lib/pageHeader.tsx). Sits above every page's own filters/tabs, which
    have their own lower z-index sticky layer (.roster-sticky, .filterbar). */
@@ -215,7 +215,7 @@ table { border-collapse: collapse; width: 100%; }
   box-shadow: var(--shadow-sm);
   transition: box-shadow .24s var(--ease-out), transform .24s var(--ease-out), border-color .24s;
 }
-/* Hairline highlight along the top edge — the cue that reads as "lit from above". */
+/* Hairline highlight along the top edge, the cue that reads as "lit from above". */
 .card::before {
   content: ""; position: absolute; left: 12px; right: 12px; top: 0; height: 1px; pointer-events: none;
   background: linear-gradient(90deg, transparent, rgba(255,255,255,.95), transparent);
@@ -232,7 +232,7 @@ table { border-collapse: collapse; width: 100%; }
 .card--flat { box-shadow: none; }
 .card--soft { background: var(--surface-2); }
 
-/* Intelligence layer's segmented band — one card divided into clickable
+/* Intelligence layer's segmented band, one card divided into clickable
    sections instead of four separate boxes, each carrying its own accent
    color via the --accent custom property set inline per segment. */
 .intel-band { display: flex; flex-wrap: wrap; overflow: hidden; }
@@ -355,7 +355,7 @@ table { border-collapse: collapse; width: 100%; }
 /* Freezes the roster's heading + filters + quick-filter tabs together as
    one block once page scroll carries them to the top of the viewport (just
    below the page header bar). The table itself has no independent scroll
-   box (see .table-wrap--stack) — it just keeps flowing down the page
+   box (see .table-wrap--stack), it just keeps flowing down the page
    underneath, so a normal page-scroll (or a scroll started with the mouse
    over the table) always moves it; there's no separate inner scroll region
    to fight over first. */
@@ -379,7 +379,7 @@ table { border-collapse: collapse; width: 100%; }
 .filterbar__spacer { flex: 1; }
 
 /* ---------- pills / chips : THREE status dimensions ---------- */
-/* Dimension 1 — Attention (solid pill) */
+/* Dimension 1, Attention (solid pill) */
 .attn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 650; color: #fff;
@@ -393,7 +393,7 @@ table { border-collapse: collapse; width: 100%; }
 .attn--watch { background: var(--attention-medium); color: var(--brand-ink); }
 .attn--intervention { background: var(--attention-high); }
 
-/* Dimension 2 — Board urgency (outlined chip with flame glyph) */
+/* Dimension 2, Board urgency (outlined chip with flame glyph) */
 .urg {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 2px 9px; border-radius: var(--radius-sm);
@@ -407,7 +407,7 @@ table { border-collapse: collapse; width: 100%; }
 .urg--low { color: var(--urgency-low); }
 .urg svg { width: 12px; height: 12px; }
 
-/* Dimension 3 — Confidence (3-dot meter + text) */
+/* Dimension 3, Confidence (3-dot meter + text) */
 .conf { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--brand-ink-soft); }
 .conf__dots { display: inline-flex; gap: 3px; }
 .conf__dot { width: 7px; height: 7px; border-radius: 50%; background: #d7dde6; box-shadow: inset 0 1px 1px rgba(21,37,46,.12); }
@@ -454,7 +454,7 @@ table { border-collapse: collapse; width: 100%; }
 .finding--not-localized { border-style: dashed; border-color: var(--line-strong); }
 .finding--compact .finding__metrics { grid-template-columns: repeat(2, 1fr); }
 
-/* Evidence / empty states (§5.7) — first-class, not error */
+/* Evidence / empty states (§5.7), first-class, not error */
 .evidence {
   display: flex; gap: 12px; align-items: flex-start;
   padding: 14px 16px; border-radius: var(--radius-md);
@@ -471,13 +471,13 @@ table { border-collapse: collapse; width: 100%; }
    which turns the wrapper into its own scroll container and breaks
    position:sticky for thead (it sticks to that box, not the viewport).
    The stack variant has no inner scrolling at all, so it must stay
-   visible on the y-axis — overriding the shared rule above. */
+   visible on the y-axis, overriding the shared rule above. */
 .table-wrap--stack { overflow-x: visible; overflow-y: visible; }
 .table-wrap--scroll { overflow-y: auto; max-height: 560px; }
 .table-wrap--scroll thead th { position: sticky; top: 0; background: var(--th-bg); z-index: 1; box-shadow: 0 1px 0 var(--line-strong); }
 .table-wrap--flex { overflow-y: auto; flex: 1 1 auto; min-height: 0; }
 .table-wrap--flex thead th { position: sticky; top: 0; background: var(--th-bg); z-index: 1; box-shadow: 0 1px 0 var(--line-strong); }
-/* No max-height/overflow of its own — the table is part of normal page
+/* No max-height/overflow of its own, the table is part of normal page
    flow, so a scroll anywhere over it moves the whole page, not a separate
    inner box. The header instead sticks at --sticky-offset (the height of
    the frozen .roster-sticky block above it), so it settles in just below
@@ -485,7 +485,7 @@ table { border-collapse: collapse; width: 100%; }
 .table-wrap--stack thead th { position: sticky; top: calc(var(--page-header-h, 0px) + var(--sticky-offset, 0px)); background: var(--th-bg); z-index: 14; box-shadow: 0 1px 0 var(--line-strong), 0 8px 16px -16px rgba(21,37,46,.8); }
 
 /* Marks entry: many question columns scroll horizontally, so Roll and
-   Student freeze on the left the same way the header row freezes on top —
+   Student freeze on the left the same way the header row freezes on top -
    a paper with 30+ questions stays navigable instead of losing the
    student's identity off-screen. */
 .marks-grid td:nth-child(1), .marks-grid td:nth-child(2) { position: sticky; z-index: 1; background: var(--surface); }
@@ -494,7 +494,7 @@ table { border-collapse: collapse; width: 100%; }
 .marks-grid th:nth-child(1), .marks-grid th:nth-child(2) { position: sticky; z-index: 3; background: var(--th-bg); }
 .marks-grid th:nth-child(1) { left: 0; }
 .marks-grid th:nth-child(2) { left: 52px; box-shadow: 2px 0 4px -2px rgba(21,37,46,.15); }
-/* The Total column freezes on the right too — only the question columns
+/* The Total column freezes on the right too, only the question columns
    between the two frozen edges scroll, so the running total stays in
    view no matter how many questions the paper has. */
 .marks-grid td:last-child { position: sticky; right: 0; z-index: 1; background: var(--surface); box-shadow: -2px 0 4px -2px rgba(21,37,46,.15); }
@@ -515,7 +515,7 @@ table { border-collapse: collapse; width: 100%; }
 .table--hover tbody tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--brand-teal); }
 .table .num { text-align: right; font-variant-numeric: tabular-nums; }
 
-/* Movement against the previous analysed test. Green up / amber down —
+/* Movement against the previous analysed test. Green up / amber down -
    deliberately quieter than the attention pill so it reads as context,
    not as a second status. */
 .delta {
@@ -635,7 +635,7 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 /* ============================================================
-   LOGIN (§4) — the one staff screen where the mascot appears
+   LOGIN (§4), the one staff screen where the mascot appears
    ============================================================ */
 .login { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
 .login__brand {
@@ -674,7 +674,7 @@ table { border-collapse: collapse; width: 100%; }
 @media (max-width: 900px) { .login { grid-template-columns: 1fr; } .login__brand { padding: 32px 24px; min-height: 300px; } }
 
 /* ============================================================
-   STUDENT (§7) — warm, plain-language, mascot-friendly
+   STUDENT (§7), warm, plain-language, mascot-friendly
    ============================================================ */
 .student-shell { min-height: 100vh; background: var(--brand-cream); }
 .student-top {
@@ -741,7 +741,7 @@ table { border-collapse: collapse; width: 100%; }
 }
 
 /* ============================================================
-   MOTION LAYER — keyframes + utilities. All neutralised under
+   MOTION LAYER, keyframes + utilities. All neutralised under
    prefers-reduced-motion at the bottom of this file.
    ============================================================ */
 @keyframes avai-reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -775,7 +775,7 @@ table { border-collapse: collapse; width: 100%; }
 .float-idle { animation: avai-float 4.4s ease-in-out infinite; }
 
 /* ============================================================
-   SHARED COMPONENT CLASSES (v2) — every --accent below is set
+   SHARED COMPONENT CLASSES (v2), every --accent below is set
    inline by the caller and falls back to brand teal.
    ============================================================ */
 
@@ -1003,7 +1003,7 @@ button.pillnum--solid:hover { background: linear-gradient(180deg, color-mix(in s
 }
 
 /* ============================================================
-   AVAI STAFF CONSOLE (internal ops) — denser, cooler, blue.
+   AVAI STAFF CONSOLE (internal ops), denser, cooler, blue.
    Deliberately a different product surface from the school app.
    ============================================================ */
 .ops-shell { display: flex; min-height: 100vh; background: #eef2f9; }
@@ -1074,7 +1074,7 @@ button.pillnum--solid:hover { background: linear-gradient(180deg, color-mix(in s
 }
 
 /* ============================================================
-   REDUCED MOTION — one switch that neutralises the whole layer.
+   REDUCED MOTION, one switch that neutralises the whole layer.
    ============================================================ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

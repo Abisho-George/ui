@@ -3,14 +3,14 @@
 import { useSyncExternalStore } from "react";
 
 /**
- * Which (section, test) reports have been "sent to students" — set from the
+ * Which (section, test) reports have been "sent to students", set from the
  * test's own page, read back as a KPI on the class page. A plain
  * module-level store rather than component state, since the two pages
  * that need it are different routes and neither owns the other: this is
  * the same "resets on reload, not before" local-state contract every other
  * simulated action in this app already follows, just visible from two
  * screens instead of one.
- * 🔧 BACKEND REQUIRED — nothing is actually sent; this only tracks that a
+ * 🔧 BACKEND REQUIRED, nothing is actually sent; this only tracks that a
  * send was requested, for this browser session.
  */
 
@@ -43,13 +43,13 @@ export function isReportShared(section: string, testKey: string): boolean {
   return shared.has(key(section, testKey));
 }
 
-/** Reactive read for one (section, test) pair — re-renders when it's shared. */
+/** Reactive read for one (section, test) pair, re-renders when it's shared. */
 export function useReportShared(section: string, testKey: string): boolean {
   return useSyncExternalStore(subscribe, () => isReportShared(section, testKey), () => false);
 }
 
 // getSnapshot must return a stable (===) value when nothing changed, or
-// useSyncExternalStore re-renders forever — cache the derived array per
+// useSyncExternalStore re-renders forever, cache the derived array per
 // section and only recompute it when the store's version has moved on.
 const keysCache = new Map<string, { version: number; keys: string[] }>();
 

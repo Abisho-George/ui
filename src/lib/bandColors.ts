@@ -1,4 +1,4 @@
-/** Shared ordinal ramp for Board-mark bands — best band first, one hue per
+/** Shared ordinal ramp for Board-mark bands, best band first, one hue per
  * step, green→gold→red so "better" always reads as greener without ever
  * needing a legend to say so. Reused by every band table/pie on the Class
  * X dashboard so a color always means the same thing across the page. */
@@ -16,5 +16,5 @@ export function scoreColor(pct: number): string {
 }
 
 /** Attention-tier colours, in the overview's tier order (On Track, Need
- * Support, At Risk) — green/amber/red, matching the band ramp's ends. */
+ * Support, At Risk), green/amber/red, matching the band ramp's ends. */
 export const TIER_COLORS = ["#3a9d6a", "#e0a62a", "#c94a3a"];

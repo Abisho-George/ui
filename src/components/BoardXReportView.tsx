@@ -7,7 +7,7 @@ import type { BoardXStudentReport } from "@/lib/avai-mock-data";
 
 const poseForTrend: Record<string, MascotPose> = { up: "achieve", down: "improve", flat: "improve" };
 
-/** The one-page BoardX report body — shared by the student-facing report
+/** The one-page BoardX report body, shared by the student-facing report
  * page and the principal's per-student, test-wise report view. */
 export function BoardXReportView({ report: r, studentName, section }: { report: BoardXStudentReport; studentName: string; section?: string }) {
   const pose = poseForTrend[r.trend] ?? "neutral";
@@ -81,7 +81,7 @@ export function BoardXReportView({ report: r, studentName, section }: { report: 
               <Search size={16} />
               <div>
                 <div className="evidence__title">Reading &amp; Understanding</div>
-                <div>No score is invented here — this needs more answer-level data than one assessment provides.</div>
+                <div>No score is invented here, this needs more answer-level data than one assessment provides.</div>
               </div>
             </div>
             <div className="card card--soft">

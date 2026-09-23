@@ -17,7 +17,7 @@ const PROMISES: Array<{ icon: typeof Clock3; text: string }> = [
 ];
 
 /**
- * §A1 Attend — the first screen of the whole product. A student opens the
+ * §A1 Attend, the first screen of the whole product. A student opens the
  * school link, types the ID printed on their slip, and starts onboarding.
  * Credentials resolve against the real roster; nothing leaves the browser.
  */
@@ -74,7 +74,7 @@ export default function AttendEntryPage() {
             Hi! Before your first test, tell us who you are.
           </h1>
           <p style={{ color: "#b9c6ce", fontSize: 15.5, lineHeight: 1.55, maxWidth: 430 }}>
-            Every student in Class X does this once. It takes a few minutes and there is nothing to revise — AVAI just needs to
+            Every student in Class X does this once. It takes a few minutes and there is nothing to revise, AVAI just needs to
             know how you learn before it starts reading your papers.
           </p>
 
@@ -151,7 +151,7 @@ export default function AttendEntryPage() {
               )}
               <span style={{ minWidth: 0 }}>
                 <strong style={{ display: "block", fontSize: 13.5, fontWeight: 650 }}>
-                  {submitted ? "Onboarding already done — see your summary" : "Continue where you left off"}
+                  {submitted ? "Onboarding already done, see your summary" : "Continue where you left off"}
                 </strong>
                 <small className="muted" style={{ display: "block", fontSize: 12 }}>
                   {identity.name} · {identity.section} · Roll {identity.rollNo}
@@ -248,7 +248,7 @@ export default function AttendEntryPage() {
               <strong style={{ fontSize: 13, fontWeight: 650 }}>Working student logins</strong>
             </div>
             <p className="muted small" style={{ marginBottom: 10 }}>
-              Any roll in any section works — <b>AVAI-XA-01</b> through <b>AVAI-XE-48</b>. Password for everyone in the demo is{" "}
+              Any roll in any section works, <b>AVAI-XA-01</b> through <b>AVAI-XE-48</b>. Password for everyone in the demo is{" "}
               <b>{DEMO_PASSWORD}</b>.
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>

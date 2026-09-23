@@ -22,8 +22,8 @@ function StatusTag({ status }: { status: SubjectPaperStatus }) {
   return <span className="tag">Not uploaded</span>;
 }
 
-/** One subject's question-paper tracker — upload, blueprint mapping, and
- * answer-card generation — scoped to a single (subject, section) the way
+/** One subject's question-paper tracker, upload, blueprint mapping, and
+ * answer-card generation, scoped to a single (subject, section) the way
  * a subject teacher actually works, instead of the whole school's paper
  * list a principal used to see. Trimmed from the old principal-wide
  * Question Papers page: no cross-subject accordion, no test creation. */
@@ -32,7 +32,7 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
   const [papers, setPapers] = useState<Record<string, SubjectPaper>>(() =>
     Object.fromEntries(testsConducted.map((t) => [t.key, initialSubjectPapers[t.key]?.[subject]]).filter(([, p]) => p))
   );
-  // Nothing expanded by default — click a test to see its paper.
+  // Nothing expanded by default, click a test to see its paper.
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   const [uploadFor, setUploadFor] = useState<string | null>(null);
@@ -193,7 +193,7 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
       </div>
 
       <p className="small muted" style={{ marginTop: 14 }}>
-        Uploads, mapping and answer cards are all simulated for this demo — nothing is parsed or stored, and the list resets on reload.
+        Uploads, mapping and answer cards are all simulated for this demo, nothing is parsed or stored, and the list resets on reload.
       </p>
 
       {/* Upload paper modal */}
@@ -273,7 +273,7 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
                     </dd>
                   </dl>
                   <p className="small muted" style={{ marginTop: 8 }}>
-                    Measured against the whole Board blueprint for {subject}, not against this one paper — a unit test is expected to cover part of it.
+                    Measured against the whole Board blueprint for {subject}, not against this one paper, a unit test is expected to cover part of it.
                   </p>
                 </div>
                 <div className="drawer__section">
@@ -368,7 +368,7 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
                   <h4>What this is</h4>
                   <p className="small muted" style={{ margin: 0 }}>
                     A blank mark-entry sheet for {subject} · {testForCard.name} · {section}, one row per student, one column per question. Print it, fill
-                    it by hand, then scan it back in from Enter Marks — the app reads the marks automatically and flags any it can&apos;t.
+                    it by hand, then scan it back in from Enter Marks, the app reads the marks automatically and flags any it can&apos;t.
                   </p>
                 </div>
                 <div className="drawer__section">

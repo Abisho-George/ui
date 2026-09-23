@@ -5,6 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { BookX, CalendarDays, ChevronRight, Download, Sparkles, TrendingDown, TrendingUp, Trophy, X } from "lucide-react";
 import {
   allStudents,
+  attentionFor,
   analysedTests,
   anomaliesFor,
   attentionBreakdown,
@@ -52,7 +53,7 @@ function longDate(iso: string): string {
   return `${Number(d)} ${MONTHS[Number(m) - 1]} ${y}`;
 }
 
-/** Principal's default landing page — the "Class X" overview. Board-mark
+/** Principal's default landing page, the "Class X" overview. Board-mark
  * distribution for the whole grade and by subject with student-level
  * drill-down, section/subject-filterable pies, and the intelligence layer
  * (toppers, late bloomers, weakest class/subject, anomalies). Every number
@@ -60,7 +61,7 @@ function longDate(iso: string): string {
  * the same roster every other screen reads, so nothing shown here can
  * disagree with a class or student page. */
 export default function ClassXOverview() {
-  // Overall standing for the whole class, as of the latest analysed test —
+  // Overall standing for the whole class, as of the latest analysed test -
   // not a per-assessment breakdown (that lives on the Exams page).
   const testKey = latestTest.key;
   const test = latestTest;
@@ -83,7 +84,7 @@ export default function ClassXOverview() {
     return totalMarkBands.map((band, i) => ({ label: band.label, count: counts[i], share: shares[i], color: TOTAL_BAND_COLORS[i] }));
   }, [testKey]);
 
-  // The subject-wise table has its own test filter — "All tests" averages a
+  // The subject-wise table has its own test filter, "All tests" averages a
   // student's % in a subject across every analysed test before banding it,
   // separate from the page's own "overall, as of the latest test" framing.
   const [subjectTestKey, setSubjectTestKey] = useState<string>("all");
@@ -109,10 +110,22 @@ export default function ClassXOverview() {
     }));
   }, [subjectTestKey]);
 
+  function openTier(key: string, label: string) {
+    const tier = key === "ontrack" ? "On Track" : key === "support" ? "Watch" : key === "risk" ? "Intervention" : null;
+    setDrill({
+      title: `Class X, ${label}`,
+      subtitle: `Based on ${test.name}.`,
+      students: [...allStudents]
+        .filter((s) => tier === null || attentionFor(s, testKey) === tier)
+        .sort((a, b) => projectedTotalMarks(b, testKey) - projectedTotalMarks(a, testKey)),
+      metaFor: (s) => `${projectedTotalMarks(s, testKey)} / 500`,
+    });
+  }
+
   function openTotalBand(index: number) {
     const band = totalMarkBands[index];
     setDrill({
-      title: `Class X overall — ${band.label}`,
+      title: `Class X overall, ${band.label}`,
       subtitle: `Projected Board total out of 500, based on ${test.name}.`,
       students: studentsInTotalBand("All", testKey, band),
       metaFor: (s) => `${projectedTotalMarks(s, testKey)} / 500`,
@@ -128,7 +141,7 @@ export default function ClassXOverview() {
         })
         .sort((a, b) => avgSubjectPctAcrossTests(b, subject) - avgSubjectPctAcrossTests(a, subject));
       setDrill({
-        title: `${subject} — ${band.label}`,
+        title: `${subject}, ${band.label}`,
         subtitle: `Projected Board marks out of 100, averaged across all ${analysedTests.length} analysed tests.`,
         students: inBand,
         metaFor: (s) => `${Math.round(avgSubjectPctAcrossTests(s, subject))} / 100`,
@@ -136,7 +149,7 @@ export default function ClassXOverview() {
       return;
     }
     setDrill({
-      title: `${subject} — ${band.label}`,
+      title: `${subject}, ${band.label}`,
       subtitle: `Projected Board marks out of 100, based on ${analysedTests.find((t) => t.key === subjectTestKey)?.name ?? test.name}.`,
       students: studentsInSubjectBand("All", subjectTestKey, subject, band),
       metaFor: (s) => `${projectedSubjectMarks(s, subjectTestKey, subject)} / 100`,
@@ -183,7 +196,7 @@ export default function ClassXOverview() {
         </div>
       </Reveal>
 
-      <OverviewKpis breakdown={breakdown} sectionCount={sections.length} />
+      <OverviewKpis breakdown={breakdown} sectionCount={sections.length} onOpen={openTier} />
 
       <Reveal delay={0.1} style={{ marginTop: 20 }}>
         <BandDistribution
@@ -281,7 +294,7 @@ export default function ClassXOverview() {
             <h2 className="section-q">
               <Sparkles size={17} style={{ verticalAlign: "-3px", marginRight: 6 }} /> Intelligence layer
             </h2>
-            <p className="section__lead">Live, drawn from the same roster as everything above — not separate claims.</p>
+            <p className="section__lead">Live, drawn from the same roster as everything above, not separate claims.</p>
           </div>
         </div>
 
@@ -293,10 +306,10 @@ export default function ClassXOverview() {
               </span>
               <div className="stat__label">Toppers</div>
               <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
-                {schoolToppers[0]?.name ?? "—"}
+                {schoolToppers[0]?.name ?? "-"}
               </div>
               <div className="small muted" style={{ marginTop: 2 }}>
-                {schoolToppers[0] ? `${Math.round(overallPctFor(schoolToppers[0], testKey))}% overall — highest in Class X` : "Not enough data"}
+                {schoolToppers[0] ? `${Math.round(overallPctFor(schoolToppers[0], testKey))}% overall, highest in Class X` : "Not enough data"}
               </div>
               <ChevronRight size={15} className="intel-band__arrow" />
             </button>
@@ -329,7 +342,7 @@ export default function ClassXOverview() {
                 {weakestSection?.section}
               </div>
               <div className="small muted" style={{ marginTop: 2 }}>
-                {weakestSection?.overallAttainment}% overall attainment — lowest of {sections.length} sections
+                {weakestSection?.overallAttainment}% overall attainment, lowest of {sections.length} sections
               </div>
               <ChevronRight size={15} className="intel-band__arrow" />
             </button>
@@ -343,7 +356,7 @@ export default function ClassXOverview() {
                 {weakestSubject?.subject}
               </div>
               <div className="small muted" style={{ marginTop: 2 }}>
-                {weakestSubject?.avgPct}% school average — lowest of {subjects.length} subjects
+                {weakestSubject?.avgPct}% school average, lowest of {subjects.length} subjects
               </div>
               <ChevronRight size={15} className="intel-band__arrow" />
             </button>
@@ -430,7 +443,7 @@ export default function ClassXOverview() {
                 )}
                 {intelPanel === "weakestClass" && (
                   <div className="drawer__section" style={{ marginTop: 0 }}>
-                    <h4>Overall attainment — average % across all {subjects.length} subjects, {test.name}</h4>
+                    <h4>Overall attainment, average % across all {subjects.length} subjects, {test.name}</h4>
                     <div style={{ display: "grid", gap: 14 }}>
                       {[...standings]
                         .sort((a, b) => a.overallAttainment - b.overallAttainment)
@@ -472,7 +485,7 @@ export default function ClassXOverview() {
                         </div>
                       ))}
                     </div>
-                    <h4 style={{ marginTop: 22 }}>Where — each subject, broken down by section</h4>
+                    <h4 style={{ marginTop: 22 }}>Where, each subject, broken down by section</h4>
                     <p className="small muted" style={{ marginTop: -4, marginBottom: 10 }}>
                       Every subject&apos;s weakest section is highlighted, so a low school average never hides which class is actually pulling it down.
                     </p>

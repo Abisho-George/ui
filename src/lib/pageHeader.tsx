@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 
 /** What a page tells the shell to show in the sticky page header. */
 export interface PageHeaderInfo {
-  /** The page's own name — "which page they're in". */
+  /** The page's own name, "which page they're in". */
   title: string;
   /** One quiet line under the title: context, counts, "as of" dates. */
   subtitle?: string;
@@ -14,7 +14,7 @@ export interface PageHeaderInfo {
 }
 
 /** The id of the empty slot PageHeaderBar renders on the right of the bar.
- * <HeaderActions> portals into it — no context state, so a page rendering
+ * <HeaderActions> portals into it, no context state, so a page rendering
  * controls can never re-trigger the shell's render. */
 export const PAGE_HEADER_ACTIONS_ID = "avai-page-header-actions";
 
@@ -26,7 +26,7 @@ interface PageHeaderContextValue {
 const PageHeaderContext = createContext<PageHeaderContextValue | null>(null);
 
 /** Wraps a shell (StaffShell, the student shell) so its pages can publish
- * a header and the shell can render it — one sticky bar per shell, fed by
+ * a header and the shell can render it, one sticky bar per shell, fed by
  * whichever page is currently mounted. */
 export function PageHeaderProvider({ children }: { children: React.ReactNode }) {
   const [header, setHeader] = useState<PageHeaderInfo | null>(null);
@@ -54,7 +54,7 @@ export function HeaderActions({ children }: { children: React.ReactNode }) {
   const [node, setNode] = useState<HTMLElement | null>(null);
 
   // The slot only exists once PageHeaderBar has a header to render, which
-  // happens a commit after this page mounts — so re-look on header change,
+  // happens a commit after this page mounts, so re-look on header change,
   // with a few frames of grace for shells that mount the bar later.
   useEffect(() => {
     let frame = 0;

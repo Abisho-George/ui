@@ -11,8 +11,8 @@ import { MarksEntryGrid } from "@/components/MarksEntryGrid";
 import { QuestionPaperPanel } from "@/components/QuestionPaperPanel";
 import { SubjectRoster } from "@/components/SubjectRoster";
 
-/** §6.3 Subject view — one subject, one section, with Question Paper and
- * Enter Marks tabs (both moved here from the principal's nav — a subject's
+/** §6.3 Subject view, one subject, one section, with Question Paper and
+ * Enter Marks tabs (both moved here from the principal's nav, a subject's
  * paper and marks are a subject teacher's job, not the principal's). */
 export default function SubjectView() {
   const params = useParams<{ subject: string; section: string }>();

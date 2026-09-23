@@ -31,7 +31,7 @@ function StatusTag({ status }: { status: SubjectPaperStatus }) {
 type PaperMap = Record<string, Record<string, SubjectPaper>>;
 
 /** The exam-cell login: every subject, every section, question papers and
- * marks only — no dashboard, no insights, no per-section views. Tests
+ * marks only, no dashboard, no insights, no per-section views. Tests
  * created here (and their papers) show up immediately in the Enter Marks
  * tab below, since both read from the same test list and paper state. */
 export default function TeacherPapersPage() {
@@ -141,7 +141,7 @@ export default function TeacherPapersPage() {
   return (
     <>
       <p className="page-sub" style={{ marginTop: 0 }}>
-        Every subject, every section — question papers and marks only. Create a test here and it shows up in Enter Marks immediately.
+        Every subject, every section, question papers and marks only. Create a test here and it shows up in Enter Marks immediately.
       </p>
 
       <div className="tabs" role="tablist" style={{ marginTop: 18 }}>
@@ -271,7 +271,7 @@ export default function TeacherPapersPage() {
           </div>
 
           <p className="small muted" style={{ marginTop: 14, display: "flex", alignItems: "center", gap: 6 }}>
-            <ClipboardList size={13} /> Uploads, mapping and answer cards are all simulated for this demo — nothing is parsed or stored, and the list resets
+            <ClipboardList size={13} /> Uploads, mapping and answer cards are all simulated for this demo, nothing is parsed or stored, and the list resets
             on reload.
           </p>
         </>
@@ -454,7 +454,7 @@ export default function TeacherPapersPage() {
                       </dd>
                     </dl>
                     <p className="small muted" style={{ marginTop: 8 }}>
-                      Measured against the whole Board blueprint for {mappingFor.subject}, not against this one paper — a unit test is expected to cover
+                      Measured against the whole Board blueprint for {mappingFor.subject}, not against this one paper, a unit test is expected to cover
                       part of it.
                     </p>
                   </>
@@ -557,7 +557,7 @@ export default function TeacherPapersPage() {
                   <h4>What this is</h4>
                   <p className="small muted" style={{ margin: 0 }}>
                     A blank mark-entry sheet for {cardFor.subject} · {testForCard.name} · Class X {cardSection}, one row per student, one column per
-                    question. Print it, fill it by hand, then scan it back in from Enter Marks — the app reads the marks automatically and flags any
+                    question. Print it, fill it by hand, then scan it back in from Enter Marks, the app reads the marks automatically and flags any
                     it can&apos;t.
                   </p>
                 </div>

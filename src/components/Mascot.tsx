@@ -1,10 +1,10 @@
 "use client";
 
 /**
- * AVAI mascot & logo — the blue/orange bird artwork (public/mascot, public/brand).
+ * AVAI mascot & logo, the blue/orange bird artwork (public/mascot, public/brand).
  *
  * Placement rule (spec §0) still applies: <Mascot> only appears on login,
- * loading states and student screens — never inside the Principal or
+ * loading states and student screens, never inside the Principal or
  * Teacher shells. <Logomark> is the compact app-icon glyph and is allowed
  * everywhere, including the staff sidebars.
  */

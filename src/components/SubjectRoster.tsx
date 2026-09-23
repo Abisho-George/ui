@@ -24,7 +24,7 @@ const FILTER_LABEL: Record<QuickFilter, string> = {
   critical: "Critical",
 };
 
-/** A subject teacher's own roster table — one subject, one test at a time
+/** A subject teacher's own roster table, one subject, one test at a time
  * (picked via `testKey`), with the same quick presets a class teacher
  * gets: top performers, students climbing since the last test, and
  * students needing urgent attention. Unlike StudentRosterTable (which is

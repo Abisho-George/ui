@@ -71,7 +71,7 @@ export const genderOptions: Option[] = [
 ];
 
 // -------------------------------------------------------------------------
-// Section 1 — Your Background
+// Section 1, Your Background
 // -------------------------------------------------------------------------
 
 export const livesInOptions: Option[] = [
@@ -96,13 +96,12 @@ export const responsibilitiesOptions: Option[] = [
 ];
 
 // -------------------------------------------------------------------------
-// Section 2 — Your Learning Profile
+// Section 2, Your Learning Profile
 // -------------------------------------------------------------------------
 
 const subjectIcons: Record<string, LucideIcon> = {
   Mathematics: Calculator,
-  Physics: Atom,
-  Chemistry: FlaskConical,
+  Science: Atom,
   English: BookOpen,
   "Social Science": Globe2,
 };
@@ -119,7 +118,7 @@ export const learningTypeOptions: Option[] = [
 ];
 
 // -------------------------------------------------------------------------
-// Section 3 — Your Interests
+// Section 3, Your Interests
 // -------------------------------------------------------------------------
 
 export const interestOptions: Option[] = [
@@ -153,7 +152,7 @@ export const newLearningOptions: Option[] = [
 ];
 
 // -------------------------------------------------------------------------
-// Section 4 — Your Future Plans
+// Section 4, Your Future Plans
 // -------------------------------------------------------------------------
 
 export const class11GroupOptions: Option[] = [
@@ -179,11 +178,11 @@ export const groupReasonOptions: Option[] = [
 ];
 
 export const confidenceOptions: Option[] = [
-  { id: "1", label: "1 — Not sure at all", icon: HelpCircle },
+  { id: "1", label: "1, Not sure at all", icon: HelpCircle },
   { id: "2", label: "2", icon: HelpCircle },
-  { id: "3", label: "3 — Still exploring", icon: Compass },
+  { id: "3", label: "3, Still exploring", icon: Compass },
   { id: "4", label: "4", icon: Compass },
-  { id: "5", label: "5 — Completely sure", icon: GraduationCap },
+  { id: "5", label: "5, Completely sure", icon: GraduationCap },
 ];
 
 export const careersKnownOptions: Option[] = [

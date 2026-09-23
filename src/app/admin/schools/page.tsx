@@ -32,7 +32,7 @@ function sortValue(s: AdminSchool, field: SortField): number | string {
 
 /** AVAI's book of business, kept to what an ops person checks daily: who's
  * live, who's stalled, and a plain list to search and open an account
- * from. No portfolio-mix chart, no contract-value column here — that
+ * from. No portfolio-mix chart, no contract-value column here, that
  * detail lives on the account page, one click away. */
 export default function AdminSchoolsPage() {
   const router = useRouter();

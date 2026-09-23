@@ -2,7 +2,7 @@
 
 /**
  * Catches a crash in the root layout itself (AuthProvider, globals.css
- * failing to apply, etc.) — the one place error.tsx can't help, since
+ * failing to apply, etc.), the one place error.tsx can't help, since
  * error.tsx renders inside the layout that might be what's broken. Kept
  * dependency-free (no components, no globals.css) so it can render even
  * when nothing else in the app can.

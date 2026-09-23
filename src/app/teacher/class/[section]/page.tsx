@@ -24,10 +24,10 @@ import { EvidenceState } from "@/components/EvidenceState";
 import { FindingCard } from "@/components/FindingCard";
 import { DeltaCell } from "@/components/StudentRosterTable";
 
-/** §6.2 Class view — a class teacher's own section, scoped to only the
+/** §6.2 Class view, a class teacher's own section, scoped to only the
  * subject(s) she actually teaches there. A class teacher oversees the
  * section, but the marks and findings shown here are still one subject
- * teacher's numbers — not a school-wide view across every subject. */
+ * teacher's numbers, not a school-wide view across every subject. */
 export default function ClassView() {
   const { section } = useParams<{ section: string }>();
   usePageHeader({ title: `Class ${section}`, backHref: "/teacher/home" });
@@ -75,7 +75,7 @@ export default function ClassView() {
 
   if (!allowed) return <EvidenceState kind="cause">You are not assigned as class teacher for {section}.</EvidenceState>;
   if (mySubjects.length === 0) {
-    return <EvidenceState kind="early">You are the class teacher for {section}, but aren&apos;t assigned to teach any subject there — nothing subject-specific to show.</EvidenceState>;
+    return <EvidenceState kind="early">You are the class teacher for {section}, but aren&apos;t assigned to teach any subject there, nothing subject-specific to show.</EvidenceState>;
   }
 
   const sectionFindings = findings.filter(
@@ -97,7 +97,7 @@ export default function ClassView() {
           <div className="stat__value">{fullRoster.length}</div>
         </div>
         <div className="stat">
-          <div className="stat__label">{mySubjects.length > 1 ? "Your subjects — attainment" : `${mySubjects[0]} attainment`}</div>
+          <div className="stat__label">{mySubjects.length > 1 ? "Your subjects, attainment" : `${mySubjects[0]} attainment`}</div>
           <div className="stat__value" style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
             {overallAttainment}%
             <DeltaCell delta={trend?.delta ?? null} />

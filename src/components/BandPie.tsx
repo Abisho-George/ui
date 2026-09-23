@@ -10,7 +10,7 @@ export interface PieSlice {
   color: string;
 }
 
-/** A donut chart built by hand with stroke-dasharray circles — no charting
+/** A donut chart built by hand with stroke-dasharray circles, no charting
  * library in this project. The ring sweeps out on mount, the hovered slice
  * lifts (thicker stroke, the rest dimmed) and the centre reads that slice's
  * share; with nothing hovered the centre prints the total, so the chart

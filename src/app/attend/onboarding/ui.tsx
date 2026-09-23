@@ -150,7 +150,7 @@ export function ChipGroup({
   );
 }
 
-/** A value the school already gave us — shown, not editable. */
+/** A value the school already gave us, shown, not editable. */
 export function LockedField({ label, value }: { label: string; value: string }) {
   return (
     <div className="field">

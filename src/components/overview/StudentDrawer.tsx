@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import type { FullRosterStudent } from "@/lib/avai-mock-data";
 
-/** One student in a drill-down list — always a link through to their own
+/** One student in a drill-down list, always a link through to their own
  * report, so a number on the overview is never a dead end. */
 export function StudentRow({ student, showSection, meta }: { student: FullRosterStudent; showSection: boolean; meta?: string }) {
   return (
@@ -26,7 +26,7 @@ export interface DrillDown {
   title: string;
   subtitle: string;
   students: FullRosterStudent[];
-  /** Right-hand figure per row — the mark that put them in this band. */
+  /** Right-hand figure per row, the mark that put them in this band. */
   metaFor?: (student: FullRosterStudent) => string;
 }
 
@@ -58,7 +58,7 @@ export function StudentDrawer({ drill, onClose }: { drill: DrillDown | null; onC
             </div>
             <div className="drawer__body">
               <div className="small muted" style={{ marginBottom: 10 }}>
-                {drill.students.length} student{drill.students.length === 1 ? "" : "s"} — tap one to open their report.
+                {drill.students.length} student{drill.students.length === 1 ? "" : "s"}, tap one to open their report.
               </div>
               <div style={{ display: "grid", gap: 8 }}>
                 {drill.students.map((s, i) => (

@@ -81,7 +81,7 @@ export function StaggerItem({ children, className, style }: { children: React.Re
   );
 }
 
-/** Counts from 0 up to `value` on mount. Deterministic — no timers beyond
+/** Counts from 0 up to `value` on mount. Deterministic, no timers beyond
  * the animation itself, and it lands exactly on `value`. */
 export function CountUp({
   value,
@@ -139,7 +139,7 @@ export function AnimatedBar({
   className,
   label,
 }: {
-  /** 0–100. */
+  /** 0-100. */
   value: number;
   accent?: string;
   height?: number;

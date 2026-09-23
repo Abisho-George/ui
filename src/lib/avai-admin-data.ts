@@ -1,12 +1,12 @@
 /**
- * AVAI — internal staff console mock data ("the book of business").
+ * AVAI, internal staff console mock data ("the book of business").
  *
  * This is the AVAI side of the product, not the school side: every account
  * we have sold, where each one sits in onboarding, and what ops has to chase
  * today. Bharat International (sch_001) is the live flagship and its numbers
  * are taken from avai-mock-data.ts so the two consoles never disagree.
  *
- * Deterministic throughout — seeded mulberry32, fixed TODAY, no Math.random
+ * Deterministic throughout, seeded mulberry32, fixed TODAY, no Math.random
  * and no clock reads at render time.
  */
 
@@ -82,13 +82,13 @@ export function formatAgo(iso: string): string {
 
 /** Contract values read as Indian ops reads them: ₹6.4L, ₹12.0L. */
 export function formatINR(value: number): string {
-  if (value <= 0) return "—";
+  if (value <= 0) return "-";
   if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
   return `₹${Math.round(value / 1000)}k`;
 }
 
 // ============================================================
-// The AVAI team — who signs in to this console
+// The AVAI team, who signs in to this console
 // ============================================================
 
 export interface StaffMember {
@@ -174,7 +174,7 @@ export interface WeekPoint {
   weekStart: string;
   value: number;
   cumulative: number;
-  /** Weeks that have not happened yet — drawn as pending, never as zero. */
+  /** Weeks that have not happened yet, drawn as pending, never as zero. */
   future: boolean;
 }
 
@@ -201,7 +201,7 @@ export interface AdminSchool {
   studentsOnboarded: number;
   assessmentsAnalysed: number;
   analysedDates: string[];
-  /** Tests created so far — may be ahead of assessmentsAnalysed when a
+  /** Tests created so far, may be ahead of assessmentsAnalysed when a
    *  test has been conducted but not every subject's paper is in yet. */
   testsConducted: number;
   papersUploaded: number;
@@ -224,7 +224,7 @@ export interface AdminSchool {
 }
 
 // ============================================================
-// Seeds — the handwritten facts. Everything else is derived so the
+// Seeds, the handwritten facts. Everything else is derived so the
 // numbers can never contradict each other.
 // ============================================================
 
@@ -325,7 +325,7 @@ const seeds: SchoolSeed[] = [
     progress: 8,
     owner: "Rohit Deshpande",
     contact: { name: "Mr. Sandeep Kulkarni", role: "Vice Principal", email: "sandeep.k@vidyaniketan.edu.in", phone: "+91 98220 77104" },
-    note: "Maths department is the heaviest user. Two teachers still share one login — flagged for cleanup.",
+    note: "Maths department is the heaviest user. Two teachers still share one login, flagged for cleanup.",
   },
   {
     id: "sch_004",
@@ -347,7 +347,7 @@ const seeds: SchoolSeed[] = [
     progress: 8,
     owner: "Sneha Balan",
     contact: { name: "Sr. Mary Thomas", role: "Principal", email: "office@staloysiuskochi.org", phone: "+91 94470 51288" },
-    note: "Pilot converts or lapses in December. One analysed paper so far — needs a second before the renewal conversation.",
+    note: "Pilot converts or lapses in December. One analysed paper so far, needs a second before the renewal conversation.",
   },
   {
     id: "sch_005",
@@ -413,7 +413,7 @@ const seeds: SchoolSeed[] = [
     progress: 7,
     owner: "Imran Qureshi",
     contact: { name: "Mr. Ajay Prasad", role: "Correspondent", email: "ajay@nalandamodel.in", phone: "+91 90310 44562" },
-    note: "State-board blueprint differs from CBSE — mapping took two rounds. Reports not shared with parents yet.",
+    note: "State-board blueprint differs from CBSE, mapping took two rounds. Reports not shared with parents yet.",
   },
   {
     id: "sch_008",
@@ -458,7 +458,7 @@ const seeds: SchoolSeed[] = [
     onboardingStart: "2026-08-24",
     progress: 4,
     daysInStage: 9,
-    blocker: "Student ID slips printed but not handed out — only two sections have attended",
+    blocker: "Student ID slips printed but not handed out, only two sections have attended",
     owner: "Imran Qureshi",
     contact: { name: "Mr. Ramesh Tiwari", role: "Principal", email: "principal@svmlucknow.edu.in", phone: "+91 94150 88321" },
     note: "Needs a call with the class teachers, not the principal. Slips were printed on 29 Aug.",
@@ -507,7 +507,7 @@ const seeds: SchoolSeed[] = [
     progress: 2,
     blocked: true,
     daysInStage: 13,
-    blocker: "Staff list still not shared by the correspondent — cannot invite teachers",
+    blocker: "Staff list still not shared by the correspondent, cannot invite teachers",
     owner: "Nandita Rao",
     contact: { name: "Sr. Josephine A.", role: "Correspondent", email: "lfcmadurai@gmail.com", phone: "+91 90031 66740" },
     note: "Third follow-up sent. Escalate to the management committee if nothing lands by the 25th.",
@@ -556,7 +556,7 @@ const seeds: SchoolSeed[] = [
     progress: 7,
     owner: "Rohit Deshpande",
     contact: { name: "Mr. Praveen Jain", role: "Academic Head", email: "praveen@gyanjyoti.ac.in", phone: "+91 99770 12048" },
-    note: "One analysed paper, good teacher engagement. Trial ends 15 Nov — quote is drafted.",
+    note: "One analysed paper, good teacher engagement. Trial ends 15 Nov, quote is drafted.",
   },
   {
     id: "sch_014",
@@ -602,7 +602,7 @@ const seeds: SchoolSeed[] = [
     progress: 8,
     owner: "Sneha Balan",
     contact: { name: "Mr. Arindam Bose", role: "Principal", email: "arindam@riverdalekol.edu.in", phone: "+91 98300 44127" },
-    note: "Did not renew after the pilot year — the principal who signed moved schools in May. Worth a re-approach in January.",
+    note: "Did not renew after the pilot year, the principal who signed moved schools in May. Worth a re-approach in January.",
   },
 ];
 
@@ -723,7 +723,7 @@ function checklistFor(
 ): ChecklistStep[] {
   const details = [
     `${seed.code} · ${seed.board} · ${seed.city}`,
-    `${seed.contact.name} — ${seed.contact.email}`,
+    `${seed.contact.name}, ${seed.contact.email}`,
     invited > 0 ? `${invited} of ${seed.staffSize} teachers invited` : `${seed.staffSize} teachers expected, none invited yet`,
     keysIssued > 0 ? `${keysIssued} access keys generated by AVAI` : "No keys generated yet",
     onboarded > 0 ? `${onboarded} of ${seed.students} students completed the onboarding test` : `0 of ${seed.students} students attended`,
@@ -766,7 +766,7 @@ function buildSchool(seed: SchoolSeed): AdminSchool {
   const current = series.find((w) => !w.future && Date.parse(w.weekStart) + 7 * DAY > Date.parse(TODAY));
 
   // A test that's been conducted but not fully analysed yet, on top of the
-  // analysed ones — its papers are only partly uploaded.
+  // analysed ones, its papers are only partly uploaded.
   const pendingTest = seed.progress >= 5 && rnd() < 0.35 ? 1 : 0;
   const testsConducted = seed.analysedDates.length + pendingTest;
   const papersUploaded = seed.analysedDates.length * subjects.length + (pendingTest ? Math.round(rnd() * subjects.length) : 0);
@@ -895,7 +895,7 @@ function genericRoster(s: AdminSchool): AdminTeacher[] {
 export function teacherRosterFor(schoolId: string): AdminTeacher[] {
   const s = schoolById(schoolId);
   if (!s) return [];
-  // Before the staff list arrives there are no names to show — an empty
+  // Before the staff list arrives there are no names to show, an empty
   // roster is the truth, not a list of invented teachers.
   if (s.teachersInvited === 0 && s.progress <= 2) return [];
   const rows = s.id === flagshipSchool.id ? flagshipRoster() : genericRoster(s);
@@ -939,7 +939,7 @@ export interface AdminEvent {
 const accountEventPool = [
   (s: AdminSchool) => `Check-in call with ${s.contact.name}`,
   (s: AdminSchool) => `Usage summary emailed to ${s.contact.role.toLowerCase()}`,
-  () => "Support ticket closed — marks upload from a scanned sheet",
+  () => "Support ticket closed, marks upload from a scanned sheet",
   (s: AdminSchool) => `${s.plan} plan confirmed, invoice raised`,
   () => "Training session run for the class teachers",
   () => "Question paper re-uploaded after a scan quality issue",
@@ -956,7 +956,7 @@ export function activityFeedFor(schoolId: string): AdminEvent[] {
       id: `${s.id}_an_${i}`,
       date,
       kind: "analysis",
-      text: `Assessment analysed — ${s.sections} sections, ${s.students} papers`,
+      text: `Assessment analysed, ${s.sections} sections, ${s.students} papers`,
       actor: "AVAI engine",
     });
   });
@@ -993,7 +993,7 @@ export function activityFeedFor(schoolId: string): AdminEvent[] {
       id: `${s.id}_blk`,
       date: shiftDays(s.lastActivity, -1),
       kind: "support",
-      text: `Blocker logged — ${s.blocker}`,
+      text: `Blocker logged, ${s.blocker}`,
       actor: s.owner,
     });
   }
@@ -1085,7 +1085,7 @@ function buildAttention(): AttentionItem[] {
         schoolId: s.id,
         schoolName: s.name,
         code: s.code,
-        reason: "Live account has gone quiet — no uploads or report views",
+        reason: "Live account has gone quiet, no uploads or report views",
         metric: `${quiet} days quiet`,
         severity: "medium",
         owner: s.owner,
@@ -1110,7 +1110,7 @@ function buildAttention(): AttentionItem[] {
         schoolId: s.id,
         schoolName: s.name,
         code: s.code,
-        reason: `${s.plan} term ends soon — renewal conversation not started`,
+        reason: `${s.plan} term ends soon, renewal conversation not started`,
         metric: `${untilRenewal} days to renewal`,
         severity: untilRenewal <= 45 ? "high" : "medium",
         owner: s.owner,
@@ -1122,7 +1122,7 @@ function buildAttention(): AttentionItem[] {
 
 export const needsAttention: AttentionItem[] = buildAttention();
 
-/** Distinct accounts behind the attention list — what the KPI counts. */
+/** Distinct accounts behind the attention list, what the KPI counts. */
 export const accountsNeedingAttention = new Set(needsAttention.map((i) => i.schoolId)).size;
 
 export interface PipelineColumn {
@@ -1136,7 +1136,7 @@ export const pipelineBoard: PipelineColumn[] = pipelineStages.map((stage) => {
   return { stage, schools, students: schools.reduce((n, s) => n + s.students, 0) };
 });
 
-/** What each stage actually means — shown under the column heading. */
+/** What each stage actually means, shown under the column heading. */
 export const stageHints: Record<OnboardingStage, string> = {
   "Kick-off": "Contract signed, principal account created",
   "Teacher setup": "Staff list collected, invites and keys issued by AVAI",
@@ -1146,7 +1146,7 @@ export const stageHints: Record<OnboardingStage, string> = {
 };
 
 // ============================================================
-// Colour helpers — one place decides what a status looks like
+// Colour helpers, one place decides what a status looks like
 // ============================================================
 
 export function statusAccent(status: AccountStatus): string {

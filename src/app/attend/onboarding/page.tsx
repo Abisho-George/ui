@@ -23,7 +23,7 @@ function slideFor(offset: number): Variants {
 }
 
 /**
- * §A2 Onboarding wizard — five screens, one per topic, with the answers
+ * §A2 Onboarding wizard, five screens, one per topic, with the answers
  * autosaved to localStorage after every change so a phone that reloads
  * mid-way picks up where it stopped.
  */
@@ -174,7 +174,7 @@ export default function OnboardingPage() {
   );
 }
 
-/** "Saving… / Saved" — the reassurance that nothing typed is lost. */
+/** "Saving… / Saved", the reassurance that nothing typed is lost. */
 function SaveBadge({ rev }: { rev: number }) {
   const [state, setState] = useState<"idle" | "saving" | "saved">("idle");
 

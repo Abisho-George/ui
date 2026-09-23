@@ -47,7 +47,7 @@ export default function AdminSignInPage() {
             </h1>
             <p style={{ color: "#b9c8e2", fontSize: 15, maxWidth: 430, lineHeight: 1.55 }}>
               Onboarding, teacher keys, usage and renewals for all {adminSchools.length} accounts. This is the tool the
-              AVAI team runs the business on — schools never see it.
+              AVAI team runs the business on, schools never see it.
             </p>
             <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
               {[
@@ -117,7 +117,7 @@ export default function AdminSignInPage() {
                     }}
                   />
                   <span className="small muted" style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
-                    <Lock size={11} /> Demo build — any password works.
+                    <Lock size={11} /> Demo build, any password works.
                   </span>
                 </div>
 

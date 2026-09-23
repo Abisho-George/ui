@@ -48,7 +48,7 @@ const ROLES: Array<{
   },
 ];
 
-/** "X-A class teacher · Mathematics · X-A, X-B" — what a demo account will
+/** "X-A class teacher · Mathematics · X-A, X-B", what a demo account will
  *  actually see. Subjects taught to the same sections are grouped so the line
  *  stays one or two rows on a phone. */
 function describeAssignments(assignments: TeacherAssignment[]) {
@@ -72,7 +72,7 @@ const principalDemo = devLoginOptions.find((o) => o.role === "principal");
 
 /**
  * §4 Sign in. Step 1 picks a staff role, step 2 shows that role's credential
- * form. The form is design only — the demo accounts beneath it are what
+ * form. The form is design only, the demo accounts beneath it are what
  * actually call signIn(). Students never sign in here; they go to /attend.
  */
 export default function LoginPage() {
@@ -128,7 +128,6 @@ export default function LoginPage() {
             Every opportunity belongs to every student.
           </h1>
 
-          <span style={{ color: "#8b99a3", fontSize: 13, letterSpacing: ".04em" }}>Built for CBSE · ICSE · State Board schools</span>
         </motion.div>
       </section>
 
@@ -319,7 +318,7 @@ export default function LoginPage() {
               <ArrowRight size={17} style={{ marginLeft: "auto", color: "#8a6410", flex: "0 0 auto" }} />
             </Link>
 
-            {/* AVAI's own staff console — deliberately quiet, and not a school login. */}
+            {/* AVAI's own staff console, deliberately quiet, and not a school login. */}
             <Link
               href="/admin"
               className="small muted"

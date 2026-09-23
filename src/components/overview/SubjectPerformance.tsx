@@ -76,7 +76,7 @@ export function SubjectPerformance({
                           className="pillnum"
                           style={{ "--accent": bandColors[i] } as React.CSSProperties}
                           onClick={() => onOpen(row.subject, i)}
-                          aria-label={`${count} students scoring ${bandLabels[i]} in ${row.subject} — open the list`}
+                          aria-label={`${count} students scoring ${bandLabels[i]} in ${row.subject}, open the list`}
                         >
                           {count}
                         </button>

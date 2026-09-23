@@ -7,10 +7,10 @@ import { DrawnPath, EASE_OUT, GrowBar } from "@/components/motion";
 import { statusAccent, type AccountStatus } from "@/lib/avai-admin-data";
 
 /** Small shared pieces for the AVAI staff console. Charts here are
- * hand-rolled SVG/CSS — the project ships no chart library. */
+ * hand-rolled SVG/CSS, the project ships no chart library. */
 
 // ------------------------------------------------------------
-// Toast — every "action" in this console is a demo acknowledgement
+// Toast, every "action" in this console is a demo acknowledgement
 // ------------------------------------------------------------
 
 export function useToast() {

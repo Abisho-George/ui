@@ -9,7 +9,7 @@ import { accessKeyFor, issueKey, keyIdFor, markReminded, regenerateKey, useAdmin
 import { OpsEmpty, StatusPill, Toast, useToast } from "../../ui";
 
 /** One school's account: who to contact, where onboarding stands, and the
- * teacher roster with key generation — the three things an ops person
+ * teacher roster with key generation, the three things an ops person
  * actually needs here. No usage charts or activity feed; those added
  * depth without adding a decision. */
 export default function AdminSchoolDetailPage() {
@@ -37,17 +37,17 @@ export default function AdminSchoolDetailPage() {
     const next = roster.find((t) => t.keyStatus === "Not issued" && !keys[keyIdFor(school.id, t.id)]);
     if (!next) {
       const idle = roster.find((t) => t.keyStatus !== "Active");
-      show(idle ? `Every key is issued — ${idle.name} has not used theirs yet.` : "Every teacher here has an active key.");
+      show(idle ? `Every key is issued, ${idle.name} has not used theirs yet.` : "Every teacher here has an active key.");
       return;
     }
     const key = issueKey(school.id, next.id);
-    show(`Key ${key} generated for ${next.name} — invite email queued.`);
+    show(`Key ${key} generated for ${next.name}, invite email queued.`);
   }
 
   function changeKey(teacherId: string, teacherName: string) {
     if (!school) return;
     const key = regenerateKey(school.id, teacherId);
-    show(`New key ${key} generated for ${teacherName} — the old key stops working.`);
+    show(`New key ${key} generated for ${teacherName}, the old key stops working.`);
   }
 
   function sendReminder() {
@@ -277,7 +277,7 @@ export default function AdminSchoolDetailPage() {
                               className="btn btn--sm"
                               onClick={() => {
                                 const key = issueKey(school.id, t.id);
-                                show(`Key ${key} generated for ${t.name} — invite email queued.`);
+                                show(`Key ${key} generated for ${t.name}, invite email queued.`);
                               }}
                             >
                               <KeyRound size={12} /> Generate key
