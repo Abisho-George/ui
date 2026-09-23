@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { AlertCircle, ArrowRight, CircleCheck, Clock3, Eye, EyeOff, IdCard, Lock, ShieldCheck, Sparkles } from "lucide-react";
-import { Logomark, Mascot } from "@/components/Mascot";
+import { Mascot, Wordmark } from "@/components/Mascot";
 import { EASE_OUT } from "@/components/motion";
 import { academicYear, school } from "@/lib/avai-mock-data";
 import { DEMO_PASSWORD, demoLogins, onboardingCohort, resolveAttendLogin, startAttend, useAttend } from "@/lib/attendState";
@@ -51,8 +51,7 @@ export default function AttendEntryPage() {
     <div className="auth">
       <section className="auth__aside">
         <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 1 }}>
-          <Logomark size={38} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 28, letterSpacing: ".14em" }}>AVAI</span>
+          <Wordmark height={40} onDark />
         </div>
 
         <motion.div

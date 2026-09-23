@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { homeFor, initials, useAuth, type CurrentUser } from "@/lib/auth";
 import { academicYear, school, type Role } from "@/lib/avai-mock-data";
 import { PAGE_HEADER_ACTIONS_ID, PageHeaderProvider, useCurrentPageHeader } from "@/lib/pageHeader";
-import { Logomark, Mascot } from "./Mascot";
+import { Mascot, Wordmark } from "./Mascot";
 
 export interface NavItem {
   href: string;
@@ -188,21 +188,17 @@ export function StaffShell({
   return (
     <div className="shell">
       <aside className="sidebar">
-        <div className="sidebar__brand">
-          <Logomark />
-          <div>
-            <div className="sidebar__brand-name">AVAI</div>
-            <div className="sidebar__brand-sub">{roleLabel}</div>
-          </div>
+        <div className="sidebar__brand" style={{ flexDirection: "column", alignItems: "flex-start", gap: 6 }}>
+          <Wordmark height={30} onDark />
+          <div className="sidebar__brand-sub">{roleLabel}</div>
         </div>
         {sidebarBody()}
       </aside>
 
       <div className="main">
         <header className="mtopbar">
-          <Logomark size={26} />
+          <Wordmark height={22} onDark />
           <div className="mtopbar__text">
-            <div className="mtopbar__brand">AVAI</div>
             <div className="mtopbar__school">{school.name}</div>
           </div>
           <span className="avatar mtopbar__avatar" aria-hidden="true">
@@ -250,12 +246,9 @@ export function StaffShell({
               transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             >
               <div className="sidebar__brand" style={{ justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <Logomark />
-                  <div>
-                    <div className="sidebar__brand-name">AVAI</div>
-                    <div className="sidebar__brand-sub">{roleLabel}</div>
-                  </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  <Wordmark height={28} onDark />
+                  <div className="sidebar__brand-sub">{roleLabel}</div>
                 </div>
                 <button className="mdrawer__close" onClick={() => setMenuOpen(false)} aria-label="Close menu">
                   <X size={20} />

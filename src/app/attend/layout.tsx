@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
-import { Logomark } from "@/components/Mascot";
+import { Wordmark } from "@/components/Mascot";
 import { school } from "@/lib/avai-mock-data";
 import { useAttend } from "@/lib/attendState";
 
@@ -44,9 +44,8 @@ export default function AttendLayout({ children }: { children: React.ReactNode }
           borderColor: "var(--line)",
         }}
       >
-        <Logomark size={30} />
+        <Wordmark height={26} />
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontFamily: "var(--font-display)", fontSize: 17, letterSpacing: ".1em", lineHeight: 1.1 }}>AVAI</div>
           <div className="muted" style={{ fontSize: 11, lineHeight: 1.3, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
             {school.name}
           </div>

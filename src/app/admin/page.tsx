@@ -4,10 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AlertCircle, ArrowRight, Lock, ShieldCheck } from "lucide-react";
-import { Mascot } from "@/components/Mascot";
+import { Mascot, Wordmark } from "@/components/Mascot";
 import { Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { DEMO_STAFF_PASSWORD, demoStaffLogins, signInStaff } from "@/lib/adminState";
-import { adminSchools, portfolioKpis } from "@/lib/avai-admin-data";
 
 /** AVAI staff sign-in. Mock: any listed staff email plus any password. */
 export default function AdminSignInPage() {
@@ -28,47 +27,16 @@ export default function AdminSignInPage() {
 
   return (
     <div className="auth">
-      <aside className="auth__aside">
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 28, letterSpacing: ".12em" }}>AVAI</span>
-          <span
-            className="tag"
-            style={{ background: "rgba(240,147,43,.16)", borderColor: "rgba(240,147,43,.45)", color: "var(--brand-orange)" }}
-          >
-            Ops console
-          </span>
-        </div>
-
-        <Reveal delay={0.05}>
-          <div style={{ display: "flex", flexDirection: "column", gap: 20, alignItems: "flex-start" }}>
-            <Mascot pose="hello" size={104} float />
-            <h1 style={{ fontFamily: "var(--font-display)", fontSize: 38, fontWeight: 500, lineHeight: 1.15, maxWidth: 460 }}>
-              The console behind every AVAI school.
+      <aside className="auth__aside" style={{ alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+        <Reveal>
+          <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 20, alignItems: "center" }}>
+            <Wordmark height={52} onDark />
+            <Mascot pose="hello" size={170} float />
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(24px, 2.8vw, 34px)", fontWeight: 500, lineHeight: 1.25, maxWidth: 380 }}>
+              Every opportunity belongs to every student.
             </h1>
-            <p style={{ color: "#b9c8e2", fontSize: 15, maxWidth: 430, lineHeight: 1.55 }}>
-              Onboarding, teacher keys, usage and renewals for all {adminSchools.length} accounts. This is the tool the
-              AVAI team runs the business on, schools never see it.
-            </p>
-            <div style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
-              {[
-                { label: "Live schools", value: portfolioKpis.schoolsLive },
-                { label: "Students analysed", value: portfolioKpis.studentsUnderAnalysis },
-                { label: "In onboarding", value: portfolioKpis.onboardingCount },
-              ].map((s) => (
-                <div key={s.label}>
-                  <div className="mono" style={{ fontSize: 24, fontWeight: 700 }}>
-                    {s.value}
-                  </div>
-                  <div style={{ fontSize: 11, letterSpacing: ".08em", textTransform: "uppercase", color: "#8fa2c2" }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
           </div>
         </Reveal>
-
-        <div style={{ color: "#8fa2c2", fontSize: 12.5 }}>
-          Internal use only · Access is logged · AVAI Learning Systems Pvt. Ltd.
-        </div>
       </aside>
 
       <div className="auth__panel">

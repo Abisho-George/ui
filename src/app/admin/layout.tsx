@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Building2, LogOut, Radio, ShieldCheck, UserPlus } from "lucide-react";
-import { Logomark } from "@/components/Mascot";
+import { Wordmark } from "@/components/Mascot";
 import { adminSchools, formatDate, portfolioKpis, staffInitials, TODAY } from "@/lib/avai-admin-data";
 import { signOutStaff, useStaffSession } from "@/lib/adminState";
 import { useOpsVersion } from "@/lib/opsDirectory";
@@ -75,9 +75,8 @@ function ConsoleShell({ children }: { children: React.ReactNode }) {
     <div className="ops-shell">
       <aside className="ops-side">
         <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "18px 16px 14px" }}>
-          <Logomark size={30} />
-          <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: "var(--font-display)", fontSize: 19, letterSpacing: ".1em", color: "#fff", lineHeight: 1.1 }}>AVAI</div>
+          <div style={{ minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+            <Wordmark height={30} onDark />
             <div style={{ fontSize: 10.5, letterSpacing: ".14em", textTransform: "uppercase", color: "var(--brand-orange)", fontWeight: 700 }}>
               Ops console
             </div>
@@ -160,7 +159,7 @@ function ConsoleShell({ children }: { children: React.ReactNode }) {
 
       <div className="ops-main">
         <header className="ops-topbar">
-          {narrow && <Logomark size={26} />}
+          {narrow && <Wordmark height={22} />}
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 10.5, letterSpacing: ".12em", textTransform: "uppercase", color: "var(--brand-blue)", fontWeight: 700 }}>
               AVAI internal

@@ -18,7 +18,7 @@ import {
   ShieldAlert,
   ShieldCheck,
 } from "lucide-react";
-import { Logomark, Mascot } from "@/components/Mascot";
+import { Mascot, Wordmark } from "@/components/Mascot";
 import { EASE_OUT } from "@/components/motion";
 import { homeFor, initials, useAuth } from "@/lib/auth";
 import { devLoginOptions, mockPrincipal, mockTeachers, type TeacherAssignment } from "@/lib/avai-mock-data";
@@ -109,10 +109,7 @@ export default function LoginPage() {
           transition={{ duration: 0.55, ease: EASE_OUT }}
           style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 20, alignItems: "center" }}
         >
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <Logomark size={38} />
-            <span style={{ fontFamily: "var(--font-display)", fontSize: 28, letterSpacing: ".14em" }}>AVAI</span>
-          </div>
+          <Wordmark height={52} onDark />
 
           <Mascot pose="hello" size={170} float />
 

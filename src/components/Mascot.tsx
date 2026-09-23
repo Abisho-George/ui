@@ -90,3 +90,17 @@ export function Logomark({ size = 28 }: { size?: number }) {
     />
   );
 }
+
+/** The AVAI wordmark. `onDark` swaps the navy letters for white so the
+ *  logo stays legible on the dark sidebars and sign-in panels. */
+export function Wordmark({ height = 28, onDark = false }: { height?: number; onDark?: boolean }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={onDark ? "/brand/avai-wordmark-light.png" : "/brand/avai-wordmark.png"}
+      alt="AVAI"
+      height={height}
+      style={{ height, width: "auto", display: "block", flex: "0 0 auto" }}
+    />
+  );
+}

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Logomark, Mascot } from "@/components/Mascot";
+import { Mascot, Wordmark } from "@/components/Mascot";
 import { EASE_OUT } from "@/components/motion";
 import { homeFor, useAuth } from "@/lib/auth";
 import { school } from "@/lib/avai-mock-data";
@@ -45,10 +45,7 @@ export default function Index() {
         style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}
       >
         <Mascot pose="hello" size={132} float />
-        <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-          <Logomark size={30} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 26, letterSpacing: ".14em" }}>AVAI</span>
-        </div>
+        <Wordmark height={40} onDark />
       </motion.div>
 
       <motion.div
