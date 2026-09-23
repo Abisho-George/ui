@@ -201,6 +201,11 @@ export interface AdminSchool {
   studentsOnboarded: number;
   assessmentsAnalysed: number;
   analysedDates: string[];
+  /** Tests created so far — may be ahead of assessmentsAnalysed when a
+   *  test has been conducted but not every subject's paper is in yet. */
+  testsConducted: number;
+  papersUploaded: number;
+  papersExpected: number;
   lastActivity: string;
   contact: AdminContact;
   note: string;
@@ -760,6 +765,12 @@ function buildSchool(seed: SchoolSeed): AdminSchool {
   const series = weeklySeries(seed, onboarded, rnd);
   const current = series.find((w) => !w.future && Date.parse(w.weekStart) + 7 * DAY > Date.parse(TODAY));
 
+  // A test that's been conducted but not fully analysed yet, on top of the
+  // analysed ones — its papers are only partly uploaded.
+  const pendingTest = seed.progress >= 5 && rnd() < 0.35 ? 1 : 0;
+  const testsConducted = seed.analysedDates.length + pendingTest;
+  const papersUploaded = seed.analysedDates.length * subjects.length + (pendingTest ? Math.round(rnd() * subjects.length) : 0);
+
   return {
     id: seed.id,
     name: seed.name,
@@ -778,6 +789,9 @@ function buildSchool(seed: SchoolSeed): AdminSchool {
     studentsOnboarded: onboarded,
     assessmentsAnalysed: seed.analysedDates.length,
     analysedDates: seed.analysedDates,
+    testsConducted,
+    papersUploaded,
+    papersExpected: testsConducted * subjects.length,
     lastActivity: seed.lastActivity,
     contact: seed.contact,
     note: seed.note,

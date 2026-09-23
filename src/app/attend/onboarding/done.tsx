@@ -5,48 +5,54 @@ import { ClipboardList, FileText, PartyPopper, ScanLine, ShieldCheck } from "luc
 import { Mascot } from "@/components/Mascot";
 import { EASE_OUT, Reveal } from "@/components/motion";
 import { classTeacherBySection, school } from "@/lib/avai-mock-data";
-import { ONBOARDING_DATE, type AttendDraft } from "@/lib/attendState";
-import { diagnosticQuestions } from "../questions";
+import { ageFrom, ONBOARDING_DATE, type AttendDraft } from "@/lib/attendState";
 import {
-  afterTenthOptions,
+  careersKnownOptions,
+  class11GroupOptions,
+  confidenceOptions,
+  decisionHelperOptions,
+  futureConcernOptions,
+  genderOptions,
+  groupReasonOptions,
   interestOptions,
   labelFor,
   labelsFor,
-  learnStyleOptions,
-  studyHourOptions,
-  studyWhenOptions,
-  supportOptions,
+  learningTypeOptions,
+  livesInOptions,
+  newLearningOptions,
+  responsibilitiesOptions,
+  workInterestOptions,
 } from "../options";
 
-function mmss(total: number): string {
-  return `${Math.floor(total / 60)}:${String(total % 60).padStart(2, "0")}`;
-}
-
-/** Step 5 — confirmation. Everything on this screen is read back from the
+/** Step 6 — confirmation. Everything on this screen is read back from the
  * saved run, so a student can see exactly what the school now has. */
 export function StepDone({ draft }: { draft: AttendDraft }) {
   const id = draft.identity;
   if (!id) return null;
 
   const first = id.name.split(" ")[0];
-  const answered = Object.values(draft.answers).filter((a) => a !== null).length;
   const classTeacher = classTeacherBySection[id.section];
+  const age = ageFrom(draft.dob);
 
   const summary: Array<[string, string]> = [
     ["Name", `${id.name} · ${id.section} · Roll ${id.rollNo}`],
-    ["Date of birth", draft.dob || "—"],
-    ["Contact", draft.contact || "—"],
+    ["Date of birth", draft.dob ? `${draft.dob}${age !== null ? ` (age ${age})` : ""}` : "—"],
+    ["Gender", labelFor(genderOptions, draft.gender) || "—"],
+    ["Where you live", labelFor(livesInOptions, draft.livesIn) || "—"],
+    ["Who helps with study decisions", labelFor(decisionHelperOptions, draft.decisionHelper) || "—"],
+    ["Responsibilities outside school", labelFor(responsibilitiesOptions, draft.hasResponsibilities) || "—"],
+    ["Enjoys learning most", draft.favoriteSubject || "—"],
+    ["Most comfortable subject", draft.comfortableSubject || "—"],
+    ["Preferred type of learning", labelFor(learningTypeOptions, draft.learningType) || "—"],
     ["Interests", labelsFor(interestOptions, draft.interests).join(", ") || "—"],
-    [
-      "Study pattern",
-      [labelFor(studyHourOptions, draft.studyHours), labelFor(studyWhenOptions, draft.studyWhen)].filter(Boolean).join(" · ") || "—",
-    ],
-    ["Learns best by", labelFor(learnStyleOptions, draft.learnStyle) || "—"],
-    ["Board target", `${draft.targetPct}%`],
-    ["After Class X", labelFor(afterTenthOptions, draft.afterTenth) || "—"],
-    ["Hardest subjects", draft.hardSubjects.join(", ") || "—"],
-    ["Support wanted", labelsFor(supportOptions, draft.support).join(", ") || "—"],
-    ["Quick check", `${answered} of ${diagnosticQuestions.length} answered in ${mmss(draft.diagnosticSeconds)}`],
+    ["Kind of work of interest", labelFor(workInterestOptions, draft.workInterest) || "—"],
+    ["Enjoys most when learning something new", labelFor(newLearningOptions, draft.newLearning) || "—"],
+    ["Future plan", draft.futurePlanUnsure ? "Not sure yet" : draft.futurePlan || "—"],
+    ["Class 11 group", labelFor(class11GroupOptions, draft.class11Group) || "—"],
+    ["Reasons for this group", labelsFor(groupReasonOptions, draft.groupReasons).join(", ") || "—"],
+    ["How sure about this choice", labelFor(confidenceOptions, draft.groupConfidence) || "—"],
+    ["Careers or exams heard about", labelsFor(careersKnownOptions, draft.careersKnown).join(", ") || "—"],
+    ["May affect future study choice", labelsFor(futureConcernOptions, draft.futureConcerns).join(", ") || "—"],
   ];
 
   const timeline: Array<{ icon: typeof ClipboardList; title: string; body: string }> = [

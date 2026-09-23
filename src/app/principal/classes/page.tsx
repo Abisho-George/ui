@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { BookX, CalendarDays, ChevronRight, Download, Sparkles, TrendingDown, TrendingUp, Trophy, X } from "lucide-react";
 import {
+  allStudents,
+  analysedTests,
   anomaliesFor,
   attentionBreakdown,
   classRosterFull,
@@ -81,14 +83,31 @@ export default function ClassXOverview() {
     return totalMarkBands.map((band, i) => ({ label: band.label, count: counts[i], share: shares[i], color: TOTAL_BAND_COLORS[i] }));
   }, [testKey]);
 
+  // The subject-wise table has its own test filter — "All tests" averages a
+  // student's % in a subject across every analysed test before banding it,
+  // separate from the page's own "overall, as of the latest test" framing.
+  const [subjectTestKey, setSubjectTestKey] = useState<string>("all");
+
+  function avgSubjectPctAcrossTests(student: (typeof allStudents)[number], subject: string): number {
+    return analysedTests.reduce((sum, t) => sum + pctFor(student, t.key, subject), 0) / analysedTests.length;
+  }
+
   const subjectRows = useMemo(() => {
-    const averages = new Map(subjectsByAverage(testKey).map((s) => [s.subject, s.avgPct]));
+    if (subjectTestKey === "all") {
+      return subjects.map((subject) => {
+        const avgs = allStudents.map((s) => avgSubjectPctAcrossTests(s, subject));
+        const avgPct = avgs.reduce((a, b) => a + b, 0) / avgs.length;
+        const counts = subjectMarkBands.map((band) => avgs.filter((v) => v >= band.min && v <= band.max).length);
+        return { subject, avgPct, counts };
+      });
+    }
+    const averages = new Map(subjectsByAverage(subjectTestKey).map((s) => [s.subject, s.avgPct]));
     return subjects.map((subject) => ({
       subject,
       avgPct: averages.get(subject) ?? 0,
-      counts: subjectBandCounts("All", testKey, subject).map((c) => c.count),
+      counts: subjectBandCounts("All", subjectTestKey, subject).map((c) => c.count),
     }));
-  }, [testKey]);
+  }, [subjectTestKey]);
 
   function openTotalBand(index: number) {
     const band = totalMarkBands[index];
@@ -101,11 +120,26 @@ export default function ClassXOverview() {
   }
   function openSubjectBand(subject: string, index: number) {
     const band = subjectMarkBands[index];
+    if (subjectTestKey === "all") {
+      const inBand = [...allStudents]
+        .filter((s) => {
+          const avg = avgSubjectPctAcrossTests(s, subject);
+          return avg >= band.min && avg <= band.max;
+        })
+        .sort((a, b) => avgSubjectPctAcrossTests(b, subject) - avgSubjectPctAcrossTests(a, subject));
+      setDrill({
+        title: `${subject} — ${band.label}`,
+        subtitle: `Projected Board marks out of 100, averaged across all ${analysedTests.length} analysed tests.`,
+        students: inBand,
+        metaFor: (s) => `${Math.round(avgSubjectPctAcrossTests(s, subject))} / 100`,
+      });
+      return;
+    }
     setDrill({
       title: `${subject} — ${band.label}`,
-      subtitle: `Projected Board marks out of 100, based on ${test.name}.`,
-      students: studentsInSubjectBand("All", testKey, subject, band),
-      metaFor: (s) => `${projectedSubjectMarks(s, testKey, subject)} / 100`,
+      subtitle: `Projected Board marks out of 100, based on ${analysedTests.find((t) => t.key === subjectTestKey)?.name ?? test.name}.`,
+      students: studentsInSubjectBand("All", subjectTestKey, subject, band),
+      metaFor: (s) => `${projectedSubjectMarks(s, subjectTestKey, subject)} / 100`,
     });
   }
 
@@ -163,11 +197,26 @@ export default function ClassXOverview() {
       <Reveal delay={0.16} style={{ marginTop: 20 }}>
         <SubjectPerformance
           title="Subject-wise performance"
-          subtitle={`Out of 100 (based on ${test.name}). Click a count to see those students.`}
+          subtitle={`Out of 100 (${
+            subjectTestKey === "all" ? `averaged across all ${analysedTests.length} analysed tests` : analysedTests.find((t) => t.key === subjectTestKey)?.name ?? test.name
+          }). Click a count to see those students.`}
           bandLabels={subjectMarkBands.map((b) => b.label)}
           bandColors={SUBJECT_BAND_COLORS}
           rows={subjectRows}
           onOpen={openSubjectBand}
+          controls={
+            <div className="filter" style={{ marginBottom: 0 }}>
+              <label htmlFor="subject-table-test">Assessment</label>
+              <select id="subject-table-test" className="select" value={subjectTestKey} onChange={(e) => setSubjectTestKey(e.target.value)}>
+                <option value="all">All tests</option>
+                {analysedTests.map((t) => (
+                  <option key={t.key} value={t.key}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          }
         />
       </Reveal>
 

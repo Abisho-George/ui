@@ -6,12 +6,10 @@ import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer
 import { ArrowLeft, ArrowRight, Check, CloudCheck, IdCard, Loader2 } from "lucide-react";
 import { EASE_OUT } from "@/components/motion";
 import { patchAttend, submitAttend, useAttend } from "@/lib/attendState";
-import { diagnosticQuestions } from "../questions";
-import { StepDiagnostic } from "./diagnostic";
 import { StepDone } from "./done";
-import { isStepValid, StepAbout, StepGoals, StepIdentity } from "./steps";
+import { isStepValid, StepBackground, StepBasicInfo, StepFuturePlans, StepInterests, StepLearningProfile } from "./steps";
 
-const STEPS = ["You", "About you", "Goals", "Quick check", "Done"];
+const STEPS = ["Basic Info", "Background", "Learning Profile", "Interests", "Future Plans", "Done"];
 const LAST = STEPS.length - 1;
 
 /** Direction-aware slide: AnimatePresence passes the *current* direction to
@@ -40,8 +38,7 @@ export default function OnboardingPage() {
   useEffect(() => setReady(true), []);
 
   const step = Math.min(draft.step, LAST);
-  const quizDone = diagnosticQuestions.every((q) => q.id in draft.answers);
-  const valid = isStepValid(step, draft, quizDone);
+  const valid = isStepValid(step, draft);
 
   useEffect(() => {
     if (step === LAST && !draft.submitted) submitAttend();
@@ -127,10 +124,11 @@ export default function OnboardingPage() {
           exit="exit"
           transition={{ duration: 0.34, ease: EASE_OUT }}
         >
-          {step === 0 && <StepIdentity {...stepProps} />}
-          {step === 1 && <StepAbout {...stepProps} />}
-          {step === 2 && <StepGoals {...stepProps} />}
-          {step === 3 && <StepDiagnostic {...stepProps} />}
+          {step === 0 && <StepBasicInfo {...stepProps} />}
+          {step === 1 && <StepBackground {...stepProps} />}
+          {step === 2 && <StepLearningProfile {...stepProps} />}
+          {step === 3 && <StepInterests {...stepProps} />}
+          {step === 4 && <StepFuturePlans {...stepProps} />}
           {step === LAST && <StepDone draft={draft} />}
         </motion.div>
       </AnimatePresence>
@@ -156,7 +154,7 @@ export default function OnboardingPage() {
           </button>
           {!valid && showErrors && (
             <span className="muted" style={{ fontSize: 12, lineHeight: 1.3, minWidth: 0 }}>
-              {step === 3 ? "Finish the check to continue." : "Fill the highlighted answers."}
+              Fill the highlighted answers.
             </span>
           )}
           <motion.button

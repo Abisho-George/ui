@@ -17,7 +17,7 @@ import {
 
 export type CurrentUser =
   | { role: "principal"; id: string; name: string }
-  | { role: "teacher"; id: string; name: string; assignments: TeacherAssignment[] }
+  | { role: "teacher"; id: string; name: string; assignments: TeacherAssignment[]; examsOnly?: boolean }
   | { role: "student"; id: string; name: string; rollNo: string; section: string };
 
 interface AuthState {
@@ -35,13 +35,15 @@ export function resolveUser(role: Role, userId: string): CurrentUser | null {
   if (role === "principal") return { role, id: mockPrincipal.id, name: mockPrincipal.name };
   if (role === "teacher") {
     const t = mockTeachers.find((x) => x.id === userId);
-    return t ? { role, id: t.id, name: t.name, assignments: t.assignments } : null;
+    return t ? { role, id: t.id, name: t.name, assignments: t.assignments, examsOnly: t.examsOnly } : null;
   }
   if (role === "student") return { role, ...mockStudentUser };
   return null;
 }
 
-export function homeFor(role: Role) {
+export function homeFor(user: CurrentUser | Role) {
+  const role = typeof user === "string" ? user : user.role;
+  if (role === "teacher" && typeof user !== "string" && user.role === "teacher" && user.examsOnly) return "/teacher/papers";
   // Students never sign in — their only visit is the onboarding assessment.
   return role === "principal" ? "/principal/classes" : role === "teacher" ? "/teacher/home" : "/attend";
 }

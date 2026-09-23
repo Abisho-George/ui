@@ -21,13 +21,15 @@ export interface AdminState {
   staffId: string | null;
   /** `${schoolId}:${teacherId}` -> generated access key. */
   keys: Record<string, string>;
+  /** `${schoolId}:${teacherId}` -> how many times the key has been changed. */
+  rotations: Record<string, number>;
   /** School ids an ops person has nudged this session. */
   reminded: string[];
   /** True once localStorage has been read on the client. */
   ready: boolean;
 }
 
-const EMPTY: AdminState = { staffId: null, keys: {}, reminded: [], ready: false };
+const EMPTY: AdminState = { staffId: null, keys: {}, rotations: {}, reminded: [], ready: false };
 
 let state: AdminState = EMPTY;
 let hydrated = false;
@@ -44,8 +46,8 @@ function subscribe(cb: () => void) {
 
 function persist() {
   try {
-    const { staffId, keys, reminded } = state;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ staffId, keys, reminded }));
+    const { staffId, keys, rotations, reminded } = state;
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ staffId, keys, rotations, reminded }));
   } catch {
     /* blocked storage — the console still works, it just won't survive a reload */
   }
@@ -129,9 +131,11 @@ function seedFromString(s: string) {
   return h;
 }
 
-/** Deterministic, so the same teacher always gets the same key back. */
-export function accessKeyFor(schoolId: string, teacherId: string): string {
-  const rnd = mulberry32(seedFromString(`key|${schoolId}|${teacherId}`));
+/** Deterministic for a given rotation, so the same teacher at the same
+ *  rotation always gets the same key back — but a new rotation produces a
+ *  genuinely different one, for "change key". */
+export function accessKeyFor(schoolId: string, teacherId: string, rotation = 0): string {
+  const rnd = mulberry32(seedFromString(`key|${schoolId}|${teacherId}|${rotation}`));
   const block = () =>
     Array.from({ length: 4 }, () => KEY_ALPHABET[Math.floor(rnd() * KEY_ALPHABET.length)]).join("");
   return `AVAI-${block()}-${block()}`;
@@ -146,8 +150,19 @@ export function issueKey(schoolId: string, teacherId: string): string {
   const id = keyIdFor(schoolId, teacherId);
   const existing = state.keys[id];
   if (existing) return existing;
-  const key = accessKeyFor(schoolId, teacherId);
+  const key = accessKeyFor(schoolId, teacherId, state.rotations[id] ?? 0);
   state = { ...state, keys: { ...state.keys, [id]: key } };
+  persist();
+  emit();
+  return key;
+}
+
+/** Invalidates a teacher's current key and issues a new one in its place. */
+export function regenerateKey(schoolId: string, teacherId: string): string {
+  const id = keyIdFor(schoolId, teacherId);
+  const rotation = (state.rotations[id] ?? 0) + 1;
+  const key = accessKeyFor(schoolId, teacherId, rotation);
+  state = { ...state, keys: { ...state.keys, [id]: key }, rotations: { ...state.rotations, [id]: rotation } };
   persist();
   emit();
   return key;

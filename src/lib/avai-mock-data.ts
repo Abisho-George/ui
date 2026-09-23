@@ -24,7 +24,10 @@ export const school = {
 
 export const academicYear = "2026–27";
 
-export const sections = ["X-A", "X-B", "X-C", "X-D", "X-E"] as const;
+export const sections = ["X-A", "X-B"] as const;
+/** Students per section — X-A and X-B are not the same size, the way a
+ *  real school's sections rarely are. */
+export const sectionSize: Record<string, number> = { "X-A": 45, "X-B": 53 };
 export const subjects = [
   "Mathematics",
   "Physics",
@@ -56,6 +59,10 @@ export const mockTeachers: Array<{
   name: string;
   role: "teacher";
   assignments: TeacherAssignment[];
+  /** An "exam cell" account: every subject, every section, question papers
+   *  and marks only — no class-teacher view, no subject insights. AVAI
+   *  issues this to the one staff member who runs the exam desk. */
+  examsOnly?: boolean;
 }> = [
   {
     id: "staff_teacher_1",
@@ -71,8 +78,8 @@ export const mockTeachers: Array<{
     name: "Mr. Ravi",
     role: "teacher",
     assignments: [
-      { type: "subject", subject: "Physics", sections: ["X-A", "X-C"] },
-      { type: "subject", subject: "Chemistry", sections: ["X-A", "X-C"] },
+      { type: "subject", subject: "Physics", sections: ["X-A", "X-B"] },
+      { type: "subject", subject: "Chemistry", sections: ["X-A", "X-B"] },
     ],
   },
   {
@@ -81,45 +88,21 @@ export const mockTeachers: Array<{
     role: "teacher",
     assignments: [
       { type: "class", section: "X-B" },
-      { type: "subject", subject: "English", sections: ["X-A", "X-B", "X-C"] },
+      { type: "subject", subject: "English", sections: ["X-A", "X-B"] },
     ],
   },
   {
     id: "staff_teacher_4",
     name: "Mr. Anand Kumar",
     role: "teacher",
-    assignments: [
-      { type: "class", section: "X-C" },
-      { type: "subject", subject: "Social Science", sections: ["X-A", "X-B", "X-C"] },
-    ],
+    assignments: [{ type: "subject", subject: "Social Science", sections: ["X-A", "X-B"] }],
   },
   {
-    id: "staff_teacher_5",
-    name: "Mrs. Priya Menon",
+    id: "staff_teacher_examcell",
+    name: "Mr. Vikram Iyer",
     role: "teacher",
-    assignments: [
-      { type: "class", section: "X-D" },
-      { type: "subject", subject: "Mathematics", sections: ["X-C", "X-D", "X-E"] },
-    ],
-  },
-  {
-    id: "staff_teacher_6",
-    name: "Mr. Suresh Babu",
-    role: "teacher",
-    assignments: [
-      { type: "class", section: "X-E" },
-      { type: "subject", subject: "Physics", sections: ["X-B", "X-D", "X-E"] },
-      { type: "subject", subject: "Chemistry", sections: ["X-B", "X-D", "X-E"] },
-    ],
-  },
-  {
-    id: "staff_teacher_7",
-    name: "Ms. Fatima Sheikh",
-    role: "teacher",
-    assignments: [
-      { type: "subject", subject: "English", sections: ["X-D", "X-E"] },
-      { type: "subject", subject: "Social Science", sections: ["X-D", "X-E"] },
-    ],
+    examsOnly: true,
+    assignments: subjects.map((subject) => ({ type: "subject" as const, subject, sections: [...sections] })),
   },
 ];
 
@@ -215,7 +198,7 @@ const subjectMaxMarks: Record<string, number> = Object.fromEntries(
 
 
 // ============================================================
-// Full class rosters (48 students × 5 sections = 240) with one set of
+// Full class rosters (2 sections, sized per sectionSize) with one set of
 // per-subject scores per analysed test. Deterministically generated
 // (seeded per section, never Math.random at render time) so the same
 // names and numbers show up on every visit. This roster is the single
@@ -248,7 +231,7 @@ const firstNamePool = [
 ];
 const lastInitialPool = ["R.", "K.", "S.", "M.", "P.", "N.", "V.", "T.", "G.", "D.", "B.", "J.", "A.", "L."];
 
-const sectionMeanPct: Record<string, number> = { "X-A": 81, "X-B": 74, "X-C": 78, "X-D": 68, "X-E": 76 };
+const sectionMeanPct: Record<string, number> = { "X-A": 81, "X-B": 74 };
 
 export interface TestScore {
   scored: number;
@@ -330,7 +313,9 @@ function generateSectionRoster(section: string, count: number): FullRosterStuden
   return students;
 }
 
-export const classRosterFull: Record<string, FullRosterStudent[]> = Object.fromEntries(sections.map((s) => [s, generateSectionRoster(s, 48)]));
+export const classRosterFull: Record<string, FullRosterStudent[]> = Object.fromEntries(
+  sections.map((s) => [s, generateSectionRoster(s, sectionSize[s])])
+);
 
 // Pin the named students the rest of the app refers to at their original
 // roll numbers, so their links keep resolving inside the full roster.
@@ -340,8 +325,8 @@ function nameStudent(section: string, rollNo: string, id: string, name: string) 
   if (idx >= 0) roster[idx] = { ...roster[idx], id, name };
 }
 nameStudent("X-A", "01", "student_aditi", "Aditi R.");
-nameStudent("X-C", "05", "student_riya", "Riya");
-nameStudent("X-D", "14", "student_divya", "Divya");
+nameStudent("X-B", "05", "student_riya", "Riya");
+nameStudent("X-B", "14", "student_divya", "Divya");
 
 export const allStudents: FullRosterStudent[] = sections.flatMap((s) => classRosterFull[s]);
 
@@ -409,7 +394,7 @@ export const findings: Finding[] = [
     subject: "Mathematics",
     topic: "Quadratic Equations",
     subskill: "Application Problems",
-    studentsAffected: 146,
+    studentsAffected: 60,
     avgMarksLost: 4.2,
     boardUrgency: "VERY_HIGH",
     boardRecurrence: "4/4 recent Board years",
@@ -418,7 +403,6 @@ export const findings: Finding[] = [
     observation:
       "61% of analysed students demonstrate the underlying concept but lose marks when the same concept appears in application-style questions.",
     mostAffectedSections: [
-      { section: "X-D", pct: 72 },
       { section: "X-B", pct: 66 },
       { section: "X-A", pct: 41 },
     ],
@@ -429,7 +413,7 @@ export const findings: Finding[] = [
     subject: "Physics",
     topic: "Electricity",
     subskill: "Numericals",
-    studentsAffected: 122,
+    studentsAffected: 50,
     avgMarksLost: 3.8,
     boardUrgency: "HIGH",
     boardRecurrence: "3/4 recent Board years",
@@ -444,7 +428,7 @@ export const findings: Finding[] = [
     subject: "Physics",
     topic: "Light",
     subskill: undefined as unknown as string,
-    studentsAffected: 84,
+    studentsAffected: 34,
     avgMarksLost: 2.7,
     boardUrgency: "HIGH",
     boardRecurrence: "3/4 years",
@@ -458,7 +442,7 @@ export const findings: Finding[] = [
     subject: "Chemistry",
     topic: "Carbon and its Compounds",
     subskill: "Reasoning",
-    studentsAffected: 71,
+    studentsAffected: 29,
     avgMarksLost: 1.4,
     boardUrgency: "LOW",
     boardRecurrence: "1/4 years",
@@ -915,7 +899,7 @@ export function buildStudentReport(student: FullRosterStudent, testKey: string, 
 
 // ---- Report identity -------------------------------------------------
 // A report id encodes who / which test / which subject, so any of the
-// 240 students can be linked to directly.
+// every student can be linked to directly.
 
 export function reportId(studentId: string, testKey: string, subject: string): string {
   return `${studentId}~${testKey}~${subject}`;
@@ -1142,7 +1126,7 @@ export function teacherReportFor(student: FullRosterStudent, testKey: string = l
 export const devLoginOptions = [
   { key: "principal", label: "Sign in as Principal", sub: mockPrincipal.name, role: "principal" as Role, userId: mockPrincipal.id },
   { key: "teacher_1", label: "Sign in as Teacher", sub: "Mrs. Lakshmi · X-A class teacher · Maths X-A, X-B", role: "teacher" as Role, userId: "staff_teacher_1" },
-  { key: "teacher_2", label: "Sign in as Teacher", sub: "Mr. Ravi · Physics & Chemistry · X-A, X-C", role: "teacher" as Role, userId: "staff_teacher_2" },
+  { key: "teacher_2", label: "Sign in as Teacher", sub: "Mr. Ravi · Physics & Chemistry · X-A, X-B", role: "teacher" as Role, userId: "staff_teacher_2" },
   { key: "student", label: "Sign in as Student", sub: "Aditi R. · X-A · Roll 01", role: "student" as Role, userId: mockStudentUser.id },
 ];
 
@@ -1487,7 +1471,7 @@ export const helpContact = {
 // ============================================================
 
 /** Every report id available for a student — one per analysed test per
- *  subject, so all 240 students drill down to a real report. */
+ *  subject, so every student drills down to a real report. */
 export function studentReportIds(studentId: string): string[] {
   return reportsForStudent(studentId).map((r) => r.id);
 }

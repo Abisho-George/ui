@@ -59,7 +59,7 @@ export function StudentRosterTable({
    * single-screen test-sheet page) instead of capping at a fixed height. */
   fillHeight?: boolean;
   /** Rendered above the filters, inside the same frozen block (e.g. the
-   * "Students in X-D" heading) — so it freezes with the filters and tabs
+   * "Students in X-A" heading) — so it freezes with the filters and tabs
    * rather than scrolling away above them. Ignored in fillHeight mode,
    * where the page itself never scrolls. */
   heading?: React.ReactNode;

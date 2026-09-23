@@ -1,94 +1,56 @@
 "use client";
 
 import {
-  Bot,
+  Atom,
+  Baby,
+  Banknote,
   BookOpen,
   Briefcase,
-  Camera,
-  Code2,
-  Drama,
+  Building,
+  Building2,
+  Calculator,
+  Cog,
+  Compass,
+  CircleHelp,
   Dumbbell,
-  Gamepad2,
-  Headphones,
-  HeartHandshake,
-  Hourglass,
-  Landmark,
+  FlaskConical,
+  Gavel,
+  Globe2,
+  GraduationCap,
+  HandHeart,
+  Handshake,
+  Hammer,
+  HelpCircle,
+  Home as HomeIcon,
   Lightbulb,
-  Mic,
-  Moon,
+  Landmark,
+  Map,
+  MessagesSquare,
   Music,
-  NotebookPen,
+  PawPrint,
   Palette,
   PenLine,
-  Rocket,
+  PiggyBank,
+  Puzzle,
+  School,
+  ScrollText,
+  Shield,
+  ShieldQuestion,
+  Sprout,
   Stethoscope,
-  Sun,
-  Sunrise,
-  Sunset,
+  Store,
+  Trees,
   Users,
-  Video,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
+import { subjects } from "@/lib/avai-mock-data";
 
 export interface Option {
   id: string;
   label: string;
   icon: LucideIcon;
 }
-
-export const interestOptions: Option[] = [
-  { id: "sports", label: "Sports", icon: Dumbbell },
-  { id: "music", label: "Music", icon: Music },
-  { id: "coding", label: "Coding", icon: Code2 },
-  { id: "reading", label: "Reading", icon: BookOpen },
-  { id: "art", label: "Art & design", icon: Palette },
-  { id: "debate", label: "Debate", icon: Mic },
-  { id: "robotics", label: "Robotics", icon: Bot },
-  { id: "theatre", label: "Theatre", icon: Drama },
-  { id: "photography", label: "Photography", icon: Camera },
-  { id: "gaming", label: "Gaming", icon: Gamepad2 },
-  { id: "volunteering", label: "Volunteering", icon: HeartHandshake },
-];
-
-export const studyHourOptions: Option[] = [
-  { id: "under1", label: "Under 1 hour", icon: Hourglass },
-  { id: "1to2", label: "1–2 hours", icon: Hourglass },
-  { id: "2to3", label: "2–3 hours", icon: Hourglass },
-  { id: "over3", label: "More than 3", icon: Hourglass },
-];
-
-export const studyWhenOptions: Option[] = [
-  { id: "early", label: "Early morning", icon: Sunrise },
-  { id: "afternoon", label: "Afternoon", icon: Sun },
-  { id: "evening", label: "Evening", icon: Sunset },
-  { id: "night", label: "Late night", icon: Moon },
-];
-
-export const learnStyleOptions: Option[] = [
-  { id: "video", label: "Watching videos", icon: Video },
-  { id: "notes", label: "Reading notes", icon: NotebookPen },
-  { id: "practice", label: "Solving problems", icon: PenLine },
-  { id: "explain", label: "Explaining it to someone", icon: Users },
-  { id: "listen", label: "Listening in class", icon: Headphones },
-];
-
-export const afterTenthOptions: Option[] = [
-  { id: "engineering", label: "Engineering", icon: Rocket },
-  { id: "medicine", label: "Medicine", icon: Stethoscope },
-  { id: "commerce", label: "Commerce", icon: Briefcase },
-  { id: "design", label: "Design", icon: Palette },
-  { id: "civil", label: "Civil services", icon: Landmark },
-  { id: "undecided", label: "Not decided yet", icon: Lightbulb },
-];
-
-export const supportOptions: Option[] = [
-  { id: "practice", label: "More practice papers", icon: PenLine },
-  { id: "stepwise", label: "Step-by-step explanations", icon: NotebookPen },
-  { id: "doubts", label: "Doubt-clearing time", icon: Mic },
-  { id: "timing", label: "Managing time in exams", icon: Hourglass },
-  { id: "revision", label: "A revision plan", icon: BookOpen },
-  { id: "feedback", label: "Someone checking my answers", icon: Users },
-];
 
 export function labelFor(options: Option[], id: string): string {
   return options.find((o) => o.id === id)?.label ?? "";
@@ -97,3 +59,151 @@ export function labelFor(options: Option[], id: string): string {
 export function labelsFor(options: Option[], ids: string[]): string[] {
   return ids.map((id) => labelFor(options, id)).filter(Boolean);
 }
+
+// -------------------------------------------------------------------------
+// Basic information
+// -------------------------------------------------------------------------
+
+export const genderOptions: Option[] = [
+  { id: "male", label: "Male", icon: Users },
+  { id: "female", label: "Female", icon: Users },
+  { id: "prefer_not", label: "Prefer not to say", icon: ShieldQuestion },
+];
+
+// -------------------------------------------------------------------------
+// Section 1 — Your Background
+// -------------------------------------------------------------------------
+
+export const livesInOptions: Option[] = [
+  { id: "village", label: "Village", icon: Trees },
+  { id: "town", label: "Town", icon: Building },
+  { id: "city", label: "City", icon: Building2 },
+];
+
+export const decisionHelperOptions: Option[] = [
+  { id: "self", label: "I decide myself", icon: Compass },
+  { id: "parents", label: "My parents decide", icon: HomeIcon },
+  { id: "family", label: "Me and my family together", icon: Users },
+  { id: "teacher", label: "Teacher/school helps me", icon: School },
+  { id: "relative", label: "Relative helps me", icon: Handshake },
+  { id: "unsure", label: "Not sure yet", icon: HelpCircle },
+];
+
+export const responsibilitiesOptions: Option[] = [
+  { id: "yes", label: "Yes", icon: Baby },
+  { id: "no", label: "No", icon: Shield },
+  { id: "unsure", label: "Not sure yet", icon: HelpCircle },
+];
+
+// -------------------------------------------------------------------------
+// Section 2 — Your Learning Profile
+// -------------------------------------------------------------------------
+
+const subjectIcons: Record<string, LucideIcon> = {
+  Mathematics: Calculator,
+  Physics: Atom,
+  Chemistry: FlaskConical,
+  English: BookOpen,
+  "Social Science": Globe2,
+};
+
+export const subjectOptions: Option[] = subjects.map((s) => ({ id: s, label: s, icon: subjectIcons[s] ?? BookOpen }));
+
+export const learningTypeOptions: Option[] = [
+  { id: "solving", label: "Solving problems and finding answers", icon: Puzzle },
+  { id: "how_things_work", label: "Understanding how things work", icon: Cog },
+  { id: "reading_sharing", label: "Reading, explaining and sharing ideas", icon: MessagesSquare },
+  { id: "creating", label: "Creating or designing things", icon: Palette },
+  { id: "numbers", label: "Working with numbers and information", icon: Calculator },
+  { id: "unsure", label: "Not sure yet", icon: HelpCircle },
+];
+
+// -------------------------------------------------------------------------
+// Section 3 — Your Interests
+// -------------------------------------------------------------------------
+
+export const interestOptions: Option[] = [
+  { id: "tech", label: "Computers and technology", icon: Cog },
+  { id: "building", label: "Building or fixing things", icon: Wrench },
+  { id: "creative", label: "Drawing/design/creative work", icon: Palette },
+  { id: "sports", label: "Sports", icon: Dumbbell },
+  { id: "music_dance", label: "Music/dance", icon: Music },
+  { id: "reading_writing", label: "Reading/writing", icon: PenLine },
+  { id: "helping", label: "Helping people", icon: HandHeart },
+  { id: "nature", label: "Nature/animals", icon: PawPrint },
+  { id: "business", label: "Business/selling activities", icon: Store },
+];
+
+export const workInterestOptions: Option[] = [
+  { id: "people", label: "Working with people", icon: Users },
+  { id: "machines", label: "Working with machines and technology", icon: Wrench },
+  { id: "ideas", label: "Solving problems and finding ideas", icon: Lightbulb },
+  { id: "numbers_money", label: "Working with numbers and money", icon: Banknote },
+  { id: "creating_new", label: "Creating new things", icon: Sprout },
+  { id: "unsure", label: "Not sure yet", icon: HelpCircle },
+];
+
+export const newLearningOptions: Option[] = [
+  { id: "why", label: "Understanding why something happens", icon: Lightbulb },
+  { id: "practical", label: "Doing practical activities", icon: Hammer },
+  { id: "discussing", label: "Discussing with others", icon: MessagesSquare },
+  { id: "experiments", label: "Trying experiments", icon: FlaskConical },
+  { id: "facts", label: "Learning facts and information", icon: ScrollText },
+  { id: "unsure", label: "Not sure yet", icon: HelpCircle },
+];
+
+// -------------------------------------------------------------------------
+// Section 4 — Your Future Plans
+// -------------------------------------------------------------------------
+
+export const class11GroupOptions: Option[] = [
+  { id: "maths_bio", label: "Maths + Biology", icon: Calculator },
+  { id: "maths_cs", label: "Maths + Computer Science", icon: Cog },
+  { id: "bio_no_maths", label: "Biology without Maths", icon: FlaskConical },
+  { id: "commerce", label: "Commerce", icon: Briefcase },
+  { id: "arts", label: "Arts / Humanities", icon: Palette },
+  { id: "vocational", label: "Vocational", icon: Wrench },
+  { id: "diploma_iti", label: "Diploma / ITI", icon: GraduationCap },
+  { id: "not_decided", label: "Not decided yet", icon: HelpCircle },
+];
+
+export const groupReasonOptions: Option[] = [
+  { id: "like_subjects", label: "I like these subjects", icon: BookOpen },
+  { id: "do_well", label: "I think I can do well in these subjects", icon: GraduationCap },
+  { id: "career_match", label: "It matches my career interest", icon: Briefcase },
+  { id: "parents_suggested", label: "My parents suggested it", icon: HomeIcon },
+  { id: "friends_choosing", label: "My friends are choosing it", icon: Users },
+  { id: "keeps_options_open", label: "It keeps many options open", icon: Compass },
+  { id: "available_option", label: "It is the available option", icon: School },
+  { id: "dont_know", label: "I don't know yet", icon: HelpCircle },
+];
+
+export const confidenceOptions: Option[] = [
+  { id: "1", label: "1 — Not sure at all", icon: HelpCircle },
+  { id: "2", label: "2", icon: HelpCircle },
+  { id: "3", label: "3 — Still exploring", icon: Compass },
+  { id: "4", label: "4", icon: Compass },
+  { id: "5", label: "5 — Completely sure", icon: GraduationCap },
+];
+
+export const careersKnownOptions: Option[] = [
+  { id: "doctor", label: "Doctor / Healthcare", icon: Stethoscope },
+  { id: "engineering", label: "Engineering / Technology", icon: Cog },
+  { id: "ca_finance", label: "CA / Finance", icon: PiggyBank },
+  { id: "law", label: "Law", icon: Gavel },
+  { id: "defence", label: "Defence", icon: Shield },
+  { id: "teaching", label: "Teaching", icon: School },
+  { id: "design", label: "Design", icon: Palette },
+  { id: "business", label: "Business", icon: Briefcase },
+  { id: "government", label: "Government jobs", icon: Landmark },
+  { id: "research", label: "Research", icon: FlaskConical },
+  { id: "none", label: "None of these", icon: HelpCircle },
+];
+
+export const futureConcernOptions: Option[] = [
+  { id: "cost", label: "College cost", icon: Banknote },
+  { id: "close_home", label: "Staying close to home", icon: HomeIcon },
+  { id: "moving_city", label: "Moving to another city", icon: Map },
+  { id: "family", label: "Family responsibilities", icon: Users },
+  { id: "not_thought", label: "I have not thought about this yet", icon: CircleHelp },
+];

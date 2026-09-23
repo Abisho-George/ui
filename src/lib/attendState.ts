@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useSyncExternalStore } from "react";
-import { classRosterFull, findStudent, sections, type FullRosterStudent } from "./avai-mock-data";
+import { assessmentContext, classRosterFull, findStudent, sections, type FullRosterStudent } from "./avai-mock-data";
 
 /**
  * The onboarding assessment a school's students complete before any staff
@@ -18,6 +18,16 @@ export const DEMO_PASSWORD = "avai@2026";
 /** Fixed submission date — the app must not read the clock at render time. */
 export const ONBOARDING_DATE = "22 Sep 2026";
 
+/** Age as of the fixed "today" the whole app uses — never Date.now(). */
+export function ageFrom(dob: string): number | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) return null;
+  const [by, bm, bd] = dob.split("-").map(Number);
+  const [ty, tm, td] = assessmentContext.today.split("-").map(Number);
+  let age = ty - by;
+  if (tm < bm || (tm === bm && td < bd)) age -= 1;
+  return age;
+}
+
 export interface AttendIdentity {
   studentId: string;
   loginId: string;
@@ -30,19 +40,29 @@ export interface AttendDraft {
   identity: AttendIdentity | null;
   /** Highest step the student has reached, so a reload lands where they left. */
   step: number;
+  // Basic information
   dob: string;
-  contact: string;
+  gender: string;
+  // Section 1 — Your Background
+  livesIn: string;
+  decisionHelper: string;
+  hasResponsibilities: string;
+  // Section 2 — Your Learning Profile
+  favoriteSubject: string;
+  comfortableSubject: string;
+  learningType: string;
+  // Section 3 — Your Interests
   interests: string[];
-  studyHours: string;
-  studyWhen: string;
-  learnStyle: string;
-  targetPct: number;
-  afterTenth: string;
-  hardSubjects: string[];
-  support: string[];
-  /** questionId -> chosen option index, or null when skipped. */
-  answers: Record<string, number | null>;
-  diagnosticSeconds: number;
+  workInterest: string;
+  newLearning: string;
+  // Section 4 — Your Future Plans
+  futurePlan: string;
+  futurePlanUnsure: boolean;
+  class11Group: string;
+  groupReasons: string[];
+  groupConfidence: string;
+  careersKnown: string[];
+  futureConcerns: string[];
   submitted: boolean;
   /** Increments on every write — the autosave indicator watches it. */
   rev: number;
@@ -54,17 +74,23 @@ const EMPTY: AttendDraft = {
   identity: null,
   step: 0,
   dob: "",
-  contact: "",
+  gender: "",
+  livesIn: "",
+  decisionHelper: "",
+  hasResponsibilities: "",
+  favoriteSubject: "",
+  comfortableSubject: "",
+  learningType: "",
   interests: [],
-  studyHours: "",
-  studyWhen: "",
-  learnStyle: "",
-  targetPct: 85,
-  afterTenth: "",
-  hardSubjects: [],
-  support: [],
-  answers: {},
-  diagnosticSeconds: 0,
+  workInterest: "",
+  newLearning: "",
+  futurePlan: "",
+  futurePlanUnsure: false,
+  class11Group: "",
+  groupReasons: [],
+  groupConfidence: "",
+  careersKnown: [],
+  futureConcerns: [],
   submitted: false,
   rev: 0,
 };
@@ -158,9 +184,12 @@ export type AttendLoginResult =
   | { ok: true; identity: AttendIdentity }
   | { ok: false; field: "loginId" | "password"; message: string };
 
+const sectionLetters = sections.map((s) => s.replace("-", "")).join("|");
+const loginIdPattern = new RegExp(`^AVAI-(${sectionLetters})-(\\d{2})$`);
+
 export function resolveAttendLogin(rawId: string, rawPassword: string): AttendLoginResult {
   const id = normaliseId(rawId);
-  const match = /^AVAI-(X[A-E])-(\d{2})$/.exec(id);
+  const match = loginIdPattern.exec(id);
   if (!match) {
     return {
       ok: false,
@@ -191,7 +220,7 @@ export function resolveAttendLogin(rawId: string, rawPassword: string): AttendLo
 /** Two real, working logins to print on the entry screen. */
 export const demoLogins = [
   { section: "X-A", rollNo: "01" },
-  { section: "X-C", rollNo: "05" },
+  { section: "X-B", rollNo: "05" },
 ]
   .map(({ section, rollNo }) => (classRosterFull[section] ?? []).find((s) => s.rollNo === rollNo))
   .filter((s): s is FullRosterStudent => Boolean(s))

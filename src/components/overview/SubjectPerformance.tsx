@@ -20,6 +20,7 @@ export function SubjectPerformance({
   bandColors,
   rows,
   onOpen,
+  controls,
 }: {
   title: string;
   subtitle: string;
@@ -27,6 +28,8 @@ export function SubjectPerformance({
   bandColors: string[];
   rows: SubjectPerformanceRow[];
   onOpen: (subject: string, bandIndex: number) => void;
+  /** Rendered on the right of the card head, e.g. a test-picker select. */
+  controls?: React.ReactNode;
 }) {
   return (
     <div className="card">
@@ -37,6 +40,7 @@ export function SubjectPerformance({
             {subtitle}
           </p>
         </div>
+        {controls}
       </div>
       <div className="card__body" style={{ paddingTop: 14 }}>
         <div className="table-wrap">

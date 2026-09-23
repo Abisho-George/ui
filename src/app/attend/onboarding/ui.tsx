@@ -17,7 +17,7 @@ export function StepCard({
   icon: LucideIcon;
   eyebrow: string;
   title: string;
-  lead: string;
+  lead?: string;
   accent?: string;
   children: React.ReactNode;
 }) {
@@ -53,9 +53,11 @@ export function StepCard({
         <div style={{ minWidth: 0 }}>
           <div className="eyebrow">{eyebrow}</div>
           <h2 style={{ fontSize: "clamp(19px, 4.2vw, 23px)", letterSpacing: "-.01em", marginTop: 2 }}>{title}</h2>
-          <p className="muted" style={{ fontSize: 13.5, lineHeight: 1.45, marginTop: 5 }}>
-            {lead}
-          </p>
+          {lead && (
+            <p className="muted" style={{ fontSize: 13.5, lineHeight: 1.45, marginTop: 5 }}>
+              {lead}
+            </p>
+          )}
         </div>
       </div>
       <div style={{ padding: "clamp(18px, 4vw, 24px) clamp(16px, 4vw, 26px)", display: "flex", flexDirection: "column", gap: 22 }}>

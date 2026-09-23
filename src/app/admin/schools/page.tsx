@@ -3,20 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { AlertTriangle, Building2, ChevronRight, KeyRound, Search, Users } from "lucide-react";
+import { Building2, ChevronRight, FileCheck2, KeyRound, Search, Users } from "lucide-react";
 import { AnimatedBar, CountUp, Reveal, Stagger, StaggerItem } from "@/components/motion";
-import {
-  accountStatuses,
-  adminSchools,
-  boards,
-  formatAgo,
-  needsAttention,
-  onboardingPct,
-  portfolioKpis,
-  statusAccent,
-  accountsNeedingAttention,
-  type AdminSchool,
-} from "@/lib/avai-admin-data";
+import { accountStatuses, adminSchools, boards, formatAgo, onboardingPct, portfolioKpis, statusAccent, type AdminSchool } from "@/lib/avai-admin-data";
 import { OpsEmpty, SortHeader, StatusPill, type SortDir } from "../ui";
 
 type SortField = "name" | "students" | "activation" | "progress";
@@ -25,7 +14,7 @@ const kpis = [
   { label: "Schools live", value: portfolioKpis.schoolsLive, sub: `of ${portfolioKpis.schoolsTotal} accounts`, accent: "var(--brand-green)", icon: Building2 },
   { label: "Students under analysis", value: portfolioKpis.studentsUnderAnalysis, sub: "across the portfolio", accent: "var(--brand-teal)", icon: Users },
   { label: "Teachers activated", value: portfolioKpis.teachersActivated, sub: `of ${portfolioKpis.teachersInvited} invited`, accent: "var(--brand-gold)", icon: KeyRound },
-  { label: "Needs attention", value: accountsNeedingAttention, sub: `${needsAttention.length} open flags`, accent: "var(--risk)", icon: AlertTriangle },
+  { label: "Assessments analysed", value: portfolioKpis.assessmentsThisTerm, sub: "this term, across the portfolio", accent: "var(--brand-blue)", icon: FileCheck2 },
 ];
 
 function sortValue(s: AdminSchool, field: SortField): number | string {
@@ -106,43 +95,7 @@ export default function AdminSchoolsPage() {
         })}
       </Stagger>
 
-      {needsAttention.length > 0 && (
-        <Reveal delay={0.1}>
-          <section className="card" style={{ marginTop: 18 }} aria-labelledby="attn-h">
-            <div className="card__body">
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                <h2 id="attn-h" style={{ fontSize: 15 }}>
-                  Needs attention today
-                </h2>
-                <span className="pillnum" style={{ "--accent": "var(--risk)" } as React.CSSProperties}>
-                  {needsAttention.length}
-                </span>
-              </div>
-              <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
-                {needsAttention.slice(0, 4).map((item) => {
-                  const accent = item.severity === "high" ? "var(--risk)" : "var(--brand-gold)";
-                  return (
-                    <Link
-                      key={item.id}
-                      href={`/admin/schools/${item.schoolId}`}
-                      style={{ display: "flex", gap: 10, alignItems: "center", padding: "8px 4px", color: "inherit", textDecoration: "none" }}
-                    >
-                      <span className="healthdot" style={{ "--accent": accent } as React.CSSProperties} />
-                      <span style={{ minWidth: 0, flex: 1 }}>
-                        <b style={{ fontSize: 13, fontWeight: 650 }}>{item.schoolName}</b>{" "}
-                        <span className="small muted">{item.reason}</span>
-                      </span>
-                      <ChevronRight size={15} className="muted" />
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
-        </Reveal>
-      )}
-
-      <section className="section" aria-labelledby="table-h">
+      <section className="section" style={{ marginTop: 18 }} aria-labelledby="table-h">
         <div className="section__head">
           <h2 id="table-h" className="section-q" style={{ fontSize: 17 }}>
             All accounts

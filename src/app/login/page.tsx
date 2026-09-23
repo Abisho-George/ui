@@ -35,7 +35,7 @@ const ROLES: Array<{
   {
     role: "principal",
     title: "Principal sign-in",
-    blurb: "School-wide intelligence — every class, every subject.",
+    blurb: "For the school principal.",
     accent: "var(--brand-teal)",
     icon: Building2,
   },
@@ -91,7 +91,7 @@ export default function LoginPage() {
 
   function enter(r: StaffRole, userId: string) {
     const u = signIn(r, userId);
-    if (u) router.push(homeFor(u.role));
+    if (u) router.push(homeFor(u));
   }
 
   function back() {
@@ -224,9 +224,6 @@ export default function LoginPage() {
                       <School size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
                       <input id="schoolCode" className="input" style={{ paddingLeft: 34 }} placeholder="e.g. BIS-TN-001" autoComplete="off" />
                     </div>
-                    <small className="muted" style={{ marginTop: 2 }}>
-                      The same code your principal, teachers and students all use for this school.
-                    </small>
                   </div>
 
                   <div className="field">
@@ -275,7 +272,6 @@ export default function LoginPage() {
                   )}
                 </form>
 
-                <div className="login__help">Lost your access key? Contact your AVAI school administrator.</div>
 
                 <DemoAccounts role={chosen.role} accent={chosen.accent} onPick={enter} />
               </motion.div>
@@ -356,7 +352,11 @@ function DemoAccounts({
             sub: "Principal · every section, every subject",
           },
         ]
-      : mockTeachers.map((t) => ({ id: t.id, name: t.name, sub: describeAssignments(t.assignments) }));
+      : mockTeachers.map((t) => ({
+          id: t.id,
+          name: t.name,
+          sub: t.examsOnly ? "Question papers & marks · every subject" : describeAssignments(t.assignments),
+        }));
 
   return (
     <div className="surface" style={{ padding: 14, background: "linear-gradient(180deg, #ffffff, #faf7f1)" }}>

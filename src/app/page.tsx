@@ -16,7 +16,7 @@ export default function Index() {
 
   useEffect(() => {
     if (!ready) return;
-    router.replace(user ? homeFor(user.role) : "/login");
+    router.replace(user ? homeFor(user) : "/login");
   }, [ready, user, router]);
 
   return (

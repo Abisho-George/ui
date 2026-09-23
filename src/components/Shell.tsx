@@ -22,14 +22,18 @@ export interface NavItem {
 export function RoleGuard({ role, children }: { role: Role; children: (user: CurrentUser) => React.ReactNode }) {
   const { user, ready } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const examsOnly = user?.role === "teacher" && user.examsOnly;
+  const offLimits = examsOnly && !pathname.startsWith("/teacher/papers");
 
   useEffect(() => {
     if (!ready) return;
     if (!user) router.replace("/login");
-    else if (user.role !== role) router.replace(homeFor(user.role));
-  }, [ready, user, role, router]);
+    else if (user.role !== role) router.replace(homeFor(user));
+    else if (offLimits) router.replace("/teacher/papers");
+  }, [ready, user, role, router, offLimits]);
 
-  if (!ready || !user || user.role !== role) return <LoadingScreen />;
+  if (!ready || !user || user.role !== role || offLimits) return <LoadingScreen />;
   return <>{children(user)}</>;
 }
 

@@ -2,21 +2,10 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { AlertTriangle, ArrowLeft, BellRing, Building2, Check, KeyRound, Mail, Phone, UserPlus, type LucideIcon } from "lucide-react";
+import { AlertTriangle, ArrowLeft, BellRing, Building2, Check, FileUp, KeyRound, Mail, Phone, RefreshCw, UserPlus, type LucideIcon } from "lucide-react";
 import { CountUp, Reveal, Stagger, StaggerItem } from "@/components/motion";
-import {
-  checklistAccent,
-  checklistLength,
-  daysUntil,
-  formatAgo,
-  formatDate,
-  formatINR,
-  onboardingPct,
-  schoolById,
-  statusAccent,
-  teacherRosterFor,
-} from "@/lib/avai-admin-data";
-import { accessKeyFor, issueKey, keyIdFor, markReminded, useAdminState } from "@/lib/adminState";
+import { checklistAccent, checklistLength, daysUntil, formatAgo, formatDate, onboardingPct, schoolById, statusAccent, teacherRosterFor } from "@/lib/avai-admin-data";
+import { accessKeyFor, issueKey, keyIdFor, markReminded, regenerateKey, useAdminState } from "@/lib/adminState";
 import { OpsEmpty, StatusPill, Toast, useToast } from "../../ui";
 
 /** One school's account: who to contact, where onboarding stands, and the
@@ -55,6 +44,12 @@ export default function AdminSchoolDetailPage() {
     show(`Key ${key} generated for ${next.name} — invite email queued.`);
   }
 
+  function changeKey(teacherId: string, teacherName: string) {
+    if (!school) return;
+    const key = regenerateKey(school.id, teacherId);
+    show(`New key ${key} generated for ${teacherName} — the old key stops working.`);
+  }
+
   function sendReminder() {
     if (!school) return;
     markReminded(school.id);
@@ -65,6 +60,7 @@ export default function AdminSchoolDetailPage() {
     { label: "Students onboarded", value: school.studentsOnboarded, sub: `of ${school.students} enrolled`, accent: "var(--brand-blue)", icon: UserPlus },
     { label: "Teachers activated", value: school.teachersActivated, sub: `of ${school.teachersInvited} invited`, accent: "var(--brand-gold)", icon: KeyRound },
     { label: "Onboarding", value: onboardingPct(school), sub: `${school.progress} of ${checklistLength} steps done`, accent: statusAccent(school.status), icon: Building2, suffix: "%" },
+    { label: "Tests conducted", value: school.testsConducted, sub: `${school.papersUploaded} of ${school.papersExpected} papers uploaded`, accent: "var(--brand-teal)", icon: FileUp },
   ];
 
   return (
@@ -108,10 +104,6 @@ export default function AdminSchoolDetailPage() {
                   {renewalIn > 0 ? ` · ${renewalIn}d` : " · lapsed"}
                 </b>
               </div>
-              <div className="metric-row">
-                <span className="muted">Contract</span>
-                <b>{formatINR(school.contractValue)}</b>
-              </div>
             </div>
           </div>
 
@@ -129,7 +121,7 @@ export default function AdminSchoolDetailPage() {
         </header>
       </Reveal>
 
-      <Stagger className="grid grid--3" gap={0.05} style={{ marginTop: 16 }}>
+      <Stagger className="grid grid--4" gap={0.05} style={{ marginTop: 16 }}>
         {headline.map((k, i) => {
           const Icon = k.icon;
           return (
@@ -250,7 +242,7 @@ export default function AdminSchoolDetailPage() {
                 <tbody>
                   {roster.map((t) => {
                     const stored = keys[keyIdFor(school.id, t.id)];
-                    const shownKey = stored ?? (t.keyStatus === "Issued" ? accessKeyFor(school.id, t.id) : null);
+                    const shownKey = stored ?? (t.keyStatus === "Issued" || t.keyStatus === "Active" ? accessKeyFor(school.id, t.id) : null);
                     return (
                       <tr key={t.id}>
                         <td style={{ fontWeight: 600, whiteSpace: "nowrap" }}>{t.name}</td>
@@ -261,18 +253,22 @@ export default function AdminSchoolDetailPage() {
                         <td>
                           <span className={`tag ${t.invite === "Accepted" ? "tag--green" : t.invite === "Sent" ? "tag--gold" : ""}`}>{t.invite}</span>
                         </td>
-                        <td style={{ minWidth: 190 }}>
-                          {t.keyStatus === "Active" ? (
-                            <span className="tag tag--teal">
-                              <Check size={11} /> Active
-                            </span>
-                          ) : shownKey ? (
+                        <td style={{ minWidth: 220 }}>
+                          {shownKey ? (
                             <span style={{ display: "inline-flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                              {t.keyStatus === "Active" && (
+                                <span className="tag tag--teal">
+                                  <Check size={11} /> Active
+                                </span>
+                              )}
                               <span className="mono small" style={{ fontWeight: 650, color: "var(--brand-blue)" }}>
                                 {shownKey}
                               </span>
                               <button type="button" className="btn btn--ghost btn--sm" onClick={() => show(`Access key re-sent to ${t.name}.`)}>
                                 Resend
+                              </button>
+                              <button type="button" className="btn btn--ghost btn--sm" onClick={() => changeKey(t.id, t.name)}>
+                                <RefreshCw size={11} /> Change key
                               </button>
                             </span>
                           ) : (
