@@ -1603,21 +1603,33 @@ export interface LateBloomer {
   gain: number;
 }
 
-/** Students who moved up the most since the previous analysed test —
- *  "late bloomers" rather than the (usually already-strong) toppers. */
-export function lateBloomers(n: number, section: string | "All" = "All"): LateBloomer[] {
-  if (analysedTests.length < 2) return [];
-  const prevKey = analysedTests[analysedTests.length - 2].key;
+/** The analysed test before `testKey`, or null when it's the first one. */
+export function previousAnalysedTestKey(testKey: string): string | null {
+  const i = analysedTests.findIndex((t) => t.key === testKey);
+  return i > 0 ? analysedTests[i - 1].key : null;
+}
+
+/** Students who moved up the most between `testKey` and the analysed test
+ *  before it — "late bloomers" rather than the (usually already-strong)
+ *  toppers. Empty when `testKey` is the first analysed test. */
+export function lateBloomersFor(n: number, testKey: string = latestTest.key, section: string | "All" = "All"): LateBloomer[] {
+  const prevKey = previousAnalysedTestKey(testKey);
+  if (!prevKey) return [];
   const roster = section === "All" ? allStudents : (classRosterFull[section] ?? []);
   return roster
     .map((student) => {
       const prevPct = overallPctFor(student, prevKey);
-      const nowPct = overallPctFor(student, latestTest.key);
+      const nowPct = overallPctFor(student, testKey);
       return { student, prevPct: Math.round(prevPct), nowPct: Math.round(nowPct), gain: Math.round(nowPct - prevPct) };
     })
     .filter((r) => r.gain > 0)
     .sort((a, b) => b.gain - a.gain)
     .slice(0, n);
+}
+
+/** Late bloomers against the latest analysed test. */
+export function lateBloomers(n: number, section: string | "All" = "All"): LateBloomer[] {
+  return lateBloomersFor(n, latestTest.key, section);
 }
 
 export interface SubjectStanding {
@@ -1754,4 +1766,94 @@ function computeAnomalies(testKey: string): AnomalyInsight[] {
   return insights;
 }
 
-export const anomalyInsights: AnomalyInsight[] = computeAnomalies(latestTest.key);
+/** computeAnomalies walks every student against every subject rank, so the
+ *  per-test result is cached — switching the assessment on the Class X
+ *  dashboard re-reads it rather than recomputing. */
+const anomalyCache = new Map<string, AnomalyInsight[]>();
+
+/** Anomalies for any analysed test. */
+export function anomaliesFor(testKey: string): AnomalyInsight[] {
+  const cached = anomalyCache.get(testKey);
+  if (cached) return cached;
+  const computed = computeAnomalies(testKey);
+  anomalyCache.set(testKey, computed);
+  return computed;
+}
+
+export const anomalyInsights: AnomalyInsight[] = anomaliesFor(latestTest.key);
+
+// ============================================================
+// Class X overview roll-ups — attention tiers, per-test section
+// standings, and share rounding. All derived from the same roster as
+// everything above, so nothing on the overview can disagree with a
+// class or student page.
+// ============================================================
+
+export interface AttentionBreakdown {
+  total: number;
+  onTrack: number;
+  watch: number;
+  intervention: number;
+}
+
+/** How a cohort splits across the three attention tiers in one test. */
+export function attentionBreakdown(testKey: string = latestTest.key, section: string | "All" = "All"): AttentionBreakdown {
+  const roster = section === "All" ? allStudents : (classRosterFull[section] ?? []);
+  const tiers = roster.map((s) => attentionFor(s, testKey));
+  return {
+    total: roster.length,
+    onTrack: tiers.filter((t) => t === "On Track").length,
+    watch: tiers.filter((t) => t === "Watch").length,
+    intervention: tiers.filter((t) => t === "Intervention").length,
+  };
+}
+
+export interface SectionStanding {
+  section: string;
+  students: number;
+  overallAttainment: number;
+  needAttention: number;
+  critical: number;
+  /** Movement against the previous analysed test, in points. null if none. */
+  delta: number | null;
+}
+
+/** sectionComparison, but for any analysed test rather than only the
+ *  latest — so a dashboard with an assessment picker never shows last
+ *  test's standings next to this test's numbers. */
+export function sectionStandings(testKey: string = latestTest.key): SectionStanding[] {
+  const prevKey = previousAnalysedTestKey(testKey);
+  return sections.map((section) => {
+    const roster = classRosterFull[section] ?? [];
+    const overallAttainment = Math.round(classAveragePct(section, testKey));
+    return {
+      section,
+      students: roster.length,
+      overallAttainment,
+      needAttention: roster.filter((s) => attentionFor(s, testKey) !== "On Track").length,
+      critical: roster.filter((s) => attentionFor(s, testKey) === "Intervention").length,
+      delta: prevKey ? Math.round(classAveragePct(section, testKey) - classAveragePct(section, prevKey)) : null,
+    };
+  });
+}
+
+/** Rounds a set of counts to whole percentages that still add up to 100
+ *  (largest-remainder), so a distribution's shares never read as 99% or
+ *  101% next to the counts they describe. */
+export function percentShares(counts: number[]): number[] {
+  const total = counts.reduce((sum, c) => sum + c, 0);
+  if (total <= 0) return counts.map(() => 0);
+  const exact = counts.map((c) => (c / total) * 100);
+  const floors = exact.map((v) => Math.floor(v));
+  let remainder = 100 - floors.reduce((sum, v) => sum + v, 0);
+  const order = exact
+    .map((v, i) => ({ i, frac: v - Math.floor(v) }))
+    .sort((a, b) => b.frac - a.frac || a.i - b.i);
+  const shares = [...floors];
+  for (const { i } of order) {
+    if (remainder <= 0) break;
+    shares[i] += 1;
+    remainder -= 1;
+  }
+  return shares;
+}

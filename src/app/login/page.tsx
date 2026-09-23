@@ -2,135 +2,496 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowRight, KeyRound, School, ShieldAlert, User } from "lucide-react";
-import { motion } from "framer-motion";
+import Link from "next/link";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Building2,
+  ChevronRight,
+  Eye,
+  EyeOff,
+  GraduationCap,
+  KeyRound,
+  Lock,
+  PenLine,
+  School,
+  ShieldAlert,
+  ShieldCheck,
+} from "lucide-react";
 import { Logomark, Mascot } from "@/components/Mascot";
-import { homeFor, useAuth } from "@/lib/auth";
-import { devLoginOptions, school } from "@/lib/avai-mock-data";
+import { EASE_OUT } from "@/components/motion";
+import { homeFor, initials, useAuth } from "@/lib/auth";
+import {
+  analysedTests,
+  devLoginOptions,
+  mockPrincipal,
+  mockTeachers,
+  school,
+  sections,
+  subjects,
+  type TeacherAssignment,
+} from "@/lib/avai-mock-data";
 
-type Tab = "staff" | "student";
+type StaffRole = "principal" | "teacher";
+
+const ROLES: Array<{
+  role: StaffRole;
+  title: string;
+  blurb: string;
+  accent: string;
+  icon: typeof Building2;
+}> = [
+  {
+    role: "principal",
+    title: "Principal sign-in",
+    blurb: "School-wide intelligence — every class, every subject.",
+    accent: "var(--brand-teal)",
+    icon: Building2,
+  },
+  {
+    role: "teacher",
+    title: "Teacher sign-in",
+    blurb: "Your classes and your subjects, with the findings that matter.",
+    accent: "var(--brand-blue)",
+    icon: GraduationCap,
+  },
+];
+
+/** "X-A class teacher · Mathematics · X-A, X-B" — what a demo account will
+ *  actually see. Subjects taught to the same sections are grouped so the line
+ *  stays one or two rows on a phone. */
+function describeAssignments(assignments: TeacherAssignment[]) {
+  const parts: string[] = [];
+  const bySections = new Map<string, string[]>();
+
+  for (const a of assignments) {
+    if (a.type === "class") parts.push(`${a.section} class teacher`);
+    else {
+      const key = a.sections.join(", ");
+      bySections.set(key, [...(bySections.get(key) ?? []), a.subject]);
+    }
+  }
+  for (const [sectionList, subjectList] of bySections) {
+    parts.push(`${subjectList.join(", ")} · ${sectionList}`);
+  }
+  return parts.join(" · ");
+}
+
+const principalDemo = devLoginOptions.find((o) => o.role === "principal");
 
 /**
- * §4 Login. Two tabs (School Staff / Student). The form is the real design;
- * the DEV LOGIN block beneath it is the only thing that actually signs in.
+ * §4 Sign in. Step 1 picks a staff role, step 2 shows that role's credential
+ * form. The form is design only — the demo accounts beneath it are what
+ * actually call signIn(). Students never sign in here; they go to /attend.
  */
 export default function LoginPage() {
-  const [tab, setTab] = useState<Tab>("staff");
+  const [role, setRole] = useState<StaffRole | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const { signIn } = useAuth();
   const router = useRouter();
 
+  const chosen = ROLES.find((r) => r.role === role) ?? null;
+
   function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setNotice("Real sign-in is not wired in this build. Use a DEV LOGIN shortcut below.");
+    setNotice("Sign-in is not connected in this preview build. Use a demo account below.");
   }
 
-  const options = devLoginOptions.filter((o) => (tab === "student" ? o.role === "student" : o.role !== "student"));
+  function enter(r: StaffRole, userId: string) {
+    const u = signIn(r, userId);
+    if (u) router.push(homeFor(u.role));
+  }
+
+  function back() {
+    setRole(null);
+    setNotice(null);
+    setShowPassword(false);
+  }
 
   return (
-    <div className="login">
-      <section className="login__brand">
-        <div className="login__logo">
-          <Logomark size={36} />
-          <span className="login__wordmark">AVAI</span>
+    <div className="auth">
+      <section className="auth__aside">
+        <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 1 }}>
+          <Logomark size={38} />
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 28, letterSpacing: ".14em" }}>AVAI</span>
         </div>
-        <motion.div className="login__hero" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <Mascot pose="hello" size={150} />
-          <h1>Hello. Let&apos;s turn one test into Board-ready intelligence.</h1>
-          <p>AVAI reads your assessments against the Board blueprint and tells you where marks are being lost, how urgent it is, and how sure we are.</p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55, ease: EASE_OUT }}
+          style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 22, alignItems: "flex-start" }}
+        >
+          <Mascot pose="hello" size={160} float />
+          <h1
+            style={{
+              fontFamily: "var(--font-display)",
+              fontSize: "clamp(28px, 3.4vw, 42px)",
+              fontWeight: 500,
+              lineHeight: 1.14,
+              maxWidth: 480,
+            }}
+          >
+            One test in. Board-ready intelligence out.
+          </h1>
+          <p style={{ color: "#b9c6ce", fontSize: 15.5, lineHeight: 1.55, maxWidth: 430 }}>
+            AVAI reads every answer against the {school.board} blueprint and shows exactly where marks are being lost — by
+            class, by chapter, by student.
+          </p>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {[
+              `${sections.length} sections`,
+              `${subjects.length} subjects`,
+              `${analysedTests.length} assessments analysed`,
+            ].map((chip, i) => (
+              <motion.span
+                key={chip}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.35 + i * 0.08, ease: EASE_OUT }}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 7,
+                  padding: "6px 12px",
+                  borderRadius: 999,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: "#dbe6ec",
+                  background: "rgba(255,255,255,.08)",
+                  border: "1px solid rgba(255,255,255,.14)",
+                  backdropFilter: "blur(8px)",
+                  WebkitBackdropFilter: "blur(8px)",
+                }}
+              >
+                <span className="pulse-dot" style={{ "--accent": "var(--brand-teal)" } as React.CSSProperties} />
+                {chip}
+              </motion.span>
+            ))}
+          </div>
         </motion.div>
-        <div className="login__foot">
-          {school.name} · {school.board}
+
+        <div style={{ position: "relative", zIndex: 1, color: "#8b99a3", fontSize: 12.5 }}>
+          {school.name} · {school.board} · {school.state}
         </div>
       </section>
 
-      <section className="login__panel">
-        <div className="login__card">
-          <h2>Sign in</h2>
-          <p className="muted small">Choose how you are signing in to {school.name}.</p>
-
-          <div className="tabs" role="tablist">
-            <button role="tab" aria-selected={tab === "staff"} className={`tab ${tab === "staff" ? "tab--active" : ""}`} onClick={() => setTab("staff")}>
-              School Staff
-            </button>
-            <button role="tab" aria-selected={tab === "student"} className={`tab ${tab === "student" ? "tab--active" : ""}`} onClick={() => setTab("student")}>
-              Student
-            </button>
+      <section className="auth__panel">
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+          <div className="stepper" aria-hidden="true">
+            <div className="stepper__bar" style={{ "--progress": role ? "75%" : "25%" } as React.CSSProperties} />
+            <div className="stepper__step" data-state={role ? "done" : "current"}>
+              <span className="stepper__dot">1</span>
+              Choose role
+            </div>
+            <div className="stepper__step" data-state={role ? "current" : "todo"}>
+              <span className="stepper__dot">2</span>
+              Sign in
+            </div>
           </div>
 
-          <form className="login__form" onSubmit={onSubmit}>
-            <div className="field">
-              <label htmlFor="schoolCode">School code</label>
-              <div style={{ position: "relative" }}>
-                <School size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
-                <input id="schoolCode" className="input" style={{ paddingLeft: 34 }} placeholder="e.g. BIS-TN-001" autoComplete="off" />
-              </div>
-            </div>
-            {tab === "staff" ? (
-              <div className="field">
-                <label htmlFor="staffKey">Staff access key</label>
-                <div style={{ position: "relative" }}>
-                  <KeyRound size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
-                  <input id="staffKey" className="input" style={{ paddingLeft: 34 }} type="password" placeholder="Access key issued by AVAI" />
+          <AnimatePresence mode="wait" initial={false}>
+            {!chosen ? (
+              <motion.div
+                key="choose"
+                initial={{ opacity: 0, x: -14 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -14 }}
+                transition={{ duration: 0.32, ease: EASE_OUT }}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <div>
+                  <h2 style={{ fontSize: 23 }}>
+                    Sign in to <span className="gradient-text">AVAI</span>
+                  </h2>
+                  <p className="muted small" style={{ marginTop: 4 }}>
+                    Staff access for {school.name}.
+                  </p>
                 </div>
-              </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                  {ROLES.map((r, i) => {
+                    const Icon = r.icon;
+                    return (
+                      <motion.button
+                        key={r.role}
+                        type="button"
+                        className="authchoice"
+                        style={{ "--accent": r.accent } as React.CSSProperties}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4, delay: 0.06 + i * 0.08, ease: EASE_OUT }}
+                        onClick={() => setRole(r.role)}
+                      >
+                        <span className="authchoice__icon">
+                          <Icon size={21} />
+                        </span>
+                        <div>
+                          <strong>{r.title}</strong>
+                          <small>{r.blurb}</small>
+                        </div>
+                        <ChevronRight size={17} style={{ marginLeft: "auto", color: "var(--muted)", flex: "0 0 auto" }} />
+                      </motion.button>
+                    );
+                  })}
+                </div>
+              </motion.div>
             ) : (
-              <>
-                <div className="field">
-                  <label htmlFor="rollNo">Roll number</label>
-                  <div style={{ position: "relative" }}>
-                    <User size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
-                    <input id="rollNo" className="input" style={{ paddingLeft: 34 }} placeholder="e.g. 01" inputMode="numeric" />
-                  </div>
-                </div>
-                <div className="field">
-                  <label htmlFor="pin">PIN</label>
-                  <div style={{ position: "relative" }}>
-                    <KeyRound size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
-                    <input id="pin" className="input" style={{ paddingLeft: 34 }} type="password" placeholder="4-digit PIN from your teacher" inputMode="numeric" />
-                  </div>
-                </div>
-              </>
-            )}
-            <button type="submit" className="btn btn--primary" style={{ justifyContent: "center", padding: "11px" }}>
-              Continue <ArrowRight size={15} />
-            </button>
-            {notice && (
-              <div className="evidence evidence--gold" role="status">
-                <ShieldAlert size={16} />
-                <div>{notice}</div>
-              </div>
-            )}
-          </form>
-          <div className="login__help">{tab === "staff" ? "Lost your access key? Contact your AVAI school administrator." : "Ask your class teacher for your PIN."}</div>
-
-          <div className="devlogin" aria-label="Development login shortcuts">
-            <div className="devlogin__head">
-              <span className="tag tag--dev">DEV LOGIN</span>
-              <span>Mock role switcher — not real authentication.</span>
-            </div>
-            <div className="devlogin__grid">
-              {options.map((o) => (
-                <button
-                  key={o.key}
-                  className="devlogin__btn"
-                  onClick={() => {
-                    const u = signIn(o.role, o.userId);
-                    if (u) router.push(homeFor(u.role));
-                  }}
-                >
-                  <span>
-                    {o.label}
-                    <br />
-                    <small>{o.sub}</small>
+              <motion.div
+                key={chosen.role}
+                initial={{ opacity: 0, x: 16 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 16 }}
+                transition={{ duration: 0.32, ease: EASE_OUT }}
+                style={{ display: "flex", flexDirection: "column", gap: 16 }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <button type="button" className="btn btn--ghost btn--sm" onClick={back} aria-label="Back to role selection">
+                    <ArrowLeft size={15} />
+                  </button>
+                  <span
+                    className="authchoice__icon"
+                    style={{ "--accent": chosen.accent, width: 38, height: 38, flexBasis: 38, borderRadius: 12 } as React.CSSProperties}
+                  >
+                    <chosen.icon size={18} />
                   </span>
-                  <ArrowRight size={14} />
-                </button>
-              ))}
-            </div>
-          </div>
+                  <div style={{ minWidth: 0 }}>
+                    <h2 style={{ fontSize: 19 }}>{chosen.title}</h2>
+                    <p className="muted small">{chosen.blurb}</p>
+                  </div>
+                </div>
+
+                <form className="login__form" onSubmit={onSubmit}>
+                  <div className="field">
+                    <label htmlFor="schoolCode">School code</label>
+                    <div style={{ position: "relative" }}>
+                      <School size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
+                      <input id="schoolCode" className="input" style={{ paddingLeft: 34 }} placeholder="e.g. BIS-TN-001" autoComplete="off" />
+                    </div>
+                  </div>
+
+                  <div className="field">
+                    <label htmlFor="staffId">Email or access key</label>
+                    <div style={{ position: "relative" }}>
+                      <KeyRound size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
+                      <input
+                        id="staffId"
+                        className="input"
+                        style={{ paddingLeft: 34 }}
+                        placeholder={chosen.role === "principal" ? "principal@school.edu.in" : "you@school.edu.in"}
+                        autoComplete="username"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="field">
+                    <label htmlFor="password">Password</label>
+                    <div style={{ position: "relative" }}>
+                      <Lock size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
+                      <input
+                        id="password"
+                        className="input"
+                        style={{ paddingLeft: 34, paddingRight: 40 }}
+                        type={showPassword ? "text" : "password"}
+                        placeholder="Your password"
+                        autoComplete="current-password"
+                      />
+                      <button
+                        type="button"
+                        className="btn btn--ghost btn--sm"
+                        onClick={() => setShowPassword((v) => !v)}
+                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        style={{ position: "absolute", right: 5, top: 5, padding: 6 }}
+                      >
+                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className={`btn ${chosen.role === "principal" ? "btn--primary" : "btn--blue"}`}
+                    style={{ justifyContent: "center", padding: 11 }}
+                  >
+                    Continue <ArrowRight size={15} />
+                  </button>
+
+                  {notice && (
+                    <motion.div
+                      className="evidence evidence--gold"
+                      role="status"
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, ease: EASE_OUT }}
+                    >
+                      <ShieldAlert size={16} />
+                      <div>{notice}</div>
+                    </motion.div>
+                  )}
+                </form>
+
+                <div className="login__help">Lost your access key? Contact your AVAI school administrator.</div>
+
+                <DemoAccounts role={chosen.role} accent={chosen.accent} onPick={enter} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <div style={{ height: 1, background: "var(--line)", margin: "2px 0" }} />
+
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45, delay: 0.2, ease: EASE_OUT }}>
+            <Link
+              href="/attend"
+              className="surface surface--tinted hoverlift"
+              style={{
+                "--accent": "var(--brand-gold)",
+                display: "flex",
+                alignItems: "center",
+                gap: 13,
+                padding: "13px 15px",
+                textDecoration: "none",
+                color: "inherit",
+              } as React.CSSProperties}
+            >
+              <span
+                style={{
+                  width: 36,
+                  height: 36,
+                  flex: "0 0 36px",
+                  borderRadius: 11,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  color: "#fff",
+                  background: "linear-gradient(160deg, #eab949, var(--brand-gold))",
+                  boxShadow: "0 8px 16px -8px rgba(224,166,42,.9), inset 0 1px 0 rgba(255,255,255,.4)",
+                }}
+              >
+                <PenLine size={17} />
+              </span>
+              <div style={{ minWidth: 0 }}>
+                <strong style={{ display: "block", fontSize: 13.5, fontWeight: 650 }}>Attending an AVAI assessment? Start here</strong>
+                <small className="muted" style={{ display: "block", fontSize: 12, lineHeight: 1.35 }}>
+                  For students with a test ID. This is not a staff login.
+                </small>
+              </div>
+              <ArrowRight size={17} style={{ marginLeft: "auto", color: "#8a6410", flex: "0 0 auto" }} />
+            </Link>
+
+            {/* AVAI's own staff console — deliberately quiet, and not a school login. */}
+            <Link
+              href="/admin"
+              className="small muted"
+              style={{ display: "inline-flex", alignItems: "center", gap: 6, marginTop: 14, textDecoration: "none" }}
+            >
+              <ShieldCheck size={13} /> AVAI staff console
+            </Link>
+          </motion.div>
         </div>
       </section>
+    </div>
+  );
+}
+
+function DemoAccounts({
+  role,
+  accent,
+  onPick,
+}: {
+  role: StaffRole;
+  accent: string;
+  onPick: (role: StaffRole, userId: string) => void;
+}) {
+  const rows =
+    role === "principal"
+      ? [
+          {
+            id: principalDemo?.userId ?? mockPrincipal.id,
+            name: principalDemo?.sub ?? mockPrincipal.name,
+            sub: "Principal · every section, every subject",
+          },
+        ]
+      : mockTeachers.map((t) => ({ id: t.id, name: t.name, sub: describeAssignments(t.assignments) }));
+
+  return (
+    <div className="surface" style={{ padding: 14, background: "linear-gradient(180deg, #ffffff, #faf7f1)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9, marginBottom: 4 }}>
+        <span className="tag tag--dev">DEMO</span>
+        <strong style={{ fontSize: 13, fontWeight: 650 }}>Demo accounts</strong>
+      </div>
+      <p className="muted small" style={{ marginBottom: 10 }}>
+        {role === "principal"
+          ? "Signs you straight in as the principal with mock school data."
+          : `Each teacher sees only their own classes and subjects. Pick one of the ${rows.length}.`}
+      </p>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 7,
+          maxHeight: role === "teacher" ? 268 : undefined,
+          overflowY: role === "teacher" ? "auto" : undefined,
+          paddingRight: role === "teacher" ? 4 : undefined,
+        }}
+      >
+        {rows.map((r, i) => (
+          <motion.button
+            key={r.id}
+            type="button"
+            onClick={() => onPick(role, r.id)}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, delay: 0.04 + i * 0.035, ease: EASE_OUT }}
+            whileHover={{ y: -2 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 11,
+              width: "100%",
+              textAlign: "left",
+              padding: "9px 11px",
+              borderRadius: "var(--radius-md)",
+              border: "1px solid var(--line)",
+              background: "linear-gradient(180deg, #ffffff, #fdfbf7)",
+              boxShadow: "var(--shadow-xs)",
+              font: "inherit",
+              color: "inherit",
+              cursor: "pointer",
+            }}
+          >
+            <span
+              aria-hidden="true"
+              style={{
+                width: 32,
+                height: 32,
+                flex: "0 0 32px",
+                borderRadius: "50%",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 11.5,
+                fontWeight: 700,
+                color: "#fff",
+                background: `linear-gradient(160deg, color-mix(in srgb, ${accent} 68%, #fff), ${accent})`,
+                boxShadow: `0 6px 14px -7px ${accent}`,
+              }}
+            >
+              {initials(r.name)}
+            </span>
+            <span style={{ minWidth: 0 }}>
+              <span style={{ display: "block", fontSize: 13.5, fontWeight: 620 }}>{r.name}</span>
+              <span className="muted" style={{ display: "block", fontSize: 11.5, lineHeight: 1.35 }}>
+                {r.sub}
+              </span>
+            </span>
+            <ArrowRight size={15} style={{ marginLeft: "auto", color: "var(--muted)", flex: "0 0 auto" }} />
+          </motion.button>
+        ))}
+      </div>
     </div>
   );
 }

@@ -1,18 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { BookX, ChevronRight, Download, Sparkles, TrendingDown, TrendingUp, Trophy, X } from "lucide-react";
+import { BookX, CalendarDays, ChevronRight, Download, Sparkles, TrendingDown, TrendingUp, Trophy, X } from "lucide-react";
 import {
-  anomalyInsights,
+  anomaliesFor,
+  attentionBreakdown,
+  analysedTests,
   classRosterFull,
-  lateBloomers,
   latestTest,
+  lateBloomersFor,
   overallPctFor,
   pctFor,
+  percentShares,
+  projectedSubjectMarks,
+  projectedTotalMarks,
   schoolSnapshot,
-  sectionComparison,
+  sectionStandings,
   sections,
   studentsInSubjectBand,
   studentsInTotalBand,
@@ -24,73 +28,92 @@ import {
   topStudents,
   totalBandCounts,
   totalMarkBands,
-  type FullRosterStudent,
-  type MarkBand,
+  type ConductedTest,
 } from "@/lib/avai-mock-data";
 import { downloadSectionsComparisonReport } from "@/lib/downloadReport";
-import { usePageHeader } from "@/lib/pageHeader";
+import { HeaderActions, usePageHeader } from "@/lib/pageHeader";
 import { SUBJECT_BAND_COLORS, TOTAL_BAND_COLORS } from "@/lib/bandColors";
 import { BandPie } from "@/components/BandPie";
-import { MarkBandTable, type BandTableRow } from "@/components/MarkBandTable";
+import { Reveal, Stagger, StaggerItem } from "@/components/motion";
+import { OverviewKpis } from "@/components/overview/OverviewKpis";
+import { BandDistribution } from "@/components/overview/BandDistribution";
+import { SubjectPerformance } from "@/components/overview/SubjectPerformance";
+import { StudentDrawer, StudentRow, type DrillDown } from "@/components/overview/StudentDrawer";
+import { AnomalyGrid } from "@/components/overview/AnomalyGrid";
 
-type BandDrawer = { title: string; subtitle: string; students: FullRosterStudent[] } | null;
 type IntelPanel = "toppers" | "lateBloomers" | "weakestClass" | "weakestSubject" | null;
 
-function StudentRow({ student, showSection, meta }: { student: FullRosterStudent; showSection: boolean; meta?: string }) {
-  return (
-    <Link href={`/principal/classes/${student.section}/${student.id}`} className="subject-row">
-      <div>
-        <div className="strong">{student.name}</div>
-        <div className="small muted">
-          Roll {student.rollNo}
-          {showSection ? ` · ${student.section}` : ""}
-        </div>
-      </div>
-      {meta && <div className="strong">{meta}</div>}
-    </Link>
-  );
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Dates are fixed mock strings, so they're formatted by hand rather than
+ * with a locale-dependent formatter that could render differently. */
+function monthYear(iso: string): string {
+  const [y, m] = iso.split("-");
+  return `${MONTHS[Number(m) - 1]} ${y}`;
+}
+function longDate(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return `${Number(d)} ${MONTHS[Number(m) - 1]} ${y}`;
+}
+function testOptionLabel(test: ConductedTest): string {
+  return `${test.name} (${monthYear(test.date)})`;
 }
 
-/** Principal's default landing page (§ "Class X" dashboard) — Board-mark
+/** Principal's default landing page — the "Class X" overview. Board-mark
  * distribution for the whole grade and by subject with student-level
  * drill-down, section/subject-filterable pies, and the intelligence layer
- * (toppers, late bloomers, weakest class/subject, anomalies). Everything
- * here reads from the same roster every other screen reads, so nothing
- * shown here can disagree with a class or student page. */
-export default function ClassXDashboard() {
-  usePageHeader({ title: "Class X" });
-
-  const [bandDrawer, setBandDrawer] = useState<BandDrawer>(null);
+ * (toppers, late bloomers, weakest class/subject, anomalies). Every number
+ * follows the assessment picked in the header, and all of them read from
+ * the same roster every other screen reads, so nothing shown here can
+ * disagree with a class or student page. */
+export default function ClassXOverview() {
+  const [testKey, setTestKey] = useState(latestTest.key);
+  const [drill, setDrill] = useState<DrillDown | null>(null);
   const [intelPanel, setIntelPanel] = useState<IntelPanel>(null);
   const [pieSubject, setPieSubject] = useState<string>("All");
   const [pieSection, setPieSection] = useState<string>(sections[0]);
 
-  const testKey = latestTest.key;
+  const test = analysedTests.find((t) => t.key === testKey) ?? latestTest;
 
-  // ---------- Board mark distribution ----------
-  const overallRow: BandTableRow = {
-    key: "overall",
-    label: "Class X overall",
-    counts: totalBandCounts("All", testKey),
-  };
-  const subjectRows: BandTableRow[] = subjects.map((subject) => ({
-    key: subject,
-    label: subject,
-    counts: subjectBandCounts("All", testKey, subject),
-  }));
+  usePageHeader({
+    title: "Class X",
+    subtitle: `${test.name} · ${schoolSnapshot.students} students · ${sections.length} sections`,
+  });
 
-  function openTotalBand(band: MarkBand) {
-    setBandDrawer({
+  // ---------- Headline figures ----------
+  const breakdown = useMemo(() => attentionBreakdown(testKey), [testKey]);
+
+  const totalSegments = useMemo(() => {
+    const counts = totalBandCounts("All", testKey).map((c) => c.count);
+    const shares = percentShares(counts);
+    return totalMarkBands.map((band, i) => ({ label: band.label, count: counts[i], share: shares[i], color: TOTAL_BAND_COLORS[i] }));
+  }, [testKey]);
+
+  const subjectRows = useMemo(() => {
+    const averages = new Map(subjectsByAverage(testKey).map((s) => [s.subject, s.avgPct]));
+    return subjects.map((subject) => ({
+      subject,
+      avgPct: averages.get(subject) ?? 0,
+      counts: subjectBandCounts("All", testKey, subject).map((c) => c.count),
+    }));
+  }, [testKey]);
+
+  function openTotalBand(index: number) {
+    const band = totalMarkBands[index];
+    setDrill({
       title: `Class X overall — ${band.label}`,
-      subtitle: `Projected Board total out of 500, based on ${latestTest.name}.`,
+      subtitle: `Projected Board total out of 500, based on ${test.name}.`,
       students: studentsInTotalBand("All", testKey, band),
+      metaFor: (s) => `${projectedTotalMarks(s, testKey)} / 500`,
     });
   }
-  function openSubjectBand(subject: string, band: MarkBand) {
-    setBandDrawer({
+  function openSubjectBand(subject: string, index: number) {
+    const band = subjectMarkBands[index];
+    setDrill({
       title: `${subject} — ${band.label}`,
-      subtitle: `Projected Board marks out of 100, based on ${latestTest.name}.`,
+      subtitle: `Projected Board marks out of 100, based on ${test.name}.`,
       students: studentsInSubjectBand("All", testKey, subject, band),
+      metaFor: (s) => `${projectedSubjectMarks(s, testKey, subject)} / 100`,
     });
   }
 
@@ -101,63 +124,88 @@ export default function ClassXDashboard() {
   const sectionCounts = pieSubject === "All" ? totalBandCounts(pieSection, testKey) : subjectBandCounts(pieSection, testKey, pieSubject);
 
   // ---------- Intelligence layer ----------
-  const schoolToppers = topStudents(10, testKey);
-  const bloomers = lateBloomers(10);
-  const weakestSection = [...sectionComparison].sort((a, b) => a.overallAttainment - b.overallAttainment)[0];
-  const subjectStandings = subjectsByAverage(testKey);
+  const standings = useMemo(() => sectionStandings(testKey), [testKey]);
+  const schoolToppers = useMemo(() => topStudents(10, testKey), [testKey]);
+  const bloomers = useMemo(() => lateBloomersFor(10, testKey), [testKey]);
+  const subjectStandings = useMemo(() => subjectsByAverage(testKey), [testKey]);
+  const anomalies = useMemo(() => anomaliesFor(testKey), [testKey]);
+  const weakestSection = [...standings].sort((a, b) => a.overallAttainment - b.overallAttainment)[0];
   const weakestSubject = subjectStandings[0];
 
   return (
     <>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
-        <p className="page-sub" style={{ marginTop: 0 }}>
-          After {latestTest.name} · {schoolSnapshot.students} students across {sections.length} sections of Class X.
-        </p>
+      <HeaderActions>
+        <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+          <CalendarDays
+            size={13}
+            style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", pointerEvents: "none" }}
+            aria-hidden="true"
+          />
+          <select
+            className="select"
+            aria-label="Assessment"
+            value={testKey}
+            onChange={(e) => setTestKey(e.target.value)}
+            style={{ paddingLeft: 30, paddingTop: 5, paddingBottom: 5, fontSize: 12.5, minWidth: 190 }}
+          >
+            {analysedTests.map((t) => (
+              <option key={t.key} value={t.key}>
+                {testOptionLabel(t)}
+              </option>
+            ))}
+          </select>
+        </span>
         <button className="btn btn--sm" onClick={() => downloadSectionsComparisonReport(testKey)}>
           <Download size={13} /> Download report
         </button>
-      </div>
+      </HeaderActions>
 
-      {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(112px, 1fr))", gap: 16, marginTop: 20 }}>
-        {sections.map((s) => (
-          <div className="stat" key={s}>
-            <div className="stat__label">{s} students</div>
-            <div className="stat__value">{classRosterFull[s]?.length ?? 0}</div>
-          </div>
-        ))}
-        <div className="stat" style={{ background: "var(--brand-teal-soft)", borderColor: "transparent" }}>
-          <div className="stat__label">Class X total</div>
-          <div className="stat__value">{schoolSnapshot.students}</div>
-        </div>
-      </div>
-
-      {/* Board mark distribution */}
-      <section className="section">
-        <div className="section__head">
+      {/* Title block */}
+      <Reveal>
+        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
           <div>
-            <h2 className="section-q">Projected Board mark distribution</h2>
-            <p className="section__lead">
-              {latestTest.name} scores projected onto the Board scale (100 marks a subject, 500 overall). Click a number to see who&apos;s in that band.
+            <h2 className="page-title" style={{ fontSize: 30, lineHeight: 1.15 }}>
+              Class X <span className="gradient-text">Overview</span>
+            </h2>
+            <p className="page-sub" style={{ fontSize: 14 }}>
+              Performance snapshot based on {test.name}. Projected onto Board scale (out of 500).
             </p>
           </div>
+          <span className="tag">
+            <CalendarDays size={12} /> Analysed {longDate(test.date)}
+          </span>
         </div>
-        <div className="card">
-          <div className="card__body" style={{ paddingBottom: 0 }}>
-            <div className="eyebrow">Overall — out of 500</div>
-          </div>
-          <MarkBandTable bands={totalMarkBands} rows={[overallRow]} colors={TOTAL_BAND_COLORS} onOpen={(_key, band) => openTotalBand(band)} />
-          <div className="card__body" style={{ paddingBottom: 0, paddingTop: 4 }}>
-            <div className="eyebrow">By subject — out of 100 each</div>
-          </div>
-          <MarkBandTable bands={subjectMarkBands} rows={subjectRows} colors={SUBJECT_BAND_COLORS} onOpen={(key, band) => openSubjectBand(key, band)} />
-        </div>
-      </section>
+      </Reveal>
+
+      <OverviewKpis breakdown={breakdown} sectionCount={sections.length} />
+
+      <Reveal delay={0.1} style={{ marginTop: 20 }}>
+        <BandDistribution
+          title="Projected Board mark distribution"
+          subtitle={`Out of 500 (based on ${test.name}). Click a band to see who's in it.`}
+          segments={totalSegments}
+          onSelect={openTotalBand}
+        />
+      </Reveal>
+
+      <Reveal delay={0.16} style={{ marginTop: 20 }}>
+        <SubjectPerformance
+          title="Subject-wise performance"
+          subtitle={`Out of 100 (based on ${test.name}). Click a count to see those students.`}
+          bandLabels={subjectMarkBands.map((b) => b.label)}
+          bandColors={SUBJECT_BAND_COLORS}
+          rows={subjectRows}
+          onOpen={openSubjectBand}
+        />
+      </Reveal>
 
       {/* Filters + pies */}
       <section className="section">
         <div className="section__head">
-          <h2 className="section-q">Where the marks land</h2>
+          <div>
+            <h2 className="section-q">Where the marks land</h2>
+            <p className="section__lead">Compare one section against the whole of Class X, overall or in a single subject.</p>
+          </div>
         </div>
         <div className="filterbar">
           <div className="filter">
@@ -179,26 +227,30 @@ export default function ClassXDashboard() {
           </div>
         </div>
 
-        <div className="grid grid--2" style={{ marginTop: 16, alignItems: "start" }}>
-          <div className="card">
-            <div className="card__head">
-              <h3 style={{ fontSize: 15 }}>Class X overall</h3>
-              <span className="small muted">{pieSubject === "All" ? "All subjects" : pieSubject}</span>
+        <Stagger className="grid grid--2" gap={0.08} style={{ marginTop: 16, alignItems: "start" }}>
+          <StaggerItem>
+            <div className="card hoverlift" style={{ height: "100%" }}>
+              <div className="card__head">
+                <h3 style={{ fontSize: 15 }}>Class X overall</h3>
+                <span className="small muted">{pieSubject === "All" ? "All subjects" : pieSubject}</span>
+              </div>
+              <div className="card__body">
+                <BandPie slices={pieBands.map((b, i) => ({ label: b.label, value: overallCounts[i].count, color: pieColors[i] }))} />
+              </div>
             </div>
-            <div className="card__body">
-              <BandPie slices={pieBands.map((b, i) => ({ label: b.label, value: overallCounts[i].count, color: pieColors[i] }))} />
+          </StaggerItem>
+          <StaggerItem>
+            <div className="card hoverlift" style={{ height: "100%" }}>
+              <div className="card__head">
+                <h3 style={{ fontSize: 15 }}>{pieSection}</h3>
+                <span className="small muted">{pieSubject === "All" ? "All subjects" : pieSubject}</span>
+              </div>
+              <div className="card__body">
+                <BandPie slices={pieBands.map((b, i) => ({ label: b.label, value: sectionCounts[i].count, color: pieColors[i] }))} />
+              </div>
             </div>
-          </div>
-          <div className="card">
-            <div className="card__head">
-              <h3 style={{ fontSize: 15 }}>{pieSection}</h3>
-              <span className="small muted">{pieSubject === "All" ? "All subjects" : pieSubject}</span>
-            </div>
-            <div className="card__body">
-              <BandPie slices={pieBands.map((b, i) => ({ label: b.label, value: sectionCounts[i].count, color: pieColors[i] }))} />
-            </div>
-          </div>
-        </div>
+          </StaggerItem>
+        </Stagger>
       </section>
 
       {/* Intelligence layer */}
@@ -212,63 +264,70 @@ export default function ClassXDashboard() {
           </div>
         </div>
 
-        <div className="card intel-band">
-          <button className="intel-band__seg" style={{ "--accent": "#e0a62a" } as React.CSSProperties} onClick={() => setIntelPanel("toppers")}>
-            <span className="intel-band__icon">
-              <Trophy size={15} />
-            </span>
-            <div className="stat__label">Toppers</div>
-            <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
-              {schoolToppers[0]?.name ?? "—"}
-            </div>
-            <div className="small muted" style={{ marginTop: 2 }}>
-              {schoolToppers[0] ? `${Math.round(overallPctFor(schoolToppers[0], testKey))}% overall — highest in Class X` : "Not enough data"}
-            </div>
-            <ChevronRight size={15} className="intel-band__arrow" />
-          </button>
+        <Reveal>
+          <div className="card intel-band">
+            <button className="intel-band__seg" style={{ "--accent": "var(--brand-gold)" } as React.CSSProperties} onClick={() => setIntelPanel("toppers")}>
+              <span className="intel-band__icon">
+                <Trophy size={15} />
+              </span>
+              <div className="stat__label">Toppers</div>
+              <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
+                {schoolToppers[0]?.name ?? "—"}
+              </div>
+              <div className="small muted" style={{ marginTop: 2 }}>
+                {schoolToppers[0] ? `${Math.round(overallPctFor(schoolToppers[0], testKey))}% overall — highest in Class X` : "Not enough data"}
+              </div>
+              <ChevronRight size={15} className="intel-band__arrow" />
+            </button>
 
-          <button className="intel-band__seg" style={{ "--accent": "#3a9d6a" } as React.CSSProperties} disabled={bloomers.length === 0} onClick={() => setIntelPanel("lateBloomers")}>
-            <span className="intel-band__icon">
-              <TrendingUp size={15} />
-            </span>
-            <div className="stat__label">Late bloomers</div>
-            <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
-              {bloomers.length > 0 ? `${bloomers.length} climbing` : "None this term"}
-            </div>
-            <div className="small muted" style={{ marginTop: 2 }}>
-              {bloomers[0] ? `Led by ${bloomers[0].student.name}, +${bloomers[0].gain}pt since the previous test` : "Needs a second analysed test"}
-            </div>
-            <ChevronRight size={15} className="intel-band__arrow" />
-          </button>
+            <button
+              className="intel-band__seg"
+              style={{ "--accent": "var(--brand-green)" } as React.CSSProperties}
+              disabled={bloomers.length === 0}
+              onClick={() => setIntelPanel("lateBloomers")}
+            >
+              <span className="intel-band__icon">
+                <TrendingUp size={15} />
+              </span>
+              <div className="stat__label">Late bloomers</div>
+              <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
+                {bloomers.length > 0 ? `${bloomers.length} climbing` : "None this term"}
+              </div>
+              <div className="small muted" style={{ marginTop: 2 }}>
+                {bloomers[0] ? `Led by ${bloomers[0].student.name}, +${bloomers[0].gain}pt since the previous test` : "Needs an earlier analysed test"}
+              </div>
+              <ChevronRight size={15} className="intel-band__arrow" />
+            </button>
 
-          <button className="intel-band__seg" style={{ "--accent": "#c94a3a" } as React.CSSProperties} onClick={() => setIntelPanel("weakestClass")}>
-            <span className="intel-band__icon">
-              <TrendingDown size={15} />
-            </span>
-            <div className="stat__label">Weakest class</div>
-            <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
-              {weakestSection?.section}
-            </div>
-            <div className="small muted" style={{ marginTop: 2 }}>
-              {weakestSection?.overallAttainment}% overall attainment — lowest of {sections.length} sections
-            </div>
-            <ChevronRight size={15} className="intel-band__arrow" />
-          </button>
+            <button className="intel-band__seg" style={{ "--accent": "var(--risk)" } as React.CSSProperties} onClick={() => setIntelPanel("weakestClass")}>
+              <span className="intel-band__icon">
+                <TrendingDown size={15} />
+              </span>
+              <div className="stat__label">Weakest class</div>
+              <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
+                {weakestSection?.section}
+              </div>
+              <div className="small muted" style={{ marginTop: 2 }}>
+                {weakestSection?.overallAttainment}% overall attainment — lowest of {sections.length} sections
+              </div>
+              <ChevronRight size={15} className="intel-band__arrow" />
+            </button>
 
-          <button className="intel-band__seg" style={{ "--accent": "#2f6fd3" } as React.CSSProperties} onClick={() => setIntelPanel("weakestSubject")}>
-            <span className="intel-band__icon">
-              <BookX size={15} />
-            </span>
-            <div className="stat__label">Weakest subject</div>
-            <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
-              {weakestSubject?.subject}
-            </div>
-            <div className="small muted" style={{ marginTop: 2 }}>
-              {weakestSubject?.avgPct}% school average — lowest of {subjects.length} subjects
-            </div>
-            <ChevronRight size={15} className="intel-band__arrow" />
-          </button>
-        </div>
+            <button className="intel-band__seg" style={{ "--accent": "var(--info)" } as React.CSSProperties} onClick={() => setIntelPanel("weakestSubject")}>
+              <span className="intel-band__icon">
+                <BookX size={15} />
+              </span>
+              <div className="stat__label">Weakest subject</div>
+              <div className="strong" style={{ fontSize: 16, marginTop: 6 }}>
+                {weakestSubject?.subject}
+              </div>
+              <div className="small muted" style={{ marginTop: 2 }}>
+                {weakestSubject?.avgPct}% school average — lowest of {subjects.length} subjects
+              </div>
+              <ChevronRight size={15} className="intel-band__arrow" />
+            </button>
+          </div>
+        </Reveal>
 
         {/* Anomalies */}
         <div className="section__head" style={{ marginTop: 28 }}>
@@ -279,81 +338,10 @@ export default function ClassXDashboard() {
             <p className="section__lead">Real, numbers-backed surprises the averages above don&apos;t show on their own.</p>
           </div>
         </div>
-        {anomalyInsights.length === 0 ? (
-          <p className="small muted">No anomalies stand out against this assessment&apos;s data.</p>
-        ) : (
-          <div className="grid grid--2">
-            {anomalyInsights.slice(0, 8).map((a) => (
-              <div className="card card--flat" key={a.id}>
-                <div className="card__body">
-                  <div className="finding__subject">{a.subject ?? a.section ?? "School-wide"}</div>
-                  <div className="strong" style={{ marginTop: 2 }}>
-                    {a.headline}
-                  </div>
-                  <p className="small muted" style={{ marginTop: 6 }}>
-                    {a.detail}
-                  </p>
-                  <div style={{ display: "flex", gap: 18, flexWrap: "wrap", marginTop: 10 }}>
-                    {a.numbers.map((n) => (
-                      <div key={n.label}>
-                        <div className="stat__label">{n.label}</div>
-                        <div className="strong">{n.value}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {a.studentId && (
-                  <div className="card__foot" style={{ justifyContent: "flex-end" }}>
-                    <Link href={`/principal/classes/${a.section}/${a.studentId}`} className="btn btn--sm">
-                      View student
-                    </Link>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <AnomalyGrid anomalies={anomalies.slice(0, 8)} />
       </section>
 
-      {/* Band drill-down drawer */}
-      <AnimatePresence>
-        {bandDrawer && (
-          <>
-            <motion.div className="drawer-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setBandDrawer(null)} />
-            <motion.aside
-              className="drawer"
-              role="dialog"
-              aria-modal="true"
-              aria-label={bandDrawer.title}
-              initial={{ x: 40, opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: 40, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 380, damping: 34 }}
-            >
-              <div className="drawer__head">
-                <div>
-                  <h3 style={{ fontSize: 18 }}>{bandDrawer.title}</h3>
-                  <div className="muted small">{bandDrawer.subtitle}</div>
-                </div>
-                <button className="iconbtn" onClick={() => setBandDrawer(null)} aria-label="Close">
-                  <X size={18} />
-                </button>
-              </div>
-              <div className="drawer__body">
-                <div className="small muted" style={{ marginBottom: 10 }}>
-                  {bandDrawer.students.length} student{bandDrawer.students.length === 1 ? "" : "s"} — tap one to open their report.
-                </div>
-                <div style={{ display: "grid", gap: 8 }}>
-                  {bandDrawer.students.map((s) => (
-                    <StudentRow key={s.id} student={s} showSection />
-                  ))}
-                  {bandDrawer.students.length === 0 && <p className="small muted">No students in this band.</p>}
-                </div>
-              </div>
-            </motion.aside>
-          </>
-        )}
-      </AnimatePresence>
+      <StudentDrawer drill={drill} onClose={() => setDrill(null)} />
 
       {/* Intelligence layer drawer */}
       <AnimatePresence>
@@ -384,7 +372,7 @@ export default function ClassXDashboard() {
                 {intelPanel === "toppers" && (
                   <>
                     <p className="small muted" style={{ marginTop: 0 }}>
-                      Ranked by overall % across all {subjects.length} subjects, {latestTest.name}.
+                      Ranked by overall % across all {subjects.length} subjects, {test.name}.
                     </p>
                     <div className="drawer__section" style={{ marginTop: 0 }}>
                       <h4>School-wide top 10</h4>
@@ -409,21 +397,21 @@ export default function ClassXDashboard() {
                 {intelPanel === "lateBloomers" && (
                   <div className="drawer__section" style={{ marginTop: 0 }}>
                     <h4>
-                      {bloomers.length} student{bloomers.length === 1 ? "" : "s"} gained ground since {latestTest.name}&apos;s previous test
+                      {bloomers.length} student{bloomers.length === 1 ? "" : "s"} gained ground between {test.name} and the test before it
                     </h4>
                     <div style={{ display: "grid", gap: 8 }}>
                       {bloomers.map((b) => (
                         <StudentRow key={b.student.id} student={b.student} showSection meta={`${b.prevPct}% → ${b.nowPct}% (+${b.gain}pt)`} />
                       ))}
-                      {bloomers.length === 0 && <p className="small muted">Needs a second analysed test to show movement.</p>}
+                      {bloomers.length === 0 && <p className="small muted">Needs an earlier analysed test to show movement.</p>}
                     </div>
                   </div>
                 )}
                 {intelPanel === "weakestClass" && (
                   <div className="drawer__section" style={{ marginTop: 0 }}>
-                    <h4>Overall attainment — average % across all 5 subjects, {latestTest.name}</h4>
+                    <h4>Overall attainment — average % across all {subjects.length} subjects, {test.name}</h4>
                     <div style={{ display: "grid", gap: 14 }}>
-                      {[...sectionComparison]
+                      {[...standings]
                         .sort((a, b) => a.overallAttainment - b.overallAttainment)
                         .map((s) => (
                           <div key={s.section}>
@@ -448,7 +436,7 @@ export default function ClassXDashboard() {
                 )}
                 {intelPanel === "weakestSubject" && (
                   <div className="drawer__section" style={{ marginTop: 0 }}>
-                    <h4>School average per subject, {latestTest.name}</h4>
+                    <h4>School average per subject, {test.name}</h4>
                     <div style={{ display: "grid", gap: 6 }}>
                       {subjectStandings.map((s) => (
                         <div className="bar-row" key={s.subject} style={{ gridTemplateColumns: "140px 1fr 50px" }}>

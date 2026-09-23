@@ -7,7 +7,7 @@ import { ArrowLeft, LogOut, type LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 import { homeFor, initials, useAuth, type CurrentUser } from "@/lib/auth";
 import { academicYear, school, type Role } from "@/lib/avai-mock-data";
-import { PageHeaderProvider, useCurrentPageHeader } from "@/lib/pageHeader";
+import { PAGE_HEADER_ACTIONS_ID, PageHeaderProvider, useCurrentPageHeader } from "@/lib/pageHeader";
 import { Logomark, Mascot } from "./Mascot";
 
 export interface NavItem {
@@ -37,10 +37,16 @@ export function RoleGuard({ role, children }: { role: Role; children: (user: Cur
 export function LoadingScreen({ label = "Loading AVAI…" }: { label?: string }) {
   return (
     <div className="loading">
-      <motion.div animate={{ y: [0, -6, 0] }} transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}>
-        <Mascot pose="thinking" size={96} />
+      <Mascot pose="thinking" size={112} float />
+      <motion.div
+        className="small"
+        style={{ fontWeight: 600, letterSpacing: ".01em" }}
+        animate={{ opacity: [0.55, 1, 0.55] }}
+        transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+      >
+        {label}
       </motion.div>
-      <div className="small">{label}</div>
+      <div className="shimmer" style={{ width: 140, height: 4, minHeight: 0, borderRadius: 999 }} />
     </div>
   );
 }
@@ -58,10 +64,12 @@ function PageHeaderBar() {
   // (.roster-sticky, a standalone .filterbar) can sit right below this bar
   // instead of guessing its height or sticking underneath it at the same
   // top:0. Reset to 0 when there's no header so nothing sticks to a gap.
+  // header is a fresh object whenever title/subtitle/backHref change, so a
+  // subtitle appearing (which makes the bar taller) re-measures too.
   useLayoutEffect(() => {
     document.documentElement.style.setProperty("--page-header-h", header && ref.current ? `${ref.current.offsetHeight}px` : "0px");
     return () => document.documentElement.style.setProperty("--page-header-h", "0px");
-  }, [header]);
+  }, [header, header?.subtitle]);
 
   if (!header) return null;
   return (
@@ -71,7 +79,12 @@ function PageHeaderBar() {
           <ArrowLeft size={13} /> Back
         </button>
       )}
-      <h1 className="page-header-bar__title">{header.title}</h1>
+      <div className="page-header-bar__text">
+        <h1 className="page-header-bar__title">{header.title}</h1>
+        {header.subtitle && <div className="page-header-bar__sub">{header.subtitle}</div>}
+      </div>
+      {/* Filled by <HeaderActions> via a portal — see src/lib/pageHeader.tsx. */}
+      <div className="page-header-bar__actions" id={PAGE_HEADER_ACTIONS_ID} />
     </div>
   );
 }

@@ -42,7 +42,8 @@ export function resolveUser(role: Role, userId: string): CurrentUser | null {
 }
 
 export function homeFor(role: Role) {
-  return role === "principal" ? "/principal/classes" : role === "teacher" ? "/teacher/home" : "/student/home";
+  // Students never sign in — their only visit is the onboarding assessment.
+  return role === "principal" ? "/principal/classes" : role === "teacher" ? "/teacher/home" : "/attend";
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
