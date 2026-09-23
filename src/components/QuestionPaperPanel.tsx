@@ -13,6 +13,7 @@ import {
   type SubjectPaperStatus,
 } from "@/lib/avai-mock-data";
 import { downloadAnswerCard } from "@/lib/downloadReport";
+import { FilePickButtons } from "@/components/FilePickButtons";
 import { useAuth } from "@/lib/auth";
 
 function StatusTag({ status }: { status: SubjectPaperStatus }) {
@@ -49,11 +50,6 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
 
   function setPaper(testKey: string, patch: Partial<SubjectPaper>) {
     setPapers((p) => ({ ...p, [testKey]: { ...p[testKey], ...patch } }));
-  }
-
-  function onFilePicked(e: React.ChangeEvent<HTMLInputElement>) {
-    const name = e.target.files?.[0]?.name;
-    if (name) setUploadFileName(name);
   }
 
   function upload() {
@@ -214,8 +210,8 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
                   {testForUpload?.name} · {subject}
                 </p>
                 <div className="field">
-                  <label htmlFor="p-file">Paper file</label>
-                  <input id="p-file" className="input" type="file" accept=".pdf,.doc,.docx" onChange={onFilePicked} />
+                  <label>Paper file</label>
+                  <FilePickButtons accept=".pdf,.doc,.docx,image/*" onPick={(f) => setUploadFileName(f.name)} />
                   {uploadFileName && (
                     <div className="small muted" style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                       <CheckCircle2 size={13} style={{ color: "var(--brand-green)" }} /> {uploadFileName}

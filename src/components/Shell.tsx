@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useLayoutEffect, useRef } from "react";
-import { ArrowLeft, LogOut, type LucideIcon } from "lucide-react";
-import { motion } from "framer-motion";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { ArrowLeft, LogOut, Menu, X, type LucideIcon } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { homeFor, initials, useAuth, type CurrentUser } from "@/lib/auth";
 import { academicYear, school, type Role } from "@/lib/avai-mock-data";
 import { PAGE_HEADER_ACTIONS_ID, PageHeaderProvider, useCurrentPageHeader } from "@/lib/pageHeader";
@@ -93,7 +93,9 @@ function PageHeaderBar() {
   );
 }
 
-/** Staff shell (Principal + Teacher). Deliberately mascot-free. */
+/** Staff shell (Principal + Teacher). Deliberately mascot-free. On a phone
+ * the sidebar becomes a slide-in menu, with the top-level pages repeated in
+ * a bottom tab bar so the common destinations are one thumb-tap away. */
 export function StaffShell({
   user,
   nav,
@@ -112,18 +114,27 @@ export function StaffShell({
   const pathname = usePathname();
   const router = useRouter();
   const { signOut } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
-  let lastGroup: string | undefined;
-  return (
-    <div className="shell">
-      <aside className="sidebar">
-        <div className="sidebar__brand">
-          <Logomark />
-          <div>
-            <div className="sidebar__brand-name">AVAI</div>
-            <div className="sidebar__brand-sub">{roleLabel}</div>
-          </div>
-        </div>
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenuOpen(false);
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [menuOpen]);
+
+  const isActive = (item: NavItem) => (item.match ? item.match(pathname) : pathname.startsWith(item.href));
+  const tabs = nav.filter((i) => !i.group).slice(0, 3);
+
+  function sidebarBody(onNavigate?: () => void) {
+    let lastGroup: string | undefined;
+    return (
+      <>
         <div className="sidebar__meta">
           <div className="sidebar__meta-school">{school.name}</div>
           <div className="sidebar__meta-sub">
@@ -135,12 +146,12 @@ export function StaffShell({
           {nav.map((item) => {
             const groupHeader = item.group && item.group !== lastGroup ? <div className="sidebar__group" key={`g-${item.group}`}>{item.group}</div> : null;
             lastGroup = item.group ?? lastGroup;
-            const active = item.match ? item.match(pathname) : pathname.startsWith(item.href);
+            const active = isActive(item);
             const Icon = item.icon;
             return (
               <div key={item.href} style={{ display: "contents" }}>
                 {groupHeader}
-                <Link href={item.href} className={`navlink ${active ? "navlink--active" : ""}`} aria-current={active ? "page" : undefined}>
+                <Link href={item.href} onClick={onNavigate} className={`navlink ${active ? "navlink--active" : ""}`} aria-current={active ? "page" : undefined}>
                   <Icon size={16} /> {item.label}
                 </Link>
               </div>
@@ -165,13 +176,91 @@ export function StaffShell({
             <LogOut size={13} /> Sign out
           </button>
         </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="shell">
+      <aside className="sidebar">
+        <div className="sidebar__brand">
+          <Logomark />
+          <div>
+            <div className="sidebar__brand-name">AVAI</div>
+            <div className="sidebar__brand-sub">{roleLabel}</div>
+          </div>
+        </div>
+        {sidebarBody()}
       </aside>
+
       <div className="main">
+        <header className="mtopbar">
+          <Logomark size={26} />
+          <div className="mtopbar__text">
+            <div className="mtopbar__brand">AVAI</div>
+            <div className="mtopbar__school">{school.name}</div>
+          </div>
+          <span className="avatar mtopbar__avatar" aria-hidden="true">
+            {initials(user.name)}
+          </span>
+          <button className="mtopbar__menu" onClick={() => setMenuOpen(true)} aria-label="Open menu" aria-expanded={menuOpen}>
+            <Menu size={20} />
+          </button>
+        </header>
         <PageHeaderProvider>
           <PageHeaderBar />
           <main className="content">{children}</main>
         </PageHeaderProvider>
       </div>
+
+      <nav className="mtabs" aria-label="Quick navigation">
+        {tabs.map((item) => {
+          const Icon = item.icon;
+          const active = isActive(item);
+          return (
+            <Link key={item.href} href={item.href} className={`mtabs__item ${active ? "mtabs__item--active" : ""}`} aria-current={active ? "page" : undefined}>
+              <Icon size={20} />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
+        <button className={`mtabs__item ${menuOpen ? "mtabs__item--active" : ""}`} onClick={() => setMenuOpen(true)}>
+          <Menu size={20} />
+          <span>Menu</span>
+        </button>
+      </nav>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <>
+            <motion.div className="mdrawer-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setMenuOpen(false)} />
+            <motion.aside
+              className="sidebar mdrawer"
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <div className="sidebar__brand" style={{ justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Logomark />
+                  <div>
+                    <div className="sidebar__brand-name">AVAI</div>
+                    <div className="sidebar__brand-sub">{roleLabel}</div>
+                  </div>
+                </div>
+                <button className="mdrawer__close" onClick={() => setMenuOpen(false)} aria-label="Close menu">
+                  <X size={20} />
+                </button>
+              </div>
+              {sidebarBody(() => setMenuOpen(false))}
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

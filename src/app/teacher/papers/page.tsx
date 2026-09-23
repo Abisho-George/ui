@@ -17,6 +17,7 @@ import {
   type SubjectPaperStatus,
 } from "@/lib/avai-mock-data";
 import { downloadAnswerCard } from "@/lib/downloadReport";
+import { FilePickButtons } from "@/components/FilePickButtons";
 import { useAuth } from "@/lib/auth";
 import { usePageHeader } from "@/lib/pageHeader";
 import { MarksEntryGrid } from "@/components/MarksEntryGrid";
@@ -100,11 +101,6 @@ export default function TeacherPapersPage() {
     setCreateOpen(false);
     setCreateDraft({ name: "", date: "", subjects: [] });
     setToast(`${name} created with ${createDraft.subjects.length} subject${createDraft.subjects.length === 1 ? "" : "s"}. It's also ready in Enter Marks.`);
-  }
-
-  function onFilePicked(e: React.ChangeEvent<HTMLInputElement>) {
-    const name = e.target.files?.[0]?.name;
-    if (name) setUploadFileName(name);
   }
 
   function upload() {
@@ -394,8 +390,8 @@ export default function TeacherPapersPage() {
                   {testForUpload?.name} · {uploadFor.subject}
                 </p>
                 <div className="field">
-                  <label htmlFor="p-file">Paper file</label>
-                  <input id="p-file" className="input" type="file" accept=".pdf,.doc,.docx" onChange={onFilePicked} />
+                  <label>Paper file</label>
+                  <FilePickButtons accept=".pdf,.doc,.docx,image/*" onPick={(f) => setUploadFileName(f.name)} />
                   {uploadFileName && (
                     <div className="small muted" style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
                       <CheckCircle2 size={13} style={{ color: "var(--brand-green)" }} /> {uploadFileName}

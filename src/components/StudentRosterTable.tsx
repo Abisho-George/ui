@@ -153,7 +153,7 @@ export function StudentRosterTable({
             className={`table-wrap ${fillHeight ? "table-wrap--flex" : "table-wrap--stack"}`}
             style={fillHeight ? undefined : ({ "--sticky-offset": `${stickyHeight}px` } as React.CSSProperties)}
           >
-            <table className="table table--hover">
+            <table className="table table--hover table--roster">
               <thead>
                 <tr>
                   <th>Roll</th>
