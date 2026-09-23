@@ -13,7 +13,6 @@ import {
   EyeOff,
   GraduationCap,
   KeyRound,
-  Lock,
   PenLine,
   School,
   ShieldAlert,
@@ -22,16 +21,7 @@ import {
 import { Logomark, Mascot } from "@/components/Mascot";
 import { EASE_OUT } from "@/components/motion";
 import { homeFor, initials, useAuth } from "@/lib/auth";
-import {
-  analysedTests,
-  devLoginOptions,
-  mockPrincipal,
-  mockTeachers,
-  school,
-  sections,
-  subjects,
-  type TeacherAssignment,
-} from "@/lib/avai-mock-data";
+import { devLoginOptions, mockPrincipal, mockTeachers, type TeacherAssignment } from "@/lib/avai-mock-data";
 
 type StaffRole = "principal" | "teacher";
 
@@ -112,71 +102,34 @@ export default function LoginPage() {
 
   return (
     <div className="auth">
-      <section className="auth__aside">
-        <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 1 }}>
-          <Logomark size={38} />
-          <span style={{ fontFamily: "var(--font-display)", fontSize: 28, letterSpacing: ".14em" }}>AVAI</span>
-        </div>
-
+      <section className="auth__aside" style={{ alignItems: "center", justifyContent: "center", textAlign: "center" }}>
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, ease: EASE_OUT }}
-          style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 22, alignItems: "flex-start" }}
+          style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 20, alignItems: "center" }}
         >
-          <Mascot pose="hello" size={160} float />
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <Logomark size={38} />
+            <span style={{ fontFamily: "var(--font-display)", fontSize: 28, letterSpacing: ".14em" }}>AVAI</span>
+          </div>
+
+          <Mascot pose="hello" size={170} float />
+
           <h1
             style={{
               fontFamily: "var(--font-display)",
-              fontSize: "clamp(28px, 3.4vw, 42px)",
+              fontSize: "clamp(24px, 2.8vw, 34px)",
               fontWeight: 500,
-              lineHeight: 1.14,
-              maxWidth: 480,
+              lineHeight: 1.25,
+              maxWidth: 380,
             }}
           >
-            One test in. Board-ready intelligence out.
+            Every opportunity belongs to every student.
           </h1>
-          <p style={{ color: "#b9c6ce", fontSize: 15.5, lineHeight: 1.55, maxWidth: 430 }}>
-            AVAI reads every answer against the {school.board} blueprint and shows exactly where marks are being lost — by
-            class, by chapter, by student.
-          </p>
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {[
-              `${sections.length} sections`,
-              `${subjects.length} subjects`,
-              `${analysedTests.length} assessments analysed`,
-            ].map((chip, i) => (
-              <motion.span
-                key={chip}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: 0.35 + i * 0.08, ease: EASE_OUT }}
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 7,
-                  padding: "6px 12px",
-                  borderRadius: 999,
-                  fontSize: 12,
-                  fontWeight: 600,
-                  color: "#dbe6ec",
-                  background: "rgba(255,255,255,.08)",
-                  border: "1px solid rgba(255,255,255,.14)",
-                  backdropFilter: "blur(8px)",
-                  WebkitBackdropFilter: "blur(8px)",
-                }}
-              >
-                <span className="pulse-dot" style={{ "--accent": "var(--brand-teal)" } as React.CSSProperties} />
-                {chip}
-              </motion.span>
-            ))}
-          </div>
+          <span style={{ color: "#8b99a3", fontSize: 13, letterSpacing: ".04em" }}>Built for CBSE · ICSE · State Board schools</span>
         </motion.div>
-
-        <div style={{ position: "relative", zIndex: 1, color: "#8b99a3", fontSize: 12.5 }}>
-          {school.name} · {school.board} · {school.state}
-        </div>
       </section>
 
       <section className="auth__panel">
@@ -208,7 +161,7 @@ export default function LoginPage() {
                     Sign in to <span className="gradient-text">AVAI</span>
                   </h2>
                   <p className="muted small" style={{ marginTop: 4 }}>
-                    Staff access for {school.name}.
+                    Sign in with your school code and access key.
                   </p>
                 </div>
 
@@ -271,39 +224,28 @@ export default function LoginPage() {
                       <School size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
                       <input id="schoolCode" className="input" style={{ paddingLeft: 34 }} placeholder="e.g. BIS-TN-001" autoComplete="off" />
                     </div>
+                    <small className="muted" style={{ marginTop: 2 }}>
+                      The same code your principal, teachers and students all use for this school.
+                    </small>
                   </div>
 
                   <div className="field">
-                    <label htmlFor="staffId">Email or access key</label>
+                    <label htmlFor="accessKey">Access key</label>
                     <div style={{ position: "relative" }}>
                       <KeyRound size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
                       <input
-                        id="staffId"
-                        className="input"
-                        style={{ paddingLeft: 34 }}
-                        placeholder={chosen.role === "principal" ? "principal@school.edu.in" : "you@school.edu.in"}
-                        autoComplete="username"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="field">
-                    <label htmlFor="password">Password</label>
-                    <div style={{ position: "relative" }}>
-                      <Lock size={15} style={{ position: "absolute", left: 11, top: 12, color: "var(--muted)" }} />
-                      <input
-                        id="password"
+                        id="accessKey"
                         className="input"
                         style={{ paddingLeft: 34, paddingRight: 40 }}
                         type={showPassword ? "text" : "password"}
-                        placeholder="Your password"
+                        placeholder="Your personal AVAI access key"
                         autoComplete="current-password"
                       />
                       <button
                         type="button"
                         className="btn btn--ghost btn--sm"
                         onClick={() => setShowPassword((v) => !v)}
-                        aria-label={showPassword ? "Hide password" : "Show password"}
+                        aria-label={showPassword ? "Hide access key" : "Show access key"}
                         style={{ position: "absolute", right: 5, top: 5, padding: 6 }}
                       >
                         {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}

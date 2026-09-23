@@ -6,7 +6,6 @@ import { BookX, CalendarDays, ChevronRight, Download, Sparkles, TrendingDown, Tr
 import {
   anomaliesFor,
   attentionBreakdown,
-  analysedTests,
   classRosterFull,
   latestTest,
   lateBloomersFor,
@@ -28,7 +27,6 @@ import {
   topStudents,
   totalBandCounts,
   totalMarkBands,
-  type ConductedTest,
 } from "@/lib/avai-mock-data";
 import { downloadSectionsComparisonReport } from "@/lib/downloadReport";
 import { HeaderActions, usePageHeader } from "@/lib/pageHeader";
@@ -47,16 +45,9 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 /** Dates are fixed mock strings, so they're formatted by hand rather than
  * with a locale-dependent formatter that could render differently. */
-function monthYear(iso: string): string {
-  const [y, m] = iso.split("-");
-  return `${MONTHS[Number(m) - 1]} ${y}`;
-}
 function longDate(iso: string): string {
   const [y, m, d] = iso.split("-");
   return `${Number(d)} ${MONTHS[Number(m) - 1]} ${y}`;
-}
-function testOptionLabel(test: ConductedTest): string {
-  return `${test.name} (${monthYear(test.date)})`;
 }
 
 /** Principal's default landing page — the "Class X" overview. Board-mark
@@ -67,17 +58,18 @@ function testOptionLabel(test: ConductedTest): string {
  * the same roster every other screen reads, so nothing shown here can
  * disagree with a class or student page. */
 export default function ClassXOverview() {
-  const [testKey, setTestKey] = useState(latestTest.key);
+  // Overall standing for the whole class, as of the latest analysed test —
+  // not a per-assessment breakdown (that lives on the Exams page).
+  const testKey = latestTest.key;
+  const test = latestTest;
   const [drill, setDrill] = useState<DrillDown | null>(null);
   const [intelPanel, setIntelPanel] = useState<IntelPanel>(null);
   const [pieSubject, setPieSubject] = useState<string>("All");
   const [pieSection, setPieSection] = useState<string>(sections[0]);
 
-  const test = analysedTests.find((t) => t.key === testKey) ?? latestTest;
-
   usePageHeader({
     title: "Class X",
-    subtitle: `${test.name} · ${schoolSnapshot.students} students · ${sections.length} sections`,
+    subtitle: `Overall · as of ${test.name} · ${schoolSnapshot.students} students · ${sections.length} sections`,
   });
 
   // ---------- Headline figures ----------
@@ -135,26 +127,6 @@ export default function ClassXOverview() {
   return (
     <>
       <HeaderActions>
-        <span style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
-          <CalendarDays
-            size={13}
-            style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "var(--muted)", pointerEvents: "none" }}
-            aria-hidden="true"
-          />
-          <select
-            className="select"
-            aria-label="Assessment"
-            value={testKey}
-            onChange={(e) => setTestKey(e.target.value)}
-            style={{ paddingLeft: 30, paddingTop: 5, paddingBottom: 5, fontSize: 12.5, minWidth: 190 }}
-          >
-            {analysedTests.map((t) => (
-              <option key={t.key} value={t.key}>
-                {testOptionLabel(t)}
-              </option>
-            ))}
-          </select>
-        </span>
         <button className="btn btn--sm" onClick={() => downloadSectionsComparisonReport(testKey)}>
           <Download size={13} /> Download report
         </button>

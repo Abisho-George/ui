@@ -1627,6 +1627,23 @@ export function lateBloomersFor(n: number, testKey: string = latestTest.key, sec
     .slice(0, n);
 }
 
+/** Same as lateBloomersFor, but the gain is measured in one subject only —
+ *  for a subject teacher's own view, where "late bloomer" should mean
+ *  rising in their subject, not overall. */
+export function lateBloomersForSubject(subject: string, testKey: string, section: string | "All" = "All"): LateBloomer[] {
+  const prevKey = previousAnalysedTestKey(testKey);
+  if (!prevKey) return [];
+  const roster = section === "All" ? allStudents : (classRosterFull[section] ?? []);
+  return roster
+    .map((student) => {
+      const prevPct = pctFor(student, prevKey, subject);
+      const nowPct = pctFor(student, testKey, subject);
+      return { student, prevPct: Math.round(prevPct), nowPct: Math.round(nowPct), gain: Math.round(nowPct - prevPct) };
+    })
+    .filter((r) => r.gain > 0)
+    .sort((a, b) => b.gain - a.gain);
+}
+
 /** Late bloomers against the latest analysed test. */
 export function lateBloomers(n: number, section: string | "All" = "All"): LateBloomer[] {
   return lateBloomersFor(n, latestTest.key, section);
