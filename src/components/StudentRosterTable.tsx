@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowRight, Search, TrendingDown, TrendingUp, X } from "lucide-react";
 import { analysedTests, attentionFor, mainBlockerFor, pctFor, subjects, type FullRosterStudent } from "@/lib/avai-mock-data";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
@@ -67,6 +67,7 @@ export function StudentRosterTable({
   const router = useRouter();
   const [subjectFilter, setSubjectFilter] = useState("All");
   const [quickFilter, setQuickFilter] = useState<QuickFilter>("all");
+  const [query, setQuery] = useState("");
 
   // The frozen heading + filters + tabs block's own height, measured so the
   // table's <thead> can stick right below it (rather than at the very top,
@@ -103,6 +104,10 @@ export function StudentRosterTable({
     }));
 
     let filtered = withScore;
+    // Match from the start of the first name or surname, so "a" lists every
+    // A-name and "ar" narrows it to Arjun, Aryan and so on as you type.
+    const q = query.trim().toLowerCase();
+    if (q) filtered = filtered.filter((r) => r.student.name.toLowerCase().split(/\s+/).some((w) => w.startsWith(q)) || r.student.name.toLowerCase().startsWith(q));
     if (quickFilter === "attention") filtered = filtered.filter((r) => r.attention !== "On Track");
     if (quickFilter === "critical") filtered = filtered.filter((r) => r.attention === "Intervention");
 
@@ -115,13 +120,33 @@ export function StudentRosterTable({
     });
     if (quickFilter === "top10") filtered = filtered.slice(0, 10);
     return filtered;
-  }, [roster, testKey, prevTestKey, testStatus, subjectFilter, quickFilter]);
+  }, [roster, testKey, prevTestKey, testStatus, subjectFilter, quickFilter, query]);
 
   return (
     <div style={fillHeight ? { display: "flex", flexDirection: "column", flex: 1, minHeight: 0 } : undefined}>
       <div ref={stickyRef} className={fillHeight ? undefined : "roster-sticky"} style={{ flex: "0 0 auto" }}>
         {!fillHeight && heading}
         <div className="filterbar" style={{ marginBottom: 0 }}>
+          <div className="filter roster-search">
+            <label htmlFor="roster-search">Search student</label>
+            <div className="searchbox">
+              <Search size={15} aria-hidden="true" />
+              <input
+                id="roster-search"
+                className="input"
+                type="search"
+                placeholder="Type a name"
+                autoComplete="off"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              {query && (
+                <button type="button" className="iconbtn" aria-label="Clear search" onClick={() => setQuery("")}>
+                  <X size={14} />
+                </button>
+              )}
+            </div>
+          </div>
           {leadingFilters}
           <div className="filter">
             <label htmlFor="subject-filter">Subject</label>

@@ -3,7 +3,8 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { analysedTests, findings, latestTest, rosterFor, subjectSnapshotFor } from "@/lib/avai-mock-data";
+import { analysedTests, findings, latestTest, rosterFor, subjectSnapshotFor, testsConducted } from "@/lib/avai-mock-data";
+import { useLiveVersion } from "@/lib/liveData";
 import { usePageHeader } from "@/lib/pageHeader";
 import { EvidenceState } from "@/components/EvidenceState";
 import { FindingCard } from "@/components/FindingCard";
@@ -21,7 +22,9 @@ export default function SubjectView() {
   usePageHeader({ title: `${subject} · ${section}`, backHref: "/teacher/home" });
   const [tab, setTab] = useState<"insights" | "paper" | "marks">("insights");
   const [testKey, setTestKey] = useState(latestTest.key);
+  const [marksTestKey, setMarksTestKey] = useState(latestTest.key);
   const { user } = useAuth();
+  useLiveVersion();
 
   const allowed = user?.role === "teacher" && user.assignments.some((a) => a.type === "subject" && a.subject === subject && a.sections.includes(section));
   if (!allowed) return <EvidenceState kind="cause">You are not assigned to {subject} for {section}.</EvidenceState>;
@@ -110,7 +113,28 @@ export default function SubjectView() {
           <QuestionPaperPanel subject={subject} section={section} />
         </div>
       ) : (
-        <MarksEntryGrid key={`${subject}-${section}`} subject={subject} roster={roster} scopeLabel={`${subject} · ${section}`} testKey={latestTest.key} />
+        <div style={{ marginTop: 18 }}>
+          <div className="filter" style={{ maxWidth: 280 }}>
+            <label htmlFor="marks-test">Assessment</label>
+            <select id="marks-test" className="select" value={marksTestKey} onChange={(e) => setMarksTestKey(e.target.value)}>
+              {testsConducted
+                .filter((t) => (t.subjects ?? [subject]).includes(subject))
+                .map((t) => (
+                  <option key={t.key} value={t.key}>
+                    {t.name}
+                    {t.status === "Analysed" ? "" : " (not yet analysed)"}
+                  </option>
+                ))}
+            </select>
+          </div>
+          <MarksEntryGrid
+            key={`${subject}-${section}-${marksTestKey}`}
+            subject={subject}
+            roster={roster}
+            scopeLabel={`${subject} · ${section} · ${testsConducted.find((t) => t.key === marksTestKey)?.name ?? ""}`}
+            testKey={marksTestKey}
+          />
+        </div>
       )}
     </>
   );

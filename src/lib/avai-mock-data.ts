@@ -27,6 +27,10 @@ export const academicYear = "2026-27";
 export const sections = ["X-A", "X-B"] as const;
 /** Students per section, X-A and X-B are not the same size, the way a
  *  real school's sections rarely are. */
+/** "X-A" -> "Class 10A", how staff name a section on screen. */
+export function sectionLabel(section: string) {
+  return `Class 10${section.split("-")[1] ?? section}`;
+}
 export const sectionSize: Record<string, number> = { "X-A": 45, "X-B": 53 };
 export const subjects = [
   "Mathematics",
@@ -122,6 +126,8 @@ export interface ConductedTest {
   name: string;
   date: string;
   status: "Analysed" | "Scheduled";
+  /** Subjects this test covers; every subject when absent. */
+  subjects?: string[];
 }
 
 export const testsConducted: ConductedTest[] = [
@@ -135,8 +141,10 @@ export const testsConducted: ConductedTest[] = [
 
 /** Analysed tests, oldest first, the spine of every derived number. */
 export const analysedTests = testsConducted.filter((t) => t.status === "Analysed");
-/** The most recent analysed test: what "current standing" means everywhere. */
-export const latestTest = analysedTests[analysedTests.length - 1];
+/** The most recent analysed test: what "current standing" means everywhere.
+ *  `let` so it moves forward when a newly marked test completes; ES module
+ *  bindings are live, so every importer sees the new value. */
+export let latestTest = analysedTests[analysedTests.length - 1];
 
 // ============================================================
 // Chapter blueprint, what each subject's marks are made of, and how
@@ -252,8 +260,9 @@ export function attentionFromPct(pct: number): Attention {
 /** Overall % for one student in one test, across all subjects. */
 export function overallPctFor(student: FullRosterStudent, testKey: string): number {
   const row = student.scores[testKey];
-  if (!row) return 0;
-  return (subjects.reduce((sum, s) => sum + row[s].scored / row[s].outOf, 0) / subjects.length) * 100;
+  const present = row ? subjects.filter((s) => row[s]) : [];
+  if (!present.length) return 0;
+  return (present.reduce((sum, s) => sum + row[s].scored / row[s].outOf, 0) / present.length) * 100;
 }
 
 /** % for one student, one test, one subject (or overall when subject is "All"). */
@@ -326,6 +335,13 @@ nameStudent("X-B", "14", "student_divya", "Divya");
 
 export const allStudents: FullRosterStudent[] = sections.flatMap((s) => classRosterFull[s]);
 
+/** testKey -> subject -> studentId -> mark per question (questionSets order).
+ *  The single source of truth for marks: every subject score, chapter loss,
+ *  band, rank and report is derived from these. Seeded at the bottom of
+ *  this file for the analysed tests; answer cards saved in Enter Marks
+ *  write here through setQuestionMarks(). */
+export const questionMarks: Record<string, Record<string, Record<string, number[]>>> = {};
+
 export function findStudent(id: string): FullRosterStudent | undefined {
   return allStudents.find((s) => s.id === id);
 }
@@ -397,7 +413,7 @@ export const findings: Finding[] = [
     confidence: "HIGH",
     causeStatus: "localized",
     observation:
-      "61% of analysed students demonstrate the underlying concept but lose marks when the same concept appears in application-style questions.",
+      "Most analysed students demonstrate the underlying concept but lose marks when the same concept appears in application-style questions.",
     mostAffectedSections: [
       { section: "X-B", pct: 66 },
       { section: "X-A", pct: 41 },
@@ -455,7 +471,9 @@ export const findings: Finding[] = [
 // in its own table (these used to be stated separately and disagreed).
 // ============================================================
 
-export const sectionComparison = sections.map((section) => {
+export const sectionComparison = buildSectionComparison();
+function buildSectionComparison() {
+  return sections.map((section) => {
   const roster = classRosterFull[section];
   const overallAttainment = Math.round(classAveragePct(section, latestTest.key));
   const needAttention = roster.filter((s) => attentionFor(s) !== "On Track").length;
@@ -474,11 +492,14 @@ export const sectionComparison = sections.map((section) => {
         ? Math.round(classAveragePct(section, latestTest.key) - classAveragePct(section, analysedTests[analysedTests.length - 2].key))
         : null,
   };
-});
+  });
+}
 
 /** School-wide roll-up of the same numbers, so the Classes overview can
  *  say where the school stands before you pick a class. */
-export const schoolSnapshot = {
+export const schoolSnapshot = buildSchoolSnapshot();
+function buildSchoolSnapshot() {
+  return {
   students: allStudents.length,
   sections: sections.length,
   overallAttainment: Math.round(allStudents.reduce((sum, s) => sum + overallPctFor(s, latestTest.key), 0) / allStudents.length),
@@ -491,7 +512,8 @@ export const schoolSnapshot = {
             allStudents.reduce((sum, s) => sum + overallPctFor(s, analysedTests[analysedTests.length - 2].key), 0) / allStudents.length
         )
       : null,
-};
+  };
+}
 
 // ============================================================
 // §5.7 Empty / limited-evidence states, reusable copy
@@ -755,6 +777,30 @@ function sectionDifficulty(section: string, spec: ChapterSpec): number {
  *  allocation, capped so no chapter loses more marks than it carries. */
 function chapterBreakdown(student: FullRosterStudent, testKey: string, subject: string): ReportStandingRow[] {
   const chapters = subjectChapters[subject] ?? [];
+  const recorded = questionMarks[testKey]?.[subject]?.[student.id];
+  if (recorded && chapters.length) {
+    const qs = questionSets[subject] ?? [];
+    return chapters.map((c) => {
+      let scored = 0;
+      qs.forEach((q, i) => {
+        if (q.chapter === c.chapter) scored += recorded[i] ?? 0;
+      });
+      return {
+        chapter: c.chapter,
+        scored,
+        outOf: c.marks,
+        notScored: c.marks - scored,
+        boardImportance: c.boardMarks === null ? "Not enough evidence" : `${c.boardMarks} / 80`,
+      };
+    });
+  }
+  return syntheticChapterBreakdown(student, testKey, subject);
+}
+
+/** The seed split of a subject score across chapters, used once to build
+ *  the per-question marks of the demo's already-analysed tests. */
+function syntheticChapterBreakdown(student: FullRosterStudent, testKey: string, subject: string): ReportStandingRow[] {
+  const chapters = subjectChapters[subject] ?? [];
   const score = student.scores[testKey]?.[subject];
   if (!score || !chapters.length) return [];
 
@@ -1003,11 +1049,12 @@ export function studentIntelligenceFor(student: FullRosterStudent, testKey: stri
   if (!row) return null;
 
   const test = testsConducted.find((t) => t.key === testKey);
-  const scored = subjects.reduce((sum, s) => sum + row[s].scored, 0);
-  const outOf = subjects.reduce((sum, s) => sum + row[s].outOf, 0);
+  const present = subjects.filter((s) => row[s]);
+  const scored = present.reduce((sum, s) => sum + row[s].scored, 0);
+  const outOf = present.reduce((sum, s) => sum + row[s].outOf, 0);
 
   const gaps: StudentSubjectGap[] = [];
-  for (const subject of subjects) {
+  for (const subject of present) {
     const lead = chapterBreakdown(student, testKey, subject)
       .filter((r) => r.notScored > 0)
       .sort((a, b) => b.notScored / b.outOf - a.notScored / a.outOf || b.notScored - a.notScored)[0];
@@ -1149,7 +1196,7 @@ export function rosterFor(section: string, testKey: string = latestTest.key): Ro
       name: s.name,
       section: s.section,
       // A scheduled test has no scores yet, "-" rather than a crash.
-      attainment: Object.fromEntries(subjects.map((sub) => [sub, row ? `${row[sub].scored}/${row[sub].outOf}` : "-"])),
+      attainment: Object.fromEntries(subjects.map((sub) => [sub, row?.[sub] ? `${row[sub].scored}/${row[sub].outOf}` : "-"])),
       attention: attentionFor(s, testKey),
       mainBlocker: mainBlockerFor(s, testKey),
     };
@@ -1418,6 +1465,8 @@ export const initialSubjectPapers: Record<string, Record<string, SubjectPaper>> 
  *  Only meaningful for an analysed test, a scheduled one has no marks to
  *  read yet, so callers should gate the upload flow on that. */
 export function ocrMarksFor(studentId: string, testKey: string, subject: string): Record<string, number> | null {
+  const recorded = questionMarks[testKey]?.[subject]?.[studentId];
+  if (recorded) return Object.fromEntries((questionSets[subject] ?? []).map((q, i) => [q.key, recorded[i] ?? 0]));
   const student = findStudent(studentId);
   const score = student?.scores[testKey]?.[subject];
   const qs = questionSets[subject];
@@ -1497,6 +1546,9 @@ export function projectedSubjectMarks(student: FullRosterStudent, testKey: strin
 
 /** Sum of all 5 subjects' projected marks, a 500-mark Board-scale total. */
 export function projectedTotalMarks(student: FullRosterStudent, testKey: string): number {
+  const row = student.scores[testKey] ?? {};
+  // A test that covered only some subjects projects its overall % onto 500.
+  if (!subjects.every((s) => row[s])) return Math.round(overallPctFor(student, testKey) * 5);
   return subjects.reduce((sum, s) => sum + projectedSubjectMarks(student, testKey, s), 0);
 }
 
@@ -1776,7 +1828,7 @@ export function anomaliesFor(testKey: string): AnomalyInsight[] {
   return computed;
 }
 
-export const anomalyInsights: AnomalyInsight[] = anomaliesFor(latestTest.key);
+export let anomalyInsights: AnomalyInsight[] = anomaliesFor(latestTest.key);
 
 // ============================================================
 // Class X overview roll-ups, attention tiers, per-test section
@@ -1853,3 +1905,149 @@ export function percentShares(counts: number[]): number[] {
   }
   return shares;
 }
+
+
+// ============================================================
+// Live marks. Per-question marks drive everything above; saving an
+// answer card rewrites them and refreshDerived() rolls the change
+// through every cached headline figure.
+// ============================================================
+
+/** Split a chapter's scored marks across that chapter's 1-mark questions,
+ *  deterministically, so the seeded analysed tests have real answer cards. */
+function seedQuestionMarks(student: FullRosterStudent, testKey: string, subject: string): number[] {
+  const qs = questionSets[subject] ?? [];
+  const out = qs.map(() => 0);
+  const rnd = mulberry32(seedFromString(`qm|${student.id}|${testKey}|${subject}`));
+  for (const row of syntheticChapterBreakdown(student, testKey, subject)) {
+    const idx = qs.map((q, i) => (q.chapter === row.chapter ? i : -1)).filter((i) => i >= 0);
+    const order = idx.map((i) => ({ i, r: rnd() })).sort((a, b) => a.r - b.r);
+    let left = row.scored;
+    for (const { i } of order) {
+      if (left <= 0) break;
+      const give = Math.min(qs[i].maxMarks, left);
+      out[i] = give;
+      left -= give;
+    }
+  }
+  return out;
+}
+
+for (const test of analysedTests) {
+  questionMarks[test.key] = {};
+  for (const subject of subjects) {
+    questionMarks[test.key][subject] = {};
+    for (const student of allStudents) questionMarks[test.key][subject][student.id] = seedQuestionMarks(student, test.key, subject);
+  }
+}
+
+/** Recorded marks for one answer card, or null if none recorded yet. */
+export function questionMarksFor(testKey: string, subject: string, studentId: string): number[] | null {
+  return questionMarks[testKey]?.[subject]?.[studentId] ?? null;
+}
+
+/** Whether every student has recorded marks for this test, subject and section. */
+export function isSubjectMarked(testKey: string, subject: string, section: string): boolean {
+  const roster = classRosterFull[section] ?? [];
+  return roster.length > 0 && roster.every((s) => !!questionMarks[testKey]?.[subject]?.[s.id]);
+}
+
+/** Marking progress for a test across every subject and section. */
+export function testSubjects(testKey: string): string[] {
+  return testsConducted.find((t) => t.key === testKey)?.subjects ?? [...subjects];
+}
+
+export function markingProgress(testKey: string): { done: number; total: number } {
+  const list = testSubjects(testKey);
+  let done = 0;
+  for (const subject of list) for (const section of sections) if (isSubjectMarked(testKey, subject, section)) done++;
+  return { done, total: list.length * sections.length };
+}
+
+/** Write one section's answer-card marks. Updates the students' subject
+ *  scores in place; a test with every subject marked becomes analysed. */
+export function setQuestionMarks(testKey: string, subject: string, marks: Record<string, number[]>) {
+  const qs = questionSets[subject] ?? [];
+  const outOf = qs.reduce((sum, q) => sum + q.maxMarks, 0);
+  questionMarks[testKey] ??= {};
+  questionMarks[testKey][subject] ??= {};
+  for (const [studentId, row] of Object.entries(marks)) {
+    questionMarks[testKey][subject][studentId] = row;
+    const student = findStudent(studentId);
+    if (!student) continue;
+    student.scores[testKey] ??= {};
+    student.scores[testKey][subject] = { scored: row.reduce((a, b) => a + b, 0), outOf };
+  }
+  const test = testsConducted.find((t) => t.key === testKey);
+  if (test && test.status !== "Analysed" && markingProgress(testKey).done === markingProgress(testKey).total) {
+    test.status = "Analysed";
+  }
+}
+
+/** Add a test created from the question-paper screen. */
+export function addConductedTest(test: ConductedTest) {
+  if (testsConducted.some((t) => t.key === test.key)) return;
+  testsConducted.push(test);
+  testsConducted.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** What a phone photo of an answer card reads for a test with nothing on
+ *  record yet: each student performs near their latest level in the
+ *  subject, question by question, adjusted for chapter difficulty. */
+export function simulatedCardRead(studentId: string, testKey: string, subject: string): number[] {
+  const student = findStudent(studentId);
+  const qs = questionSets[subject] ?? [];
+  const base = student ? pctFor(student, latestTest.key, subject) / 100 : 0.7;
+  const rnd = mulberry32(seedFromString(`card|${studentId}|${testKey}|${subject}`));
+  const shift = (rnd() - 0.45) * 0.16;
+  return qs.map((q) => {
+    const spec = (subjectChapters[subject] ?? []).find((c) => c.chapter === q.chapter);
+    const p = Math.min(0.97, Math.max(0.08, base + shift - ((spec?.difficulty ?? 1) - 1) * 0.18));
+    return rnd() < p ? q.maxMarks : 0;
+  });
+}
+
+function refreshFindings() {
+  for (const f of findings) {
+    const spec = (subjectChapters[f.subject] ?? []).find((c) => c.chapter === f.topic);
+    if (!spec) continue;
+    const perSection: { section: string; pct: number }[] = [];
+    let affected = 0;
+    let lostSum = 0;
+    for (const section of sections) {
+      let n = 0;
+      for (const student of classRosterFull[section] ?? []) {
+        const row = chapterBreakdown(student, latestTest.key, f.subject).find((r) => r.chapter === f.topic);
+        if (row && row.notScored / row.outOf >= 1 / 3) {
+          n++;
+          lostSum += row.notScored;
+        }
+      }
+      affected += n;
+      perSection.push({ section, pct: Math.round((n / Math.max(1, (classRosterFull[section] ?? []).length)) * 100) });
+    }
+    f.studentsAffected = affected;
+    f.avgMarksLost = affected ? Math.round((lostSum / affected) * 10) / 10 : 0;
+    if (f.mostAffectedSections) f.mostAffectedSections = perSection.sort((a, b) => b.pct - a.pct);
+  }
+}
+
+/** Recompute every figure cached at module load after marks change. */
+export function refreshDerived() {
+  const analysed = testsConducted.filter((t) => t.status === "Analysed");
+  analysedTests.splice(0, analysedTests.length, ...analysed);
+  latestTest = analysedTests[analysedTests.length - 1];
+  anomalyCache.clear();
+  anomalyInsights = anomaliesFor(latestTest.key);
+  refreshFindings();
+  sectionComparison.splice(0, sectionComparison.length, ...buildSectionComparison());
+  Object.assign(schoolSnapshot, buildSchoolSnapshot());
+  Object.assign(assessmentContext, {
+    assessmentName: latestTest.name,
+    assessmentEvidence: `${analysedTests.length} Test${analysedTests.length === 1 ? "" : "s"}`,
+    pilotStatusMessage: `Early Intelligence: this analysis is based on ${analysedTests.map((t) => t.name).join(" and ")}. Prediction confidence keeps improving as more assessments are analysed.`,
+    assessmentOptions: testsConducted.map((t) => ({ label: t.name, selectable: t.status === "Analysed" })),
+  });
+}
+
+refreshDerived();

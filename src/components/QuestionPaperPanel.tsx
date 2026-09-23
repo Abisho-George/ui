@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, ChevronDown, FileUp, Sparkles, Upload, X } from "lucide-react";
 import {
-  initialSubjectPapers,
   paperChapterMapping,
   paperCoverage,
   paperQuestions,
@@ -15,6 +14,7 @@ import {
 import { downloadAnswerCard } from "@/lib/downloadReport";
 import { FilePickButtons } from "@/components/FilePickButtons";
 import { useAuth } from "@/lib/auth";
+import { paperFor, updatePaper, useLiveVersion } from "@/lib/liveData";
 
 function StatusTag({ status }: { status: SubjectPaperStatus }) {
   if (status === "Mapped") return <span className="tag tag--green">Mapped</span>;
@@ -30,8 +30,9 @@ function StatusTag({ status }: { status: SubjectPaperStatus }) {
  * Question Papers page: no cross-subject accordion, no test creation. */
 export function QuestionPaperPanel({ subject, section }: { subject: string; section: string }) {
   const { user } = useAuth();
-  const [papers, setPapers] = useState<Record<string, SubjectPaper>>(() =>
-    Object.fromEntries(testsConducted.map((t) => [t.key, initialSubjectPapers[t.key]?.[subject]]).filter(([, p]) => p))
+  useLiveVersion();
+  const papers: Record<string, SubjectPaper> = Object.fromEntries(
+    testsConducted.filter((t) => (t.subjects ?? [subject]).includes(subject)).map((t) => [t.key, paperFor(t.key, subject)]),
   );
   // Nothing expanded by default, click a test to see its paper.
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
@@ -49,7 +50,7 @@ export function QuestionPaperPanel({ subject, section }: { subject: string; sect
   }, [toast]);
 
   function setPaper(testKey: string, patch: Partial<SubjectPaper>) {
-    setPapers((p) => ({ ...p, [testKey]: { ...p[testKey], ...patch } }));
+    updatePaper(testKey, subject, patch);
   }
 
   function upload() {

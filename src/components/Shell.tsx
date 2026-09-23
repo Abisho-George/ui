@@ -15,6 +15,8 @@ export interface NavItem {
   label: string;
   icon: LucideIcon;
   group?: string;
+  /** Indented under the item above it. */
+  sub?: boolean;
   match?: (path: string) => boolean;
 }
 
@@ -102,11 +104,14 @@ export function StaffShell({
   roleLabel,
   children,
   sidebarMeta,
+  tabs: tabHrefs,
 }: {
   user: CurrentUser;
   nav: NavItem[];
   roleLabel: string;
   children: React.ReactNode;
+  /** Which nav items appear in the phone tab bar (default: top-level ones). */
+  tabs?: string[];
   /** Extra content (e.g. an evidence badge) shown under the school/academic
    * year line at the top of the sidebar. */
   sidebarMeta?: React.ReactNode;
@@ -129,7 +134,7 @@ export function StaffShell({
   }, [menuOpen]);
 
   const isActive = (item: NavItem) => (item.match ? item.match(pathname) : pathname.startsWith(item.href));
-  const tabs = nav.filter((i) => !i.group).slice(0, 3);
+  const tabs = tabHrefs ? nav.filter((i) => tabHrefs.includes(i.href)) : nav.filter((i) => !i.group && !i.sub).slice(0, 3);
 
   function sidebarBody(onNavigate?: () => void) {
     let lastGroup: string | undefined;
@@ -151,7 +156,7 @@ export function StaffShell({
             return (
               <div key={item.href} style={{ display: "contents" }}>
                 {groupHeader}
-                <Link href={item.href} onClick={onNavigate} className={`navlink ${active ? "navlink--active" : ""}`} aria-current={active ? "page" : undefined}>
+                <Link href={item.href} onClick={onNavigate} className={`navlink ${item.sub ? "navlink--sub" : ""} ${active ? "navlink--active" : ""}`} aria-current={active ? "page" : undefined}>
                   <Icon size={16} /> {item.label}
                 </Link>
               </div>

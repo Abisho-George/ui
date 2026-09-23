@@ -44,7 +44,7 @@ export default function ClassTestPage() {
 
   const subjectAvgFor = useMemo(
     () => (key: string, subj: string) =>
-      roster.length ? Math.round((roster.reduce((sum, s) => sum + s.scores[key][subj].scored / s.scores[key][subj].outOf, 0) / roster.length) * 100) : 0,
+      roster.length ? Math.round((roster.reduce((sum, s) => sum + (s.scores[key]?.[subj] ? s.scores[key][subj].scored / s.scores[key][subj].outOf : 0), 0) / roster.length) * 100) : 0,
     [roster]
   );
 

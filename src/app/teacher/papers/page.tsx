@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, ChevronDown, ClipboardList, FileUp, Plus, Sparkles, Upload, X } from "lucide-react";
 import {
-  initialSubjectPapers,
   paperChapterMapping,
   paperCoverage,
   paperQuestions,
@@ -16,6 +15,7 @@ import {
   type SubjectPaper,
   type SubjectPaperStatus,
 } from "@/lib/avai-mock-data";
+import { createTest as createLiveTest, paperFor, updatePaper, useLiveVersion } from "@/lib/liveData";
 import { downloadAnswerCard } from "@/lib/downloadReport";
 import { FilePickButtons } from "@/components/FilePickButtons";
 import { useAuth } from "@/lib/auth";
@@ -29,7 +29,6 @@ function StatusTag({ status }: { status: SubjectPaperStatus }) {
   return <span className="tag">Not uploaded</span>;
 }
 
-type PaperMap = Record<string, Record<string, SubjectPaper>>;
 
 /** The exam-cell login: every subject, every section, question papers and
  * marks only, no dashboard, no insights, no per-section views. Tests
@@ -40,8 +39,7 @@ export default function TeacherPapersPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<"papers" | "marks">("papers");
 
-  const [customTests, setCustomTests] = useState<ConductedTest[]>([]);
-  const [papers, setPapers] = useState<PaperMap>(() => JSON.parse(JSON.stringify(initialSubjectPapers)) as PaperMap);
+  useLiveVersion();
   const [expanded, setExpanded] = useState<Set<string>>(() => new Set());
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -66,7 +64,7 @@ export default function TeacherPapersPage() {
     return () => clearTimeout(t);
   }, [toast]);
 
-  const allTests: ConductedTest[] = [...testsConducted, ...customTests];
+  const allTests: ConductedTest[] = testsConducted;
 
   function toggleExpand(testKey: string) {
     setExpanded((s) => {
@@ -78,24 +76,21 @@ export default function TeacherPapersPage() {
   }
 
   function setPaper(testKey: string, subject: string, patch: Partial<SubjectPaper>) {
-    setPapers((p) => ({ ...p, [testKey]: { ...p[testKey], [subject]: { ...p[testKey][subject], ...patch } } }));
+    updatePaper(testKey, subject, patch);
   }
 
   function createTest() {
     const name = createDraft.name.trim();
     if (!name || createDraft.subjects.length === 0) return;
     const key = `custom_${name.toLowerCase().replace(/[^a-z0-9]+/g, "_")}_${Date.now()}`;
-    const test: ConductedTest = { key, name, date: createDraft.date || new Date().toISOString().slice(0, 10), status: "Scheduled" };
-    setCustomTests((t) => [...t, test]);
-    setPapers((p) => ({
-      ...p,
-      [key]: Object.fromEntries(
-        createDraft.subjects.map((s) => [
-          s,
-          { testKey: key, subject: s, fileName: null, uploadedBy: null, uploadedAt: null, status: "Not uploaded" as SubjectPaperStatus, answerCardGenerated: false },
-        ])
-      ),
-    }));
+    const test: ConductedTest = {
+      key,
+      name,
+      date: createDraft.date || new Date().toISOString().slice(0, 10),
+      status: "Scheduled",
+      subjects: subjects.filter((s) => createDraft.subjects.includes(s)),
+    };
+    createLiveTest(test);
     setExpanded((s) => new Set(s).add(key));
     setMarksTestKey(key);
     setCreateOpen(false);
@@ -127,12 +122,14 @@ export default function TeacherPapersPage() {
   }
 
   const testForMapping = mappingFor ? allTests.find((t) => t.key === mappingFor.testKey) : null;
-  const paperForMapping = mappingFor ? papers[mappingFor.testKey]?.[mappingFor.subject] : null;
+  const paperForMapping = mappingFor ? paperFor(mappingFor.testKey, mappingFor.subject) : null;
   const testForCard = cardFor ? allTests.find((t) => t.key === cardFor.testKey) : null;
   const testForUpload = uploadFor ? allTests.find((t) => t.key === uploadFor.testKey) : null;
 
   const marksRoster = rosterFor(marksSection, marksTestKey || testsConducted[0]?.key);
   const marksTest = allTests.find((t) => t.key === marksTestKey);
+  const subjectOptions = marksTest?.subjects ?? [...subjects];
+  const activeSubject = subjectOptions.includes(marksSubject) ? marksSubject : subjectOptions[0];
 
   return (
     <>
@@ -159,8 +156,8 @@ export default function TeacherPapersPage() {
 
           <div style={{ display: "grid", gap: 14, marginTop: 14 }}>
             {allTests.map((t) => {
-              const subjectPapers = papers[t.key] ?? {};
-              const subjectList = Object.keys(subjectPapers);
+              const subjectList = t.subjects ?? [...subjects];
+              const subjectPapers: Record<string, SubjectPaper> = Object.fromEntries(subjectList.map((s) => [s, paperFor(t.key, s)]));
               const mappedCount = subjectList.filter((s) => subjectPapers[s].status === "Mapped").length;
               const isOpen = expanded.has(t.key);
               return (
@@ -287,8 +284,8 @@ export default function TeacherPapersPage() {
             </div>
             <div className="filter">
               <label htmlFor="marks-subject">Subject</label>
-              <select id="marks-subject" className="select" value={marksSubject} onChange={(e) => setMarksSubject(e.target.value)}>
-                {subjects.map((s) => (
+              <select id="marks-subject" className="select" value={activeSubject} onChange={(e) => setMarksSubject(e.target.value)}>
+                {subjectOptions.map((s) => (
                   <option key={s}>{s}</option>
                 ))}
               </select>
@@ -305,10 +302,10 @@ export default function TeacherPapersPage() {
 
           {marksTestKey && (
             <MarksEntryGrid
-              key={`${marksTestKey}-${marksSubject}-${marksSection}`}
-              subject={marksSubject}
+              key={`${marksTestKey}-${activeSubject}-${marksSection}`}
+              subject={activeSubject}
               roster={marksRoster}
-              scopeLabel={`${marksSection} · ${marksSubject} · ${marksTest?.name ?? marksTestKey}`}
+              scopeLabel={`${marksSection} · ${activeSubject} · ${marksTest?.name ?? marksTestKey}`}
               testKey={marksTestKey}
             />
           )}

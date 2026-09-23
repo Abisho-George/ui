@@ -10,11 +10,11 @@ import { percentShares, type AttentionBreakdown } from "@/lib/avai-mock-data";
  * shares are rounded together so they add to exactly 100%. */
 export function OverviewKpis({
   breakdown,
-  sectionCount,
+  totalSub,
   onOpen,
 }: {
   breakdown: AttentionBreakdown;
-  sectionCount: number;
+  totalSub: string;
   onOpen?: (key: string, label: string) => void;
 }) {
   const [onTrackShare, supportShare, riskShare] = percentShares([breakdown.onTrack, breakdown.watch, breakdown.intervention]);
@@ -24,7 +24,7 @@ export function OverviewKpis({
       key: "total",
       label: "Total Students",
       value: breakdown.total,
-      sub: `Across ${sectionCount} sections`,
+      sub: totalSub,
       accent: "var(--brand-blue)",
       icon: <Users size={21} />,
     },

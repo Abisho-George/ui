@@ -2,9 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { AlertTriangle, CheckCircle2, Save, ScanLine, X } from "lucide-react";
+import { AlertTriangle, CheckCircle2, FileWarning, Lock, Save, ScanLine, X } from "lucide-react";
 import { FilePickButtons } from "@/components/FilePickButtons";
-import { ocrMarksFor, questionSets, type RosterStudent } from "@/lib/avai-mock-data";
+import { questionMarksFor, questionSets, simulatedCardRead, type RosterStudent } from "@/lib/avai-mock-data";
+import { paperFor, saveMarks, useLiveVersion } from "@/lib/liveData";
 
 type MarksState = Record<string, Record<string, string>>; // studentId -> questionKey -> value
 
@@ -38,7 +39,20 @@ export function MarksEntryGrid({
    * can show progress without owning the grid's state itself. */
   onProgress?: (progress: { entered: number; total: number; reviewPending: number }) => void;
 }) {
-  const [marks, setMarks] = useState<MarksState>({});
+  useLiveVersion();
+  const questionsForInit = questionSets[subject] ?? [];
+  const recordedFor = (id: string) => (testKey ? questionMarksFor(testKey, subject, id) : null);
+  const locked = roster.length > 0 && roster.every((s) => recordedFor(s.id));
+  const paper = testKey ? paperFor(testKey, subject) : null;
+  const paperReady = locked || paper?.status === "Mapped";
+  const [marks, setMarks] = useState<MarksState>(() => {
+    const init: MarksState = {};
+    for (const s of roster) {
+      const rec = recordedFor(s.id);
+      if (rec) init[s.id] = Object.fromEntries(questionsForInit.map((q, i) => [q.key, String(rec[i] ?? 0)]));
+    }
+    return init;
+  });
   const [toast, setToast] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [flagged, setFlagged] = useState<Set<string>>(new Set());
@@ -95,13 +109,24 @@ export function MarksEntryGrid({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enteredCount, roster.length, reviewPending]);
 
+  const completeCount = roster.filter((s) => questions.every((q) => (marks[s.id]?.[q.key] ?? "") !== "")).length;
+
   function save() {
+    if (!testKey) return;
     if (reviewPending > 0) {
       setToast(`${reviewPending} mark${reviewPending === 1 ? "" : "s"} still need checking before saving.`);
       setOnlyFlagged(true);
       return;
     }
-    setToast(`Saved marks for ${enteredCount} of ${roster.length} students · ${scopeLabel} (local only).`);
+    if (completeCount < roster.length) {
+      setToast(`${roster.length - completeCount} student${roster.length - completeCount === 1 ? " has" : "s have"} empty boxes. Fill every question before saving.`);
+      return;
+    }
+    const rows: Record<string, number[]> = {};
+    for (const s of roster) rows[s.id] = questions.map((q) => Number(marks[s.id]?.[q.key] ?? 0));
+    saveMarks(testKey, subject, rows);
+    setPhoto(null);
+    setToast(`Saved ${scopeLabel}. The principal's dashboard is updated.`);
   }
 
   function onPicked(file: File) {
@@ -119,27 +144,19 @@ export function MarksEntryGrid({
     }
     const next: MarksState = {};
     const unresolved = new Set<string>();
-    let anyGroundTruth = false;
 
     for (const s of roster) {
-      const ocr = ocrMarksFor(s.id, testKey, subject);
-      if (!ocr) continue;
-      anyGroundTruth = true;
+      const read = simulatedCardRead(s.id, testKey, subject);
       const row: Record<string, string> = {};
-      for (const q of questions) {
+      questions.forEach((q, i) => {
         // ~1 in 16 cells comes back unreadable, same as a real scan would.
         if (Math.random() < 0.06) unresolved.add(`${s.id}|${q.key}`);
-        else row[q.key] = String(ocr[q.key]);
-      }
+        else row[q.key] = String(read[i] ?? 0);
+      });
       next[s.id] = row;
     }
 
     setScanning(false);
-
-    if (!anyGroundTruth) {
-      setToast(`${subject} hasn't been analysed yet, so there's nothing on record to read from a scanned card.`);
-      return;
-    }
 
     setMarks(next);
     setFlagged(unresolved);
@@ -148,6 +165,20 @@ export function MarksEntryGrid({
       unresolved.size > 0
         ? `Marks read. ${unresolved.size} could not be read, shown in red.`
         : `Answer card read for all ${roster.length} students · ${scopeLabel}.`,
+    );
+  }
+
+  if (testKey && !paperReady) {
+    return (
+      <div className="card" style={{ marginTop: 16 }}>
+        <div className="placeholder" style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, textAlign: "center" }}>
+          <FileWarning size={22} style={{ color: "var(--brand-gold)" }} />
+          <p className="strong" style={{ margin: 0 }}>The {subject} question paper for this test is not mapped yet.</p>
+          <p className="small muted" style={{ margin: 0 }}>
+            {paper?.status === "Not uploaded" ? "Upload it" : "Finish mapping it"} in Question papers first. Answer cards can be read once the paper is mapped.
+          </p>
+        </div>
+      </div>
     );
   }
 
@@ -167,6 +198,8 @@ export function MarksEntryGrid({
       <input
         className={`input ${className} ${isFlagged ? "input--flag" : ""}`}
         inputMode="numeric"
+        readOnly={locked}
+        tabIndex={locked ? -1 : undefined}
         placeholder={isFlagged ? "?" : "-"}
         aria-label={`${s.name}, ${q.label}, out of ${q.maxMarks}${isFlagged ? ", needs checking" : ""}`}
         value={marks[s.id]?.[q.key] ?? ""}
@@ -180,9 +213,15 @@ export function MarksEntryGrid({
       <div className="card" style={{ marginTop: 16 }}>
         <div className="card__head marks-head">
           <div className="small muted">
-            {questions.length} questions, {maxTotal} marks total. Photograph or upload the filled answer card to read marks, or type them in.
+            {questions.length} questions, {maxTotal} marks total.{" "}
+            {locked ? "These answer cards are already mapped." : "Photograph or upload the filled answer card to read marks, or type them in."}
           </div>
-          {testKey && (
+          {locked && (
+            <span className="tag tag--green">
+              <Lock size={11} /> Mapped, view only
+            </span>
+          )}
+          {testKey && !locked && (
             <div className="marks-head__upload">
               {scanning ? (
                 <span className="btn btn--sm" aria-live="polite">
@@ -321,14 +360,22 @@ export function MarksEntryGrid({
             </div>
           </>
         )}
-        <div className="card__foot marks-foot">
-          <span className="small muted">
-            {enteredCount} of {roster.length} students entered{reviewPending > 0 ? `, ${reviewPending} marks to check` : ""}.
-          </span>
-          <button className="btn btn--primary btn--sm" onClick={save} disabled={roster.length === 0}>
-            <Save size={13} /> Save marks
-          </button>
-        </div>
+        {locked ? (
+          <div className="card__foot">
+            <span className="small muted">
+              Marks for all {roster.length} students are saved and feed the principal&apos;s dashboard. They cannot be edited here.
+            </span>
+          </div>
+        ) : (
+          <div className="card__foot marks-foot">
+            <span className="small muted">
+              {completeCount} of {roster.length} students complete{reviewPending > 0 ? `, ${reviewPending} marks to check` : ""}.
+            </span>
+            <button className="btn btn--primary btn--sm" onClick={save} disabled={roster.length === 0}>
+              <Save size={13} /> Save marks
+            </button>
+          </div>
+        )}
       </div>
 
       <AnimatePresence>

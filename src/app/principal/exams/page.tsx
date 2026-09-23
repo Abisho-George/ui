@@ -3,18 +3,21 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CalendarCheck, CalendarClock, ChevronDown } from "lucide-react";
-import { analysedTests, assessmentContext, classRosterFull, latestTest, sections, subjects, subjectsByAverage, testsConducted } from "@/lib/avai-mock-data";
+import { analysedTests, assessmentContext, classRosterFull, latestTest, markingProgress, sections, subjects, subjectsByAverage, testsConducted } from "@/lib/avai-mock-data";
 import { usePageHeader } from "@/lib/pageHeader";
 import { DeltaCell } from "@/components/StudentRosterTable";
 
-function sectionSubjectPct(section: string, testKey: string, subject: string): number {
+function sectionSubjectPct(section: string, testKey: string, subject: string): number | null {
   const roster = classRosterFull[section] ?? [];
-  if (!roster.length) return 0;
-  return Math.round((roster.reduce((sum, s) => sum + s.scores[testKey][subject].scored / s.scores[testKey][subject].outOf, 0) / roster.length) * 100);
+  if (!roster.length) return null;
+  const scored = roster.map((s) => s.scores[testKey]?.[subject]).filter((x): x is { scored: number; outOf: number } => !!x);
+  if (!scored.length) return null;
+  return Math.round((scored.reduce((sum, x) => sum + x.scored / x.outOf, 0) / scored.length) * 100);
 }
 
 function sectionOverallPct(section: string, testKey: string): number {
-  return Math.round(subjects.reduce((sum, subj) => sum + sectionSubjectPct(section, testKey, subj), 0) / subjects.length);
+  const vals = subjects.map((subj) => sectionSubjectPct(section, testKey, subj)).filter((v): v is number => v !== null);
+  return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : 0;
 }
 
 function daysUntil(dateStr: string): number {
@@ -147,7 +150,7 @@ export default function ExamsPage() {
                             <td className="strong">{s}</td>
                             {subjects.map((subj) => (
                               <td key={subj} className="num">
-                                {sectionSubjectPct(s, t.key, subj)}%
+                                {sectionSubjectPct(s, t.key, subj) === null ? "-" : `${sectionSubjectPct(s, t.key, subj)}%`}
                               </td>
                             ))}
                             <td className="num strong">{sectionOverallPct(s, t.key)}%</td>
@@ -187,7 +190,16 @@ export default function ExamsPage() {
                     {t.date} · {daysUntil(t.date)} day{daysUntil(t.date) === 1 ? "" : "s"} away
                   </div>
                 </div>
-                <span className="tag">Scheduled</span>
+                {(() => {
+                  const p = markingProgress(t.key);
+                  return p.done > 0 ? (
+                    <span className="tag tag--gold">
+                      Marking {p.done} of {p.total}
+                    </span>
+                  ) : (
+                    <span className="tag">Scheduled</span>
+                  );
+                })()}
               </div>
             </div>
           ))}
