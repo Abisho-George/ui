@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Building2, LogOut, Radio, ShieldCheck } from "lucide-react";
+import { Building2, LogOut, Radio, ShieldCheck, UserPlus } from "lucide-react";
 import { Logomark } from "@/components/Mascot";
 import { adminSchools, formatDate, portfolioKpis, staffInitials, TODAY } from "@/lib/avai-admin-data";
 import { signOutStaff, useStaffSession } from "@/lib/adminState";
+import { useOpsVersion } from "@/lib/opsDirectory";
 
 /**
  * AVAI staff console chrome. Deliberately a different product from the
@@ -14,7 +15,10 @@ import { signOutStaff, useStaffSession } from "@/lib/adminState";
  * sign-in screen at /admin renders bare; everything under it is gated.
  */
 
-const nav = [{ href: "/admin/schools", label: "Schools", icon: Building2, match: (p: string) => p.startsWith("/admin/schools") }];
+const nav = [
+  { href: "/admin/schools", label: "Schools", icon: Building2, match: (p: string) => p.startsWith("/admin/schools") },
+  { href: "/admin/onboard", label: "Onboarding", icon: UserPlus, match: (p: string) => p.startsWith("/admin/onboard") },
+];
 
 /** Mobile check runs in an effect, so the first client render matches the server. */
 function useNarrow() {
@@ -32,6 +36,7 @@ function useNarrow() {
 function titleFor(pathname: string): string {
   const detail = /^\/admin\/schools\/([^/]+)/.exec(pathname);
   if (detail) return adminSchools.find((s) => s.id === detail[1])?.name ?? "Account";
+  if (pathname.startsWith("/admin/onboard")) return "Onboard a school";
   return "Portfolio";
 }
 
@@ -46,6 +51,7 @@ function ConsoleShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { staff, ready } = useStaffSession();
   const narrow = useNarrow();
+  useOpsVersion();
 
   useEffect(() => {
     if (ready && !staff) router.replace("/admin");

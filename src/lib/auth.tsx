@@ -8,6 +8,7 @@ import {
   type Role,
   type TeacherAssignment,
 } from "./avai-mock-data";
+import "./opsDirectory";
 
 /**
  * Mock auth. 🔧 BACKEND REQUIRED, this is a dev-only role switcher, not real

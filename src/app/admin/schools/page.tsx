@@ -3,19 +3,14 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { Building2, ChevronRight, FileCheck2, KeyRound, Search, Users } from "lucide-react";
+import { Building2, ChevronRight, FileCheck2, KeyRound, Search, UserPlus, Users } from "lucide-react";
 import { AnimatedBar, CountUp, Reveal, Stagger, StaggerItem } from "@/components/motion";
 import { accountStatuses, adminSchools, boards, formatAgo, onboardingPct, portfolioKpis, statusAccent, type AdminSchool } from "@/lib/avai-admin-data";
+import { useOpsVersion } from "@/lib/opsDirectory";
 import { OpsEmpty, SortHeader, StatusPill, type SortDir } from "../ui";
 
 type SortField = "name" | "students" | "activation" | "progress";
 
-const kpis = [
-  { label: "Schools live", value: portfolioKpis.schoolsLive, sub: `of ${portfolioKpis.schoolsTotal} accounts`, accent: "var(--brand-green)", icon: Building2 },
-  { label: "Students under analysis", value: portfolioKpis.studentsUnderAnalysis, sub: "across the portfolio", accent: "var(--brand-teal)", icon: Users },
-  { label: "Teachers activated", value: portfolioKpis.teachersActivated, sub: `of ${portfolioKpis.teachersInvited} invited`, accent: "var(--brand-gold)", icon: KeyRound },
-  { label: "Assessments analysed", value: portfolioKpis.assessmentsThisTerm, sub: "this term, across the portfolio", accent: "var(--brand-blue)", icon: FileCheck2 },
-];
 
 function sortValue(s: AdminSchool, field: SortField): number | string {
   switch (field) {
@@ -41,6 +36,13 @@ export default function AdminSchoolsPage() {
   const [board, setBoard] = useState("All");
   const [sort, setSort] = useState<SortField>("name");
   const [dir, setDir] = useState<SortDir>("asc");
+  const opsVersion = useOpsVersion();
+  const kpis = [
+    { label: "Schools live", value: portfolioKpis.schoolsLive, sub: `of ${portfolioKpis.schoolsTotal} accounts`, accent: "var(--brand-green)", icon: Building2 },
+    { label: "Students under analysis", value: portfolioKpis.studentsUnderAnalysis, sub: "across the portfolio", accent: "var(--brand-teal)", icon: Users },
+    { label: "Teachers activated", value: portfolioKpis.teachersActivated, sub: `of ${portfolioKpis.teachersInvited} invited`, accent: "var(--brand-gold)", icon: KeyRound },
+    { label: "Assessments analysed", value: portfolioKpis.assessmentsThisTerm, sub: "this term, across the portfolio", accent: "var(--brand-blue)", icon: FileCheck2 },
+  ];
 
   const rows = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -56,7 +58,8 @@ export default function AdminSchoolsPage() {
       const cmp = typeof av === "string" && typeof bv === "string" ? av.localeCompare(bv) : Number(av) - Number(bv);
       return dir === "asc" ? cmp : -cmp;
     });
-  }, [query, status, board, sort, dir]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, status, board, sort, dir, opsVersion]);
 
   function onSort(field: SortField) {
     if (field === sort) setDir(dir === "asc" ? "desc" : "asc");
@@ -100,7 +103,14 @@ export default function AdminSchoolsPage() {
           <h2 id="table-h" className="section-q" style={{ fontSize: 17 }}>
             All accounts
           </h2>
-          <span className="small muted">{rows.length} of {adminSchools.length} shown</span>
+          <span style={{ display: "inline-flex", gap: 10, alignItems: "center" }}>
+            <span className="small muted">
+              {rows.length} of {adminSchools.length} shown
+            </span>
+            <Link href="/admin/onboard" className="btn btn--blue btn--sm">
+              <UserPlus size={13} /> Onboard a school
+            </Link>
+          </span>
         </div>
 
         <div className="filterbar" style={{ position: "static", background: "transparent", backdropFilter: "none" }}>

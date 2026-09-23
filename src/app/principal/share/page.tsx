@@ -6,16 +6,15 @@ import { AnimatePresence, motion } from "framer-motion";
 import { CheckCircle2, Clock, MessageCircle, Search, Send, X } from "lucide-react";
 import { analysedTests, classRosterFull, latestTest, school, sectionLabel, sections, type FullRosterStudent } from "@/lib/avai-mock-data";
 import { markSent, sentLog, useLiveVersion } from "@/lib/liveData";
+import { parentWhatsAppFor } from "@/lib/opsDirectory";
 import { usePageHeader } from "@/lib/pageHeader";
 
 type View = "all" | "unsent" | "sent";
 
-/** Deterministic dummy parent number per student, masked as it would be on screen. */
+/** The parent's WhatsApp number held by AVAI ops, masked as it would be on screen. */
 function parentPhone(id: string): string {
-  let h = 7;
-  for (let i = 0; i < id.length; i++) h = (Math.imul(h, 31) + id.charCodeAt(i)) >>> 0;
-  const tail = String(h % 1000).padStart(3, "0");
-  return `+91 9${(h % 9) + 1}XXX XX${tail}`;
+  const n = parentWhatsAppFor(id);
+  return n ? `+91 ${n.slice(0, 2)}XXX XX${n.slice(-3)}` : "No number on file";
 }
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

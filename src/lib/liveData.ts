@@ -9,6 +9,9 @@ import {
   type ConductedTest,
   type SubjectPaper,
 } from "./avai-mock-data";
+// Ops console edits to the demo school (teacher access, parent numbers)
+// apply to the school app too, so load them wherever live data is used.
+import "./opsDirectory";
 
 /**
  * Everything staff change in this demo: tests created, question papers

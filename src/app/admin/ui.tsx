@@ -38,9 +38,9 @@ export function Toast({ message }: { message: string | null }) {
           className="toast"
           role="status"
           aria-live="polite"
-          initial={{ opacity: 0, y: 14, x: "-50%" }}
-          animate={{ opacity: 1, y: 0, x: "-50%" }}
-          exit={{ opacity: 0, y: 10, x: "-50%" }}
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
           transition={{ duration: 0.28, ease: EASE_OUT }}
         >
           {message}
