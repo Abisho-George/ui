@@ -7,7 +7,7 @@ import { ConfidenceMeter, UrgencyChip } from "./Status";
 import { EvidenceState } from "./EvidenceState";
 
 /**
- * §5.4 — the one reusable "finding" unit. Every diagnostic statement in
+ * §5.4, the one reusable "finding" unit. Every diagnostic statement in
  * BoardX renders through this; there are no bare stats.
  */
 export function FindingCard({ finding, onOpen, compact = false }: { finding: Finding; onOpen?: (f: Finding) => void; compact?: boolean }) {
@@ -18,7 +18,7 @@ export function FindingCard({ finding, onOpen, compact = false }: { finding: Fin
         <div>
           <div className="finding__subject">{finding.subject}</div>
           <h3 className="finding__title">{finding.topic}</h3>
-          <div className="finding__subskill">{finding.subskill ? finding.subskill : "Whole chapter — no single sub-skill"}</div>
+          <div className="finding__subskill">{finding.subskill ? finding.subskill : "Whole chapter, no single sub-skill"}</div>
         </div>
         <UrgencyChip level={finding.boardUrgency} withLabel={false} />
       </header>

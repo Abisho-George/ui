@@ -1,18 +1,28 @@
 "use client";
 
-import { BarChart3, ClipboardList, FileText, Settings, Users } from "lucide-react";
+import { CalendarClock, HelpCircle, LayoutGrid, Send, Users } from "lucide-react";
 import { RoleGuard, StaffShell, type NavItem } from "@/components/Shell";
-import { assessmentContext } from "@/lib/avai-mock-data";
+import { assessmentContext, sectionLabel, sections } from "@/lib/avai-mock-data";
+import { useMarksVersion } from "@/lib/liveData";
 
 const nav: NavItem[] = [
-  { href: "/principal/boardx", label: "BoardX Intelligence", icon: BarChart3, group: "Intelligence" },
-  { href: "/principal/teachers", label: "Manage Teachers", icon: Users, group: "School" },
-  { href: "/principal/papers", label: "Question Papers", icon: FileText },
-  { href: "/principal/enter-marks", label: "Enter Marks", icon: ClipboardList },
-  { href: "/principal/settings", label: "Settings", icon: Settings },
+  { href: "/principal/classes", label: "Class X", icon: LayoutGrid, match: (p) => p === "/principal/classes" },
+  ...sections.map((s) => ({
+    href: `/principal/classes/${s}`,
+    label: sectionLabel(s),
+    icon: Users,
+    sub: true,
+    match: (p: string) => p.startsWith(`/principal/classes/${s}`),
+  })),
+  { href: "/principal/exams", label: "Exams", icon: CalendarClock },
+  { href: "/principal/share", label: "Share reports", icon: Send },
+  { href: "/principal/help", label: "Help & Contact", icon: HelpCircle },
 ];
 
 export default function PrincipalLayout({ children }: { children: React.ReactNode }) {
+  // Every figure below is derived from the saved marks, so a teacher saving
+  // an answer card remounts the page and all of its numbers recompute.
+  const version = useMarksVersion();
   return (
     <RoleGuard role="principal">
       {(user) => (
@@ -20,14 +30,12 @@ export default function PrincipalLayout({ children }: { children: React.ReactNod
           user={user}
           nav={nav}
           roleLabel="Principal"
-          topbarRight={
-            <>
-              <span className="tag tag--teal">Evidence: {assessmentContext.assessmentEvidence}</span>
-              <span>Academic year 2026–27</span>
-            </>
-          }
+          tabs={["/principal/classes", "/principal/exams", "/principal/share"]}
+          sidebarMeta={<span className="sidebar__evidence">Evidence: {assessmentContext.assessmentEvidence}</span>}
         >
-          {children}
+          <div key={version} style={{ display: "contents" }}>
+            {children}
+          </div>
         </StaffShell>
       )}
     </RoleGuard>
