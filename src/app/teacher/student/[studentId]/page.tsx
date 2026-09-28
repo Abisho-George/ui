@@ -1,9 +1,10 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Check, Send, Share2 } from "lucide-react";
-import { classRoster, teacherFacingStudentReport } from "@/lib/avai-mock-data";
+import { attentionFor, findStudent, latestTest, mainBlockerFor, teacherReportFor } from "@/lib/avai-mock-data";
+import { usePageHeader } from "@/lib/pageHeader";
 import { AttentionPill } from "@/components/Status";
 import { EvidenceState } from "@/components/EvidenceState";
 
@@ -16,27 +17,23 @@ type ReportState = { issued: boolean; sharedWithStudent: boolean };
  */
 export default function StudentReportPage() {
   const { studentId } = useParams<{ studentId: string }>();
-  const roster = classRoster.find((s) => s.id === studentId);
-  const base = teacherFacingStudentReport;
-  const isAditi = studentId === "student_aditi";
+  const student = findStudent(studentId);
+  usePageHeader({ title: student?.name ?? studentId, backHref: "/teacher/home" });
+  const base = useMemo(() => (student ? teacherReportFor(student, latestTest.key) : null), [student]);
 
   const [state, setState] = useState<ReportState[]>(() =>
-    base.subjectReports.map((r) => (isAditi ? { issued: r.issued, sharedWithStudent: r.sharedWithStudent } : { issued: false, sharedWithStudent: false }))
+    (student ? teacherReportFor(student, latestTest.key).subjectReports : []).map((r) => ({ issued: r.issued, sharedWithStudent: r.sharedWithStudent }))
   );
 
-  if (!roster) return <EvidenceState kind="early">No student with id {studentId} in this dataset.</EvidenceState>;
+  if (!student || !base) return <EvidenceState kind="early">No student with id {studentId} in this dataset.</EvidenceState>;
 
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 16 }}>
-        <div>
-          <div className="eyebrow">Student report · {roster.section}</div>
-          <h1 className="page-title" style={{ marginTop: 4 }}>
-            {roster.name}
-          </h1>
-          <p className="page-sub">Roll no. {roster.rollNo} · Main blocker: {roster.mainBlocker}</p>
-        </div>
-        <AttentionPill level={roster.attention} />
+        <p className="page-sub" style={{ marginTop: 0 }}>
+          {student.section} · Roll no. {student.rollNo} · Main blocker: {mainBlockerFor(student)}
+        </p>
+        <AttentionPill level={attentionFor(student)} />
       </div>
 
       <div style={{ display: "grid", gap: 16, marginTop: 22 }}>
@@ -49,7 +46,7 @@ export default function StudentReportPage() {
                   <div className="eyebrow">{r.assessment}</div>
                   <h3 style={{ fontSize: 18, marginTop: 4 }}>{r.subject}</h3>
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 700 }}>{roster.attainment[r.subject] ? roster.attainment[r.subject] : r.score}</div>
+                <div style={{ fontSize: 22, fontWeight: 700 }}>{r.score}</div>
               </div>
               <div className="card__body">
                 <div className="grid grid--2">

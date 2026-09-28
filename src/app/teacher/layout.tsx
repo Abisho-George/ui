@@ -1,14 +1,17 @@
 "use client";
 
-import { BookOpen, Home, Users } from "lucide-react";
+import { BookOpen, FileUp, Home, Users } from "lucide-react";
 import { RoleGuard, StaffShell, type NavItem } from "@/components/Shell";
 
 export default function TeacherLayout({ children }: { children: React.ReactNode }) {
   return (
     <RoleGuard role="teacher">
       {(user) => {
-        const nav: NavItem[] = [{ href: "/teacher/home", label: "My Home", icon: Home }];
-        if (user.role === "teacher") {
+        const examsOnly = user.role === "teacher" && user.examsOnly;
+        const nav: NavItem[] = examsOnly
+          ? [{ href: "/teacher/papers", label: "Papers & Marks", icon: FileUp }]
+          : [{ href: "/teacher/home", label: "My Home", icon: Home }];
+        if (user.role === "teacher" && !examsOnly) {
           for (const a of user.assignments) {
             if (a.type === "class") nav.push({ href: `/teacher/class/${a.section}`, label: `Class ${a.section}`, icon: Users, group: "My classes" });
           }
