@@ -1,0 +1,620 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prospecting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+  if (window.tailwind) tailwind.config = { darkMode: 'class', theme: { extend: { fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui'] } } } };
+</script>
+<style type="text/tailwindcss">
+  body { font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+  .card { @apply rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900; }
+  .lbl { @apply mb-1.5 block text-sm font-medium text-slate-800 dark:text-slate-200; }
+  .hint { @apply mt-1.5 text-xs leading-relaxed text-slate-500 dark:text-slate-400; }
+  .inp { @apply w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100; }
+  .btn { @apply inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent; }
+  .btn-primary { @apply border-blue-600 bg-blue-600 text-white hover:bg-blue-500 dark:border-blue-600 dark:bg-blue-600 dark:text-white dark:hover:bg-blue-500; }
+  .btn-sm { @apply px-2.5 py-1 text-xs rounded-lg; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full border border-slate-300 px-2.5 py-1 text-xs font-medium text-slate-700 transition hover:border-blue-500 hover:text-blue-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700 dark:text-slate-300 dark:hover:text-blue-400; }
+  .pill-on { @apply border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400; }
+  .step { @apply flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-xs font-semibold text-white; }
+  .tag { @apply inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 py-1 pl-2 pr-1 text-xs dark:border-slate-700 dark:bg-slate-800; }
+  .badge { @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap; }
+  .b-green { @apply bg-emerald-500/15 text-emerald-600 dark:text-emerald-400; }
+  .b-amber { @apply bg-amber-500/15 text-amber-600 dark:text-amber-400; }
+  .b-red { @apply bg-red-500/15 text-red-600 dark:text-red-400; }
+  .b-blue { @apply bg-blue-500/15 text-blue-600 dark:text-blue-400; }
+  .b-slate { @apply bg-slate-500/15 text-slate-600 dark:text-slate-300; }
+  th { @apply sticky top-0 z-10 whitespace-nowrap bg-slate-50 px-3 py-2.5 text-left text-xs font-semibold text-slate-600 dark:bg-slate-950 dark:text-slate-300; }
+  td { @apply whitespace-nowrap border-t border-slate-200 px-3 py-2.5 text-sm dark:border-slate-800; }
+  .trunc { @apply block max-w-[180px] truncate; }
+  @keyframes flash { from { background: rgba(59,130,246,.35); } to { background: transparent; } }
+  .flash td { animation: flash 1.4s ease-out; }
+  .menu { @apply absolute right-0 z-30 mt-1 min-w-[230px] rounded-xl border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900; }
+  .menu button { @apply block w-full rounded-lg px-3 py-2 text-left text-sm hover:bg-slate-100 dark:hover:bg-slate-800; }
+  .tipwrap:hover .tipbox, .tipwrap:focus-within .tipbox { display: block; }
+</style>
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-900 antialiased dark:bg-slate-950 dark:text-slate-100">
+
+<header class="sticky top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80">
+  <div class="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-3">
+    <div class="flex items-baseline gap-3">
+      <span class="h-2.5 w-2.5 translate-y-[-1px] rounded-sm bg-blue-600"></span>
+      <h1 class="text-lg font-semibold tracking-tight">Prospecting</h1>
+      <span class="text-sm text-slate-500 dark:text-slate-400">companies in → decision makers out</span>
+    </div>
+    <button id="themeBtn" class="btn btn-sm" title="Toggle theme" aria-label="Toggle theme"><span id="themeIcon">☾</span><span id="themeTxt">Dark</span></button>
+  </div>
+</header>
+
+<main class="mx-auto grid max-w-[1440px] grid-cols-1 gap-6 px-6 py-6 lg:grid-cols-[400px_minmax(0,1fr)] xl:grid-cols-[440px_minmax(0,1fr)]">
+
+  <!-- ============ CARD 1: PROJECT ============ -->
+  <aside class="lg:sticky lg:top-[72px] lg:max-h-[calc(100vh-88px)] lg:self-start lg:overflow-y-auto rounded-2xl">
+  <section class="card space-y-5">
+    <div class="flex items-center gap-2.5"><span class="step">1</span><h2 class="text-lg font-semibold">Project</h2></div>
+
+    <div>
+      <label class="lbl" for="preset">Preset</label>
+      <div class="flex gap-2">
+        <select id="preset" class="inp flex-1"></select>
+        <button id="resetBtn" class="btn">Reset</button>
+        <button id="saveBtn" class="btn">Save</button>
+      </div>
+      <p id="presetHelp" class="hint"></p>
+    </div>
+
+    <div>
+      <label class="lbl" for="batch">Batch name</label>
+      <input id="batch" class="inp" value="Yard">
+    </div>
+
+    <div>
+      <label class="lbl" for="geo">Geography of the person</label>
+      <textarea id="geo" rows="2" class="inp resize-y">Bengaluru, India</textarea>
+      <div id="geoChips" class="mt-2 flex flex-wrap gap-1.5"></div>
+      <p class="hint">Empty = anywhere.</p>
+      <p id="geoWarn" class="mt-2 hidden rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">⚠ Many locations will slow the run. Try a region chip.</p>
+    </div>
+
+    <div>
+      <div class="mb-1.5 flex items-center justify-between">
+        <span class="lbl !mb-0">ICP <span class="text-xs font-normal text-slate-500">industries; titles</span></span>
+        <button id="icpModeBtn" class="btn btn-sm">Paste as text</button>
+      </div>
+      <div id="icpTags" class="space-y-3"></div>
+      <textarea id="icpText" rows="6" class="inp hidden font-mono text-xs"></textarea>
+      <p class="hint">Use &gt; between priority groups — Priority 1 is searched first.</p>
+      <p id="icpCounts" class="hint !mt-0.5 font-medium"></p>
+    </div>
+
+    <div>
+      <label class="lbl">Exclude titles / keywords</label>
+      <div id="exclBox" class="inp flex min-h-[42px] flex-wrap items-center gap-1.5 !py-1.5">
+        <input id="exclInput" class="min-w-[90px] flex-1 bg-transparent text-sm outline-none" placeholder="Type + Enter">
+      </div>
+      <p class="hint">People whose title contains these words are skipped.</p>
+    </div>
+
+    <div>
+      <span class="lbl">Seniority filter</span>
+      <div id="senPills" class="flex flex-wrap gap-1.5"></div>
+    </div>
+
+    <div>
+      <div class="mb-1.5 flex items-center justify-between"><span class="lbl !mb-0">Activity rule</span><span class="text-xs text-slate-500">LinkedIn activity</span></div>
+      <div id="actWarn" class="mb-2 hidden rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">⚠ No activity rule set for this project. <button id="actAdd" class="ml-1 font-semibold underline">Add default rule</button></div>
+      <div id="actPanel" class="overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800">
+        <div class="grid grid-cols-[70px_1fr_1fr] gap-2 bg-slate-50 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:bg-slate-950">
+          <span>Level</span><span>Active within (days)</span><span>Min connections</span>
+        </div>
+        <div id="actRows"></div>
+      </div>
+      <label class="lbl mt-3 !text-xs" for="minAct">Minimum activity to return</label>
+      <select id="minAct" class="inp"><option>Any</option><option>Medium+</option><option>High only</option></select>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-[120px_1fr] lg:grid-cols-1 xl:grid-cols-[120px_1fr]">
+      <div>
+        <label class="lbl" for="ppc">People per company</label>
+        <input id="ppc" type="number" min="1" max="10" value="4" class="inp">
+      </div>
+      <div class="min-w-0">
+        <label class="lbl" for="liVia">LinkedIn URL via</label>
+        <select id="liVia" class="inp">
+          <option value="free">Apollo search + free web search</option>
+          <option value="apollo">Apollo enrich (uses credits)</option>
+          <option value="web">Web search only</option>
+          <option value="none">Skip LinkedIn URL</option>
+        </select>
+      </div>
+    </div>
+    <div class="-mt-2">
+      <p id="liHelp" class="hint"></p>
+      <p id="liCost" class="hint !mt-0.5 font-medium"></p>
+    </div>
+  </section>
+  </aside>
+
+  <div class="min-w-0 space-y-6">
+  <!-- ============ CARD 2: COMPANIES ============ -->
+  <section class="card">
+    <div class="mb-4 flex items-center gap-2.5"><span class="step">2</span><h2 class="text-lg font-semibold">Companies</h2></div>
+    <label id="drop" tabindex="0" class="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-slate-300 px-6 py-8 text-center transition hover:border-blue-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700">
+      <input id="file" type="file" accept=".csv,.xlsx,.xls" class="hidden">
+      <div class="mb-2 text-2xl">⇪</div>
+      <p class="text-base"><b>Drop the CSV / Excel here</b> <span class="text-slate-500">or click to choose</span></p>
+      <p class="mt-1.5 max-w-xl text-sm text-slate-500 dark:text-slate-400">Columns: <b class="text-slate-700 dark:text-slate-200">Website</b> (best), or <b class="text-slate-700 dark:text-slate-200">LinkedIn URL</b> / <b class="text-slate-700 dark:text-slate-200">Company Name</b> (website found by free web search). 0 Apollo credits in the default mode.</p>
+    </label>
+    <div id="filePanel" class="mt-4 hidden rounded-xl border border-slate-200 dark:border-slate-800">
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-4 py-3 dark:border-slate-800">
+        <div class="text-sm"><span class="mr-1">📄</span><b id="fileName"></b> · <span id="fileRows" class="text-slate-500"></span></div>
+        <div id="mapping" class="flex flex-wrap gap-1.5"></div>
+        <button id="fileClear" class="btn btn-sm">Remove</button>
+      </div>
+      <div class="overflow-x-auto"><table class="w-full"><thead><tr><th>#</th><th>Company Name</th><th>Website</th><th>LinkedIn URL</th></tr></thead><tbody id="previewBody"></tbody></table></div>
+    </div>
+    <details class="group mt-4">
+      <summary class="cursor-pointer select-none text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200">or type / paste the companies instead of uploading</summary>
+      <textarea id="pasteBox" rows="4" class="inp mt-2" placeholder="One per line: website, LinkedIn URL or company name&#10;freshworks.com&#10;zoho.com"></textarea>
+    </details>
+    <div class="mt-5 flex flex-wrap gap-2">
+      <button id="runBtn" class="btn btn-primary px-5">▶ Run</button>
+      <button id="cancelBtn" class="btn" disabled>Cancel job</button>
+      <button id="tplBtn" class="btn">Template CSV</button>
+    </div>
+  </section>
+
+  <!-- ============ CARD 3: RESULTS ============ -->
+  <section class="card">
+    <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5"><span class="step">3</span><h2 class="text-lg font-semibold">Results</h2><span id="statusBadge" class="badge b-slate">no job</span></div>
+      <div class="flex items-center gap-2">
+        <select id="history" class="inp !w-auto !py-1.5 text-xs" title="Job history"></select>
+        <div class="relative">
+          <button id="exportBtn" class="btn btn-sm">Export ▾</button>
+          <div id="exportMenu" class="menu hidden">
+            <button data-exp="all">Download all CSV</button>
+            <button data-exp="short">Download shortlisted CSV</button>
+            <button data-exp="sheet">Send to Google Sheet</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800"><div id="bar" class="h-full w-0 rounded-full bg-blue-600 transition-all duration-300"></div></div>
+    <div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-sm">
+      <span id="progTxt" class="text-slate-600 dark:text-slate-300">—</span>
+      <button id="statusListBtn" class="text-xs text-blue-600 hover:underline dark:text-blue-400">Per-company status ▾</button>
+    </div>
+    <div id="statusList" class="mt-2 hidden max-h-48 overflow-y-auto rounded-xl border border-slate-200 dark:border-slate-800"></div>
+    <p class="mt-3 text-sm text-slate-500 dark:text-slate-400">Download when the job finishes — results are not kept after a restart.</p>
+
+    <div class="mt-4 flex items-center justify-between border-b border-slate-200 dark:border-slate-800">
+      <div class="flex">
+        <button data-tab="people" class="tab border-b-2 px-4 py-2 text-sm font-medium">People</button>
+        <button data-tab="final" class="tab border-b-2 px-4 py-2 text-sm font-medium">Final</button>
+      </div>
+      <div class="flex items-center gap-3 pb-1.5">
+        <span id="shortCount" class="text-xs font-medium text-slate-600 dark:text-slate-300"></span>
+        <span class="tipwrap relative">
+          <button class="flex h-6 w-6 items-center justify-center rounded-full border border-slate-300 text-xs font-semibold text-slate-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 dark:border-slate-700" aria-label="About Replace and Delete">i</button>
+          <span class="tipbox absolute right-0 top-8 z-30 hidden w-80 rounded-xl border border-slate-200 bg-white p-3 text-xs leading-relaxed text-slate-600 shadow-lg dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"><b>Replace</b> = remove and fetch the next match for that company, skipping everyone already listed or removed (no Apollo credits with web search). <b>Delete</b> = remove for good, no new search. Best done before the activity check; if labels already exist, a replacement is checked automatically.</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="mt-3 flex flex-wrap items-center gap-2">
+      <input id="search" class="inp !w-52 !py-1.5" placeholder="Search name, company, title…">
+      <select id="fAct" class="inp !w-auto !py-1.5"><option value="">All activity</option><option>High</option><option>Medium</option><option>Low</option></select>
+      <select id="fPri" class="inp !w-auto !py-1.5"><option value="">All priority</option><option>P1</option><option>P2</option><option>P3</option></select>
+      <select id="fStat" class="inp !w-auto !py-1.5"><option value="">All status</option><option>Verified</option><option>Off-ICP</option><option>Replaced</option></select>
+      <div class="ml-auto flex gap-2">
+        <button id="bulkLow" class="btn btn-sm">Replace all Low activity</button>
+        <button id="bulkOff" class="btn btn-sm">Replace all off-ICP</button>
+      </div>
+    </div>
+
+    <div class="mt-3 max-h-[560px] overflow-auto rounded-xl border border-slate-200 dark:border-slate-800">
+      <table class="w-full">
+        <thead><tr>
+          <th title="Shortlist">★</th><th>Company</th><th>Name</th><th>Designation</th><th>Location</th><th>LinkedIn</th>
+          <th>Activity</th><th>Last active</th><th>Connections</th><th>Matched title</th><th>Seniority</th><th>Status</th><th class="text-right">Actions</th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </section>
+  </div>
+</main>
+
+<div id="toasts" class="pointer-events-none fixed bottom-5 right-5 z-50 flex flex-col gap-2"></div>
+
+<script>
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pick = a => a[Math.floor(Math.random() * a.length)];
+function toast(msg, kind = 'info') {
+  const c = { info: 'border-blue-500/40', ok: 'border-emerald-500/50', warn: 'border-amber-500/50' }[kind];
+  const el = document.createElement('div');
+  el.className = `pointer-events-auto rounded-xl border ${c} bg-white px-4 py-3 text-sm shadow-lg transition-opacity duration-300 dark:bg-slate-900`;
+  el.textContent = msg;
+  $('toasts').appendChild(el);
+  setTimeout(() => { el.style.opacity = 0; setTimeout(() => el.remove(), 300); }, 2600);
+}
+
+/* ---------- theme ---------- */
+function setTheme(dark) {
+  document.documentElement.classList.toggle('dark', dark);
+  $('themeIcon').textContent = dark ? '☾' : '☀';
+  $('themeTxt').textContent = dark ? 'Dark' : 'Light';
+}
+$('themeBtn').onclick = () => setTheme(!document.documentElement.classList.contains('dark'));
+setTheme(true);
+
+/* ---------- presets ---------- */
+const T = {
+  founder: ['Founder', 'Co-Founder', 'CEO', 'Chief Executive Officer', 'COO', 'Chief Operating Officer', 'Managing Director', 'India Head'],
+  sales: ['VP Sales', 'Head of Sales', 'Chief Revenue Officer', 'Director of Sales', 'Head of Business Development'],
+  ops: ['Head of Operations', 'Director Operations', 'Procurement Head', 'Head of Supply Chain'],
+  mkt: ['CMO', 'Head of Marketing', 'Growth Lead', 'Director Marketing'],
+  hr: ['CHRO', 'Head of HR', 'Talent Acquisition Head', 'HR Director'],
+  tech: ['CTO', 'VP Engineering', 'Head of IT', 'Engineering Manager'],
+};
+const ACT_DEFAULT = { High: { days: 30, conn: 500 }, Medium: { days: 90, conn: 200 }, Low: { days: 365, conn: 50 } };
+const PRESETS = {
+  'Yard': { help: 'Yard: running with the project config from the server (4/company, activity on).', ppc: 4, batch: 'Yard', geo: 'Bengaluru, India',
+    icp: [T.founder, T.ops, T.sales.slice(0, 3)], excl: ['customer', 'IT', 'support', 'intern'], sen: ['C-level', 'Director', 'Head'], act: ACT_DEFAULT, min: 'Any' },
+  'Sciqik': { help: 'Sciqik: running with the project config from the server (3/company, activity on).', ppc: 3, batch: 'Sciqik Q4', geo: 'India\nUS',
+    icp: [T.tech, T.founder.slice(0, 4), T.ops.slice(0, 2)], excl: ['intern', 'trainee'], sen: ['C-level', 'VP', 'Director'], act: { High: { days: 14, conn: 800 }, Medium: { days: 60, conn: 300 }, Low: { days: 180, conn: 100 } }, min: 'Medium+' },
+  'REACH24': { help: 'REACH24: running with the project config from the server (5/company, activity on).', ppc: 5, batch: 'REACH24 GCC push', geo: 'UAE\nGCC',
+    icp: [T.hr, T.founder.slice(0, 3), T.mkt], excl: ['recruiter', 'intern', 'support'], sen: ['C-level', 'VP', 'Head', 'Manager'], act: ACT_DEFAULT, min: 'Any' },
+  'SHARP SSDI': { help: 'SHARP SSDI: running with the project config from the server (2/company, activity off).', ppc: 2, batch: 'SHARP SSDI pilot', geo: 'US',
+    icp: [T.mkt, T.sales, []], excl: ['customer'], sen: ['VP', 'Director'], act: null, min: 'Any' },
+};
+const SENIORITY = ['C-level', 'VP', 'Director', 'Head', 'Manager', 'Senior IC'];
+let S = {}; // project state
+
+function loadPreset(name) {
+  const p = PRESETS[name];
+  S = {
+    icp: p.icp.map(g => g.map(t => ({ t, on: true }))),
+    excl: [...p.excl], sen: new Set(p.sen),
+    act: p.act ? JSON.parse(JSON.stringify(p.act)) : null,
+  };
+  // pad Yard P1 etc. to look like the real counts
+  $('presetHelp').textContent = p.help;
+  $('ppc').value = p.ppc; $('batch').value = p.batch; $('geo').value = p.geo; $('minAct').value = p.min;
+  renderIcp(); renderExcl(); renderSen(); renderAct(); checkGeo();
+}
+$('preset').innerHTML = Object.keys(PRESETS).map(k => `<option>${k}</option>`).join('');
+$('preset').onchange = e => { loadPreset(e.target.value); toast(`Preset “${e.target.value}” loaded`); };
+$('resetBtn').onclick = () => { loadPreset($('preset').value); toast('Project reset to preset defaults'); };
+$('saveBtn').onclick = () => toast(`Saved preset “${$('preset').value}”`, 'ok');
+
+/* ---------- geography ---------- */
+['South India', 'North India', 'India', 'US', 'UK', 'UAE', 'GCC', 'APAC', 'Europe'].forEach(g => {
+  const b = document.createElement('button'); b.className = 'chip'; b.textContent = g;
+  b.onclick = () => { const v = $('geo').value.trim(); $('geo').value = v ? v + '\n' + g : g; checkGeo(); };
+  $('geoChips').appendChild(b);
+});
+function checkGeo() {
+  const n = $('geo').value.split(/[\n;]+/).map(s => s.trim()).filter(Boolean).length;
+  $('geoWarn').classList.toggle('hidden', n <= 5);
+}
+$('geo').oninput = checkGeo;
+
+/* ---------- ICP ---------- */
+let icpTextMode = false;
+function renderIcp() {
+  const wrap = $('icpTags'); wrap.innerHTML = '';
+  S.icp.forEach((g, gi) => {
+    const on = g.filter(x => x.on).length;
+    const box = document.createElement('div');
+    box.className = 'rounded-xl border border-slate-200 p-3 dark:border-slate-800';
+    box.innerHTML = `<div class="mb-2 flex items-center justify-between text-xs"><span class="badge ${['b-blue', 'b-slate', 'b-slate'][gi]}">Priority ${gi + 1}</span><span class="text-slate-500">${on} on / ${g.length}</span></div>
+      <div class="flex flex-wrap gap-1.5">${g.map((x, i) => `<span class="tag ${x.on ? '' : 'opacity-50 line-through'}" title="${esc(x.t)}">
+        <input type="checkbox" data-g="${gi}" data-i="${i}" class="icpChk h-3.5 w-3.5 accent-blue-600" ${x.on ? 'checked' : ''} aria-label="Enable ${esc(x.t)}">
+        <span class="max-w-[160px] truncate">${esc(x.t)}</span>
+        <button data-g="${gi}" data-i="${i}" class="icpDel rounded px-1 text-slate-400 hover:text-red-500" aria-label="Remove ${esc(x.t)}">×</button></span>`).join('')}
+      ${g.length ? '' : '<span class="text-xs text-slate-500">No titles yet</span>'}</div>
+      <input data-g="${gi}" class="icpAdd inp mt-2 !py-1.5 text-xs" placeholder="+ add title, press Enter">`;
+    wrap.appendChild(box);
+  });
+  wrap.querySelectorAll('.icpChk').forEach(c => c.onchange = () => { S.icp[c.dataset.g][c.dataset.i].on = c.checked; renderIcp(); });
+  wrap.querySelectorAll('.icpDel').forEach(b => b.onclick = () => { S.icp[b.dataset.g].splice(b.dataset.i, 1); renderIcp(); });
+  wrap.querySelectorAll('.icpAdd').forEach(inp => inp.onkeydown = e => {
+    if (e.key === 'Enter' && inp.value.trim()) { S.icp[inp.dataset.g].push({ t: inp.value.trim(), on: true }); renderIcp(); wrap.querySelector(`.icpAdd[data-g="${inp.dataset.g}"]`).focus(); }
+  });
+  icpCounts();
+}
+function icpCounts() {
+  const c = S.icp.map(g => g.filter(x => x.on).length);
+  $('icpCounts').textContent = `P1: ${c[0]} · P2: ${c[1]} · P3: ${c[2]} · ${c[0] + c[1] + c[2]} titles`;
+}
+$('icpModeBtn').onclick = () => {
+  icpTextMode = !icpTextMode;
+  if (icpTextMode) {
+    $('icpText').value = S.icp.map(g => g.filter(x => x.on).map(x => x.t).join(', ')).join(' > ');
+  } else {
+    const groups = $('icpText').value.split('>').map(s => s.split(',').map(t => t.trim()).filter(Boolean));
+    while (groups.length < 3) groups.push([]);
+    S.icp = groups.slice(0, 3).map(g => g.map(t => ({ t, on: true })));
+    renderIcp();
+  }
+  $('icpText').classList.toggle('hidden', !icpTextMode);
+  $('icpTags').classList.toggle('hidden', icpTextMode);
+  $('icpModeBtn').textContent = icpTextMode ? 'Edit as tags' : 'Paste as text';
+};
+$('icpText').oninput = () => {
+  const c = $('icpText').value.split('>').map(s => s.split(',').filter(t => t.trim()).length);
+  const n = i => c[i] || 0;
+  $('icpCounts').textContent = `P1: ${n(0)} · P2: ${n(1)} · P3: ${n(2)} · ${n(0) + n(1) + n(2)} titles`;
+};
+
+/* ---------- exclude + seniority ---------- */
+function renderExcl() {
+  $('exclBox').querySelectorAll('.tag').forEach(t => t.remove());
+  S.excl.forEach((w, i) => {
+    const t = document.createElement('span'); t.className = 'tag';
+    t.innerHTML = `${esc(w)}<button class="rounded px-1 text-slate-400 hover:text-red-500" aria-label="Remove ${esc(w)}">×</button>`;
+    t.querySelector('button').onclick = () => { S.excl.splice(i, 1); renderExcl(); };
+    $('exclBox').insertBefore(t, $('exclInput'));
+  });
+}
+$('exclInput').onkeydown = e => {
+  const v = e.target.value.trim().replace(/,$/, '');
+  if ((e.key === 'Enter' || e.key === ',') && v) { e.preventDefault(); S.excl.push(v); e.target.value = ''; renderExcl(); }
+  if (e.key === 'Backspace' && !e.target.value && S.excl.length) { S.excl.pop(); renderExcl(); }
+};
+function renderSen() {
+  $('senPills').innerHTML = '';
+  SENIORITY.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'chip ' + (S.sen.has(s) ? 'pill-on' : '');
+    b.setAttribute('aria-pressed', S.sen.has(s));
+    b.textContent = (S.sen.has(s) ? '✓ ' : '') + s;
+    b.onclick = () => { S.sen.has(s) ? S.sen.delete(s) : S.sen.add(s); renderSen(); };
+    $('senPills').appendChild(b);
+  });
+}
+
+/* ---------- activity ---------- */
+function renderAct() {
+  $('actWarn').classList.toggle('hidden', !!S.act);
+  $('actPanel').classList.toggle('opacity-40', !S.act);
+  const cls = { High: 'b-green', Medium: 'b-amber', Low: 'b-red' };
+  $('actRows').innerHTML = ['High', 'Medium', 'Low'].map(l => `<div class="grid grid-cols-[70px_1fr_1fr] items-center gap-2 border-t border-slate-200 px-3 py-2 dark:border-slate-800">
+    <span class="badge ${cls[l]} w-fit">${l}</span>
+    <input type="number" min="1" data-l="${l}" data-k="days" class="actIn inp !py-1 text-xs" value="${S.act ? S.act[l].days : ''}" placeholder="—" ${S.act ? '' : 'disabled'} aria-label="${l} active within days">
+    <input type="number" min="0" data-l="${l}" data-k="conn" class="actIn inp !py-1 text-xs" value="${S.act ? S.act[l].conn : ''}" placeholder="—" ${S.act ? '' : 'disabled'} aria-label="${l} min connections"></div>`).join('');
+  document.querySelectorAll('.actIn').forEach(i => i.oninput = () => { S.act[i.dataset.l][i.dataset.k] = +i.value; });
+  $('minAct').disabled = !S.act;
+}
+$('actAdd').onclick = () => { S.act = JSON.parse(JSON.stringify(ACT_DEFAULT)); renderAct(); toast('Default activity rule added'); };
+
+/* ---------- linkedin via ---------- */
+const LI = {
+  free: ['People from Apollo search (0 credits): LinkedIn URL found by web search (0 Apollo credits).', 'Web search: serper · 0 credits'],
+  apollo: ['People and LinkedIn URL from Apollo enrichment. Most accurate, costs 1 Apollo credit per person.', 'Apollo: ~1 credit / person · est. 100 credits for 25 companies'],
+  web: ['People and LinkedIn URLs found by web search only. Free, lower match rate.', 'Web search: serper · 0 credits'],
+  none: ['No LinkedIn URL lookup. Activity check is skipped for these rows.', '0 credits'],
+};
+$('liVia').onchange = () => { const [h, c] = LI[$('liVia').value]; $('liHelp').textContent = h; $('liCost').textContent = c; };
+$('liVia').onchange();
+
+/* ---------- mock data ---------- */
+const COMPANIES = [
+  ['Freshworks', 'freshworks.com', 'Chennai'], ['Zoho', 'zoho.com', 'Chennai'], ['Razorpay', 'razorpay.com', 'Bengaluru'], ['Swiggy', 'swiggy.com', 'Bengaluru'],
+  ['Postman', 'postman.com', 'Bengaluru'], ['BrowserStack', 'browserstack.com', 'Mumbai'], ['Chargebee', 'chargebee.com', 'Chennai'], ['Zerodha', 'zerodha.com', 'Bengaluru'],
+  ['Delhivery', 'delhivery.com', 'Gurugram'], ['CRED', 'cred.club', 'Bengaluru'], ['Meesho', 'meesho.com', 'Bengaluru'], ['InMobi', 'inmobi.com', 'Bengaluru'],
+  ['Darwinbox', 'darwinbox.com', 'Hyderabad'], ['LeadSquared', 'leadsquared.com', 'Bengaluru'], ['Mindtickle', 'mindtickle.com', 'Pune'], ['Whatfix', 'whatfix.com', 'Bengaluru'],
+  ['Atlassian', 'atlassian.com', 'Bengaluru'], ['HubSpot', 'hubspot.com', 'Bengaluru'], ['Shopify', 'shopify.com', 'Bengaluru'], ['Stripe', 'stripe.com', 'Bengaluru'],
+  ['Infosys BPM', 'infosysbpm.com', 'Bengaluru'], ['Tata Elxsi', 'tataelxsi.com', 'Bengaluru'], ['Ather Energy', 'atherenergy.com', 'Bengaluru'], ['Licious', 'licious.in', 'Bengaluru'],
+  ['Udaan', 'udaan.com', 'Bengaluru'],
+];
+const FIRST = ['Aarav', 'Priya', 'Rohan', 'Ananya', 'Vikram', 'Sneha', 'Karthik', 'Meera', 'Arjun', 'Divya', 'Rahul', 'Kavya', 'Siddharth', 'Neha', 'Aditya', 'Pooja', 'Nikhil', 'Ishita', 'Sarah', 'David', 'Emily', 'Michael', 'Fatima', 'Omar'];
+const LAST = ['Sharma', 'Iyer', 'Reddy', 'Nair', 'Menon', 'Gupta', 'Rao', 'Krishnan', 'Patel', 'Mehta', 'Kulkarni', 'Banerjee', 'Shetty', 'Pillai', 'Chen', 'Miller', 'Khan', 'Fernandes'];
+const OFF = ['Customer Success Manager', 'IT Support Lead', 'Sales Intern'];
+const FAIL = { 4: 'Domain mismatch', 11: 'No matching people', 17: 'No LinkedIn URL', 22: 'No matching people' };
+let rid = 0;
+function seniorityOf(t) {
+  if (/chief|ceo|coo|cto|cmo|chro|founder|managing director/i.test(t)) return 'C-level';
+  if (/^vp|vice/i.test(t)) return 'VP';
+  if (/director/i.test(t)) return 'Director';
+  if (/head|lead/i.test(t)) return 'Head';
+  if (/manager/i.test(t)) return 'Manager';
+  return 'Senior IC';
+}
+function mockPerson(co, exclude = []) {
+  const off = Math.random() < 0.1;
+  const groups = S.icp.map(g => g.filter(x => x.on).map(x => x.t));
+  let pri = Math.random() < 0.55 ? 0 : Math.random() < 0.6 ? 1 : 2;
+  if (!groups[pri].length) pri = groups.findIndex(g => g.length); if (pri < 0) pri = 0;
+  const title = off ? pick(OFF) : (pick(groups[pri] || ['Head of Operations']) || 'Head of Operations');
+  let name; do { name = pick(FIRST) + ' ' + pick(LAST); } while (exclude.includes(name));
+  const r = Math.random(), act = r < 0.4 ? 'High' : r < 0.75 ? 'Medium' : 'Low';
+  const days = { High: 2 + Math.floor(Math.random() * 25), Medium: 30 + Math.floor(Math.random() * 55), Low: 100 + Math.floor(Math.random() * 250) }[act];
+  return {
+    id: ++rid, company: co[0], domain: co[1], name, title, loc: co[2] + ', India',
+    li: 'linkedin.com/in/' + name.toLowerCase().replace(/ /g, '-') + '-' + (100 + rid),
+    act, last: days + 'd ago', conn: act === 'Low' ? 40 + Math.floor(Math.random() * 300) : 300 + Math.floor(Math.random() * 4500),
+    match: off ? '—' : title, pri: off ? null : 'P' + (pri + 1), sen: seniorityOf(title),
+    status: off ? 'Off-ICP' : 'Verified', short: false,
+  };
+}
+
+/* ---------- results state ---------- */
+let rows = [], coStatus = [], tab = 'people', timer = null, jobState = 'none', processed = 0, failed = 0;
+const TOTAL = COMPANIES.length;
+const STATCLS = { Found: 'b-green', 'Domain mismatch': 'b-amber', 'No matching people': 'b-red', 'No LinkedIn URL': 'b-amber', Pending: 'b-slate', Processing: 'b-blue', Cancelled: 'b-slate' };
+
+function setBadge(s) {
+  jobState = s;
+  const m = { none: ['no job', 'b-slate'], running: ['● running', 'b-blue'], done: ['done', 'b-green'], cancelled: ['cancelled', 'b-amber'], loaded: ['loaded from history', 'b-slate'] }[s];
+  $('statusBadge').className = 'badge ' + m[1]; $('statusBadge').textContent = m[0];
+  $('runBtn').disabled = s === 'running'; $('cancelBtn').disabled = s !== 'running';
+  $('runBtn').innerHTML = s === 'running' ? '<span class="animate-spin">◌</span> Running…' : '▶ Run';
+}
+function renderProgress() {
+  $('bar').style.width = (processed / TOTAL * 100) + '%';
+  const left = Math.max(0, Math.round((TOTAL - processed) * 7.2 / 60 * 10) / 10);
+  if (jobState === 'none') $('progTxt').textContent = '—';
+  else $('progTxt').innerHTML = `<b>${processed} / ${TOTAL}</b> companies · ${jobState === 'running' ? `~${Math.max(1, Math.ceil(left))} min left` : jobState} · <span class="${failed ? 'text-red-500' : ''}">${failed} failed</span>`;
+  $('statusList').innerHTML = coStatus.map(c => `<div class="flex items-center justify-between border-b border-slate-200 px-3 py-1.5 text-sm last:border-0 dark:border-slate-800">
+    <span class="truncate">${esc(c.name)} <span class="text-xs text-slate-500">${esc(c.domain)}</span></span>
+    <span class="flex items-center gap-2">${c.n ? `<span class="text-xs text-slate-500">${c.n} people</span>` : ''}<span class="badge ${STATCLS[c.s]}">${c.s}</span></span></div>`).join('') || '<p class="p-3 text-sm text-slate-500">No job yet.</p>';
+}
+$('statusListBtn').onclick = () => $('statusList').classList.toggle('hidden');
+
+function filtered() {
+  const q = $('search').value.toLowerCase(), fa = $('fAct').value, fp = $('fPri').value, fs = $('fStat').value;
+  return rows.filter(r => (tab === 'people' || r.short)
+    && (!fa || r.act === fa) && (!fp || r.pri === fp) && (!fs || r.status === fs)
+    && (!q || [r.name, r.company, r.title, r.loc].join(' ').toLowerCase().includes(q)));
+}
+const ACTCLS = { High: 'b-green', Medium: 'b-amber', Low: 'b-red' };
+const ST = { Verified: 'b-green', 'Off-ICP': 'b-red', Replaced: 'b-blue' };
+function renderTable(flashId) {
+  const list = filtered();
+  const empty = tab === 'final' && rows.length ? 'No shortlisted people yet — tick ★ on the People tab.' : 'Results appear here as each company is processed.';
+  $('tbody').innerHTML = list.length ? list.map(r => `<tr data-id="${r.id}" class="${r.id === flashId ? 'flash' : ''} hover:bg-slate-50 dark:hover:bg-slate-800/40">
+    <td><input type="checkbox" class="shortChk h-4 w-4 accent-blue-600" data-id="${r.id}" ${r.short ? 'checked' : ''} aria-label="Shortlist ${esc(r.name)}"></td>
+    <td><span class="trunc font-medium" title="${esc(r.company)} · ${esc(r.domain)}">${esc(r.company)}</span></td>
+    <td><span class="trunc" title="${esc(r.name)}">${esc(r.name)}</span></td>
+    <td><span class="trunc" title="${esc(r.title)}">${esc(r.title)}</span></td>
+    <td><span class="trunc max-w-[140px]" title="${esc(r.loc)}">${esc(r.loc)}</span></td>
+    <td><a href="#" onclick="return false" class="trunc max-w-[150px] text-blue-600 hover:underline dark:text-blue-400" title="https://${esc(r.li)}">${esc(r.li.replace('linkedin.com/in/', 'in/'))}</a></td>
+    <td><span class="badge ${ACTCLS[r.act]}">${r.act === 'Medium' ? 'Med' : r.act}</span></td>
+    <td class="text-slate-500">${r.last}</td>
+    <td class="tabular-nums">${r.conn.toLocaleString()}</td>
+    <td><span class="flex items-center gap-1.5">${r.pri ? `<span class="badge ${r.pri === 'P1' ? 'b-blue' : 'b-slate'}">${r.pri}</span>` : ''}<span class="trunc max-w-[150px] text-slate-500" title="${esc(r.match)}">${esc(r.match)}</span></span></td>
+    <td>${r.sen}</td>
+    <td><span class="badge ${ST[r.status]}">${r.status}</span></td>
+    <td class="text-right"><button class="repBtn btn btn-sm" data-id="${r.id}">Replace</button> <button class="delBtn btn btn-sm hover:!text-red-500" data-id="${r.id}">Delete</button></td>
+  </tr>`).join('') : `<tr><td colspan="13" class="py-12 text-center text-slate-500">${empty}</td></tr>`;
+  const n = rows.filter(r => r.short).length;
+  $('shortCount').innerHTML = `<b class="text-blue-600 dark:text-blue-400">${n}</b> shortlisted of ${rows.length}`;
+  document.querySelectorAll('.tab').forEach(t => {
+    const on = t.dataset.tab === tab;
+    t.className = 'tab border-b-2 px-4 py-2 text-sm font-medium ' + (on ? 'border-blue-600 text-blue-600 dark:text-blue-400' : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200');
+    if (t.dataset.tab === 'final') t.textContent = `Final${n ? ` (${n})` : ''}`;
+  });
+  $('bulkLow').disabled = $('bulkOff').disabled = !rows.length;
+}
+$('tbody').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const i = rows.findIndex(r => r.id == b.dataset.id); if (i < 0) return;
+  if (b.classList.contains('repBtn')) { const nr = replaceRow(i); renderTable(nr.id); toast(`Replaced with ${nr.name}`); }
+  if (b.classList.contains('delBtn')) { const r = rows.splice(i, 1)[0]; renderTable(); toast(`Deleted ${r.name}`); }
+});
+$('tbody').addEventListener('change', e => {
+  if (!e.target.classList.contains('shortChk')) return;
+  const r = rows.find(r => r.id == e.target.dataset.id); r.short = e.target.checked; renderTable();
+});
+function replaceRow(i) {
+  const old = rows[i], co = COMPANIES.find(c => c[0] === old.company);
+  let nr; do { nr = mockPerson(co, rows.map(r => r.name)); } while (nr.status === 'Off-ICP' || nr.act === 'Low');
+  nr.status = 'Replaced'; rows[i] = nr; return nr;
+}
+function bulk(pred, label) {
+  let n = 0, last; rows.forEach((r, i) => { if (pred(r)) { last = replaceRow(i); n++; } });
+  renderTable(last && last.id); toast(n ? `Replaced ${n} ${label}` : `No ${label} to replace`, n ? 'ok' : 'warn');
+}
+$('bulkLow').onclick = () => bulk(r => r.act === 'Low', 'Low-activity people');
+$('bulkOff').onclick = () => bulk(r => r.status === 'Off-ICP', 'off-ICP people');
+document.querySelectorAll('.tab').forEach(t => t.onclick = () => { tab = t.dataset.tab; renderTable(); });
+['search', 'fAct', 'fPri', 'fStat'].forEach(id => $(id).addEventListener('input', () => renderTable()));
+
+/* ---------- run / cancel ---------- */
+function startJob() {
+  clearInterval(timer); rows = []; processed = 0; failed = 0; tab = 'people';
+  coStatus = COMPANIES.map(c => ({ name: c[0], domain: c[1], s: 'Pending', n: 0 }));
+  setBadge('running'); $('statusList').classList.remove('hidden');
+  const per = Math.max(1, Math.min(10, +$('ppc').value || 4));
+  timer = setInterval(() => {
+    const i = processed, co = COMPANIES[i], cs = coStatus[i];
+    if (FAIL[i]) { cs.s = FAIL[i]; failed++; }
+    else {
+      const n = Math.max(1, per - (Math.random() < 0.35 ? 1 : 0));
+      for (let k = 0; k < n; k++) rows.push(mockPerson(co, rows.map(r => r.name)));
+      cs.s = 'Found'; cs.n = n;
+    }
+    processed++;
+    if (coStatus[processed]) coStatus[processed].s = 'Processing';
+    if (processed >= TOTAL) { clearInterval(timer); setBadge('done'); addHistory(); toast(`Job done — ${rows.length} people from ${TOTAL - failed} companies`, 'ok'); }
+    renderProgress(); renderTable();
+  }, 320);
+  coStatus[0].s = 'Processing'; renderProgress(); renderTable();
+  toast(`Running “${$('batch').value || 'Untitled'}” on ${TOTAL} companies`);
+}
+$('runBtn').onclick = startJob;
+$('cancelBtn').onclick = () => {
+  clearInterval(timer);
+  coStatus.forEach(c => { if (c.s === 'Pending' || c.s === 'Processing') c.s = 'Cancelled'; });
+  setBadge('cancelled'); renderProgress(); renderTable(); toast('Job cancelled — partial results kept', 'warn');
+};
+
+/* ---------- history ---------- */
+const HISTORY = [
+  { name: 'Yard — Bengaluru founders', date: '07 Oct 2026', count: 84 },
+  { name: 'Sciqik Q4', date: '02 Oct 2026', count: 61 },
+  { name: 'REACH24 GCC push', date: '24 Sep 2026', count: 118 },
+];
+function renderHistory() {
+  $('history').innerHTML = '<option value="">Job history…</option>' + HISTORY.map((h, i) => `<option value="${i}">${esc(h.name)} · ${h.date} · ${h.count}</option>`).join('');
+}
+function addHistory() {
+  const d = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  HISTORY.unshift({ name: $('batch').value || 'Untitled', date: d, count: rows.length, snap: rows.map(r => ({ ...r })) });
+  renderHistory();
+}
+$('history').onchange = e => {
+  const h = HISTORY[e.target.value]; if (!h) return;
+  clearInterval(timer);
+  if (h.snap) rows = h.snap.map(r => ({ ...r }));
+  else { rows = []; let k = 0; while (rows.length < h.count) { const co = COMPANIES[k++ % TOTAL]; rows.push(mockPerson(co)); } rows.forEach((r, i) => r.short = i % 5 === 0); }
+  processed = TOTAL; failed = 2; coStatus = COMPANIES.map((c, i) => ({ name: c[0], domain: c[1], s: FAIL[i] && i < 12 ? FAIL[i] : 'Found', n: 0 }));
+  setBadge('loaded'); renderProgress(); renderTable(); toast(`Loaded “${h.name}” (${rows.length} people)`);
+  e.target.value = '';
+};
+
+/* ---------- export / template ---------- */
+$('exportBtn').onclick = e => { e.stopPropagation(); $('exportMenu').classList.toggle('hidden'); };
+document.addEventListener('click', () => $('exportMenu').classList.add('hidden'));
+$('exportMenu').onclick = e => {
+  const k = e.target.dataset.exp; if (!k) return;
+  const n = rows.filter(r => r.short).length;
+  if (!rows.length) return toast('Nothing to export yet — run a job first', 'warn');
+  if (k === 'all') toast(`Downloaded ${rows.length} rows as ${($('batch').value || 'prospects').replace(/\s+/g, '_')}_all.csv`, 'ok');
+  if (k === 'short') toast(n ? `Downloaded ${n} shortlisted rows` : 'No shortlisted rows yet', n ? 'ok' : 'warn');
+  if (k === 'sheet') toast(`Sent ${n || rows.length} rows to Google Sheet “${$('batch').value}” (mock)`, 'ok');
+};
+$('tplBtn').onclick = () => toast('Downloaded companies_template.csv (Website, LinkedIn URL, Company Name)', 'ok');
+
+/* ---------- upload (simulated) ---------- */
+function showFile(name) {
+  $('fileName').textContent = name; $('fileRows').textContent = `${TOTAL} rows`;
+  $('mapping').innerHTML = ['Company Name → name', 'Website → domain', 'LinkedIn URL → linkedin'].map(m => `<span class="badge b-green">✓ ${m}</span>`).join('');
+  $('previewBody').innerHTML = COMPANIES.slice(0, 5).map((c, i) => `<tr><td class="text-slate-500">${i + 1}</td><td>${c[0]}</td><td>${c[1]}</td><td class="text-slate-500">${i % 2 ? '—' : 'linkedin.com/company/' + c[0].toLowerCase().replace(/\s/g, '')}</td></tr>`).join('');
+  $('filePanel').classList.remove('hidden'); toast(`${name} uploaded · ${TOTAL} companies detected`, 'ok');
+}
+$('file').onchange = e => { const f = e.target.files[0]; if (f) showFile(f.name); e.target.value = ''; };
+const drop = $('drop');
+drop.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); $('file').click(); } };
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('!border-blue-500', 'bg-blue-500/5'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('!border-blue-500', 'bg-blue-500/5'); }));
+drop.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; showFile(f ? f.name : 'companies.csv'); });
+$('fileClear').onclick = () => { $('filePanel').classList.add('hidden'); toast('File removed'); };
+
+/* ---------- init ---------- */
+loadPreset('Yard'); renderHistory(); setBadge('none'); renderProgress(); renderTable();
+</script>
+</body>
+</html>
